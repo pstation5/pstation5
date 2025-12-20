@@ -28,114 +28,8 @@ let currentTheme = 'light';
 let collection = {
     games: [],
     lastUpdated: new Date().toISOString(),
-    version: '1.0',
-    settings: {
-        collectionStartDate: '2025-02-14', // Ваша дата покупки консоли
-        collectionName: 'Моя коллекция PlayStation'
-    }
+    version: '1.0'
 };
-
-// ===== РАСЧЁТ ЛЕТ КОЛЛЕКЦИИ =====
-
-// Расчёт лет коллекции от даты начала
-function calculateCollectionYears() {
-    if (!collection.settings?.collectionStartDate) {
-        return '1 год'; // По умолчанию
-    }
-    
-    const startDate = new Date(collection.settings.collectionStartDate);
-    const currentDate = new Date();
-    
-    // Вычисляем разницу в миллисекундах
-    const diffMs = currentDate - startDate;
-    
-    // Если дата в будущем (только что купили консоль)
-    if (diffMs <= 0) {
-        return 'Менее года';
-    }
-    
-    // Конвертируем в дни
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    // Определяем сколько лет
-    if (diffDays < 30) {
-        return 'Менее месяца';
-    } else if (diffDays < 365) {
-        const months = Math.floor(diffDays / 30);
-        return `${months} ${getMonthsWord(months)}`;
-    } else {
-        const years = Math.floor(diffDays / 365);
-        return `${years} ${getYearsWord(years)}`;
-    }
-}
-
-// Склонение слова "месяц"
-function getMonthsWord(months) {
-    if (months === 1) return 'месяц';
-    if (months >= 2 && months <= 4) return 'месяца';
-    return 'месяцев';
-}
-
-// Склонение слова "год"
-function getYearsWord(years) {
-    if (years % 10 === 1 && years % 100 !== 11) return 'год';
-    if (years % 10 >= 2 && years % 10 <= 4 && 
-        (years % 100 < 10 || years % 100 >= 20)) return 'года';
-    return 'лет';
-}
-
-// Форматирование даты для отображения
-function formatCollectionDate() {
-    if (!collection.settings?.collectionStartDate) {
-        return '14 февраля 2025';
-    }
-    
-    const date = new Date(collection.settings.collectionStartDate);
-    return date.toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-}
-
-// Функция для отображения "сколько времени прошло"
-function getTimeAgo() {
-    if (!collection.settings?.collectionStartDate) {
-        return 'с 14 февраля 2025';
-    }
-    
-    const startDate = new Date(collection.settings.collectionStartDate);
-    const currentDate = new Date();
-    const diffMs = currentDate - startDate;
-    
-    if (diffMs <= 0) return 'сегодня начал';
-    
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'сегодня начал';
-    if (diffDays === 1) return 'вчера начал';
-    if (diffDays < 30) return `${diffDays} ${getDaysWord(diffDays)} назад`;
-    if (diffDays < 365) {
-        const months = Math.floor(diffDays / 30);
-        return `${months} ${getMonthsWord(months)} назад`;
-    }
-    
-    const years = Math.floor(diffDays / 365);
-    const remainingDays = diffDays % 365;
-    const months = Math.floor(remainingDays / 30);
-    
-    if (months === 0) {
-        return `${years} ${getYearsWord(years)} назад`;
-    }
-    return `${years} ${getYearsWord(years)} и ${months} ${getMonthsWord(months)} назад`;
-}
-
-// Склонение слова "день"
-function getDaysWord(days) {
-    if (days === 1) return 'день';
-    if (days >= 2 && days <= 4) return 'дня';
-    return 'дней';
-}
 
 // ===== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ =====
 function initApp() {
@@ -151,9 +45,6 @@ function initApp() {
     if (user) {
         updateUserInfo(user);
     }
-    
-    // Обновляем приветствие с названием коллекции
-    updateGreeting();
     
     // Загружаем коллекцию
     loadCollection();
@@ -238,10 +129,6 @@ function loadCollectionFromStorage() {
             const parsed = JSON.parse(saved);
             collection.games = parsed.games || [];
             collection.lastUpdated = parsed.lastUpdated || new Date().toISOString();
-            // Загружаем настройки если есть
-            if (parsed.settings) {
-                collection.settings = parsed.settings;
-            }
             return true;
         }
     } catch (error) {
@@ -262,29 +149,6 @@ function saveCollectionToStorage() {
     }
 }
 
-// ===== ОБНОВЛЕНИЕ ПРИВЕТСТВИЯ =====
-function updateGreeting() {
-    const user = tg.initDataUnsafe?.user;
-    const firstName = user?.first_name || 'Коллекционер';
-    const collectionName = collection.settings?.collectionName || 'Моя коллекция игр';
-    
-    elements.userGreeting.textContent = `🎮 ${collectionName} ${firstName}`;
-    
-    // Обновляем подзаголовок с датой начала
-    const startDate = formatCollectionDate();
-    // Ищем элемент с классом subtitle или создаем его
-    let subtitleEl = document.querySelector('.subtitle');
-    if (!subtitleEl) {
-        subtitleEl = document.createElement('div');
-        subtitleEl.className = 'subtitle';
-        subtitleEl.style.color = 'var(--text-secondary)';
-        subtitleEl.style.fontSize = '14px';
-        subtitleEl.style.marginTop = '5px';
-        elements.userGreeting.parentNode.insertBefore(subtitleEl, elements.userGreeting.nextSibling);
-    }
-    subtitleEl.textContent = `Коллекционирую с ${startDate}`;
-}
-
 // ===== ОБНОВЛЕНИЕ СТАТИСТИКИ =====
 function updateStats() {
     if (!games.length) return;
@@ -294,12 +158,15 @@ function updateStats() {
     const platforms = [...new Set(games.map(game => game.platform))];
     elements.uniquePlatformsEl.textContent = platforms.length;
     
-    // Используем новый расчёт лет
-    const collectionYears = calculateCollectionYears();
-    elements.collectionYearsEl.textContent = collectionYears;
-    
-    // Обновляем приветствие
-    updateGreeting();
+    const years = games.map(game => game.releaseYear).filter(year => year);
+    if (years.length >= 2) {
+        const minYear = Math.min(...years);
+        const maxYear = Math.max(...years);
+        const yearSpan = maxYear - minYear + 1;
+        elements.collectionYearsEl.textContent = yearSpan;
+    } else {
+        elements.collectionYearsEl.textContent = '1';
+    }
 }
 
 function updateCollectionStats() {
@@ -568,6 +435,7 @@ function addNewGame(event) {
         platform: document.getElementById('gamePlatform').value,
         platformName: document.getElementById('gamePlatform').selectedOptions[0].text,
         releaseYear: parseInt(document.getElementById('gameYear').value) || new Date().getFullYear(),
+
         purchaseDate: document.getElementById('gamePurchaseDate').value || new Date().toISOString().split('T')[0],
         coverImage: document.getElementById('gameCover').value.trim() || 
                    'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png',
@@ -726,76 +594,6 @@ function clearCollection() {
     });
 }
 
-// ===== НАСТРОЙКИ КОЛЛЕКЦИИ =====
-
-// Открытие модального окна настроек
-function openSettingsModal() {
-    // Заполняем форму текущими значениями
-    document.getElementById('collectionName').value = 
-        collection.settings?.collectionName || 'Моя коллекция PlayStation';
-    
-    document.getElementById('collectionStartDate').value = 
-        collection.settings?.collectionStartDate || '2025-02-14';
-    
-    // Обновляем предпросмотр
-    updateSettingsPreview();
-    
-    // Показываем модалку
-    document.getElementById('settingsModal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-// Закрытие модального окна
-function closeSettingsModal() {
-    document.getElementById('settingsModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Обновление предпросмотра
-function updateSettingsPreview() {
-    const name = document.getElementById('collectionName').value || 'Моя коллекция PlayStation';
-    const dateValue = document.getElementById('collectionStartDate').value || '2025-02-14';
-    
-    // Форматируем дату
-    const date = new Date(dateValue);
-    const formattedDate = date.toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    
-    // Рассчитываем годы
-    const collectionYears = calculateCollectionYears();
-    
-    // Обновляем предпросмотр
-    document.getElementById('previewName').textContent = name;
-    document.getElementById('previewDate').textContent = formattedDate;
-    document.getElementById('previewYear').textContent = collectionYears;
-}
-
-// Сохранение настроек
-function saveSettings(event) {
-    event.preventDefault();
-    
-    // Сохраняем настройки
-    collection.settings = {
-        collectionName: document.getElementById('collectionName').value || 'Моя коллекция PlayStation',
-        collectionStartDate: document.getElementById('collectionStartDate').value || '2025-02-14'
-    };
-    
-    // Сохраняем в localStorage
-    saveCollectionToStorage();
-    
-    // Обновляем статистику
-    updateStats();
-    
-    // Обновляем приветствие
-    updateGreeting();
-    
-    showNotification('Настройки сохранены!', 'success');
-    closeSettingsModal();
-}
-
 // ===== УВЕДОМЛЕНИЯ =====
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
@@ -895,12 +693,9 @@ window.onclick = function(event) {
     if (event.target === document.getElementById('manageModal')) {
         closeManageModal();
     }
-    if (event.target === document.getElementById('settingsModal')) {
-        closeSettingsModal();
-    }
 }
 
-// ===== РЕДАКТИРОВАНИЕ И УДАЛЕНИЕ ИГР =====
+// ===== РЕДАКТИРОВАНИЕ И УДАЛЕНИЕ ИГР (ЭТАП 4) =====
 
 // Открытие модального окна редактирования
 function editGame(gameId) {
@@ -1030,7 +825,7 @@ function deleteGame(gameId = null) {
     }
 }
 
-// ===== СТАТИСТИКА И АНАЛИТИКА =====
+// ===== СТАТИСТИКА И АНАЛИТИКА (ЭТАП 4) =====
 
 // Открытие модального окна статистики
 function openStatsModal() {
@@ -1084,7 +879,7 @@ function updateAdvancedStats() {
     document.getElementById('avgPrice').textContent = 'N/A';
 }
 
-// ===== ШАРИНГ КОЛЛЕКЦИИ =====
+// ===== ШАРИНГ КОЛЛЕКЦИИ (ЭТАП 4) =====
 
 // Открытие модального окна шаринга
 function openShareModal() {
@@ -1117,7 +912,7 @@ function shareCollection(type) {
 function shareByLink() {
     const shareData = {
         title: 'Моя игровая коллекция',
-        text: `Моя коллекция игр на дисках! Коллекционирую с ${formatCollectionDate()}`,
+        text: 'Посмотри мою коллекцию игр на дисках!',
         url: window.location.href
     };
     
@@ -1171,7 +966,314 @@ function exportForFriends() {
     showNotification('Общедоступная версия экспортирована!', 'success');
 }
 
-// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+// ===== СКАНЕР ШТРИХ-КОДА (ЭТАП 4) =====
+
+let barcodeScannerActive = false;
+
+// Открытие сканера
+function openBarcodeScanner() {
+    document.getElementById('barcodeScanner').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('barcodeResult').style.display = 'none';
+}
+
+// Закрытие сканера
+function closeBarcodeScanner() {
+    stopBarcodeScanner();
+    document.getElementById('barcodeScanner').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Запуск сканера
+function startBarcodeScanner() {
+    if (!('mediaDevices' in navigator)) {
+        showNotification('Ваше устройство не поддерживает камеру', 'error');
+        return;
+    }
+    
+    const video = document.getElementById('scanner-video');
+    const placeholder = document.getElementById('scanner-placeholder');
+    const startBtn = document.getElementById('startScannerBtn');
+    const stopBtn = document.getElementById('stopScannerBtn');
+    
+    navigator.mediaDevices.getUserMedia({ 
+        video: { 
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        } 
+    })
+    .then(stream => {
+        video.srcObject = stream;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+        startBtn.style.display = 'none';
+        stopBtn.style.display = 'inline-flex';
+        
+        video.play();
+        barcodeScannerActive = true;
+        scanBarcodeFromVideo(video);
+    })
+    .catch(err => {
+        console.error('Ошибка доступа к камере:', err);
+        showNotification('Не удалось получить доступ к камере', 'error');
+    });
+}
+
+// Остановка сканера
+function stopBarcodeScanner() {
+    const video = document.getElementById('scanner-video');
+    const placeholder = document.getElementById('scanner-placeholder');
+    const startBtn = document.getElementById('startScannerBtn');
+    const stopBtn = document.getElementById('stopScannerBtn');
+    
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+    
+    video.style.display = 'none';
+    placeholder.style.display = 'flex';
+    startBtn.style.display = 'inline-flex';
+    stopBtn.style.display = 'none';
+    
+    barcodeScannerActive = false;
+}
+
+// Сканирование штрих-кода с видео
+function scanBarcodeFromVideo(video) {
+    // В реальном приложении здесь был бы код для распознавания штрих-кодов
+    // Например, с использованием библиотеки QuaggaJS или ZXing
+    showNotification('Сканирование штрих-кода будет реализовано в следующей версии!', 'info');
+}
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (ЭТАП 4) =====
+
+// Копирование в буфер обмена
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showNotification('Ссылка скопирована в буфер обмена!', 'success'))
+        .catch(err => {
+            console.error('Ошибка копирования:', err);
+            showNotification('Не удалось скопировать ссылку', 'error');
+        });
+}
+
+// Шаринг конкретной игры
+function shareGame(gameId) {
+    const game = collection.games.find(g => g.id === gameId);
+    if (!game) {
+        showNotification('Игра не найдена', 'error');
+        return;
+    }
+    
+    const shareText = `🎮 "${game.title}" (${game.platformName})\n📀 Из моей коллекции игр\n\nПосмотреть все игры: ${window.location.href}`;
+    
+    // Пробуем нативный шаринг (работает на телефонах)
+    if (navigator.share) {
+        navigator.share({
+            title: `Игра: ${game.title}`,
+            text: shareText,
+            url: window.location.href
+        })
+        .then(() => {
+            showNotification('Игра отправлена!', 'success');
+        })
+        .catch(err => {
+            console.log('Нативный шаринг не сработал, копируем в буфер:', err);
+            // Если шаринг не сработал, копируем в буфер
+            copyToClipboard(shareText);
+        });
+    } else {
+        // Если нативный шаринг не поддерживается (компьютеры)
+        copyToClipboard(shareText);
+    }
+}
+
+// Контекстное меню для игр
+let currentContextGameId = null;
+
+// Показ контекстного меню
+function showGameContextMenu(gameId, event) {
+    event.preventDefault();
+    currentContextGameId = gameId;
+    
+    const contextMenu = document.getElementById('gameContextMenu');
+    contextMenu.style.display = 'block';
+    contextMenu.style.left = `${event.clientX}px`;
+    contextMenu.style.top = `${event.clientY}px`;
+    
+    // Скрываем меню при клике вне его
+    setTimeout(() => {
+        document.addEventListener('click', hideContextMenu);
+    }, 100);
+}
+
+// Скрытие контекстного меню
+function hideContextMenu() {
+    document.getElementById('gameContextMenu').style.display = 'none';
+    document.removeEventListener('click', hideContextMenu);
+}
+
+// Обработчики контекстного меню
+function contextEditGame() {
+    if (currentContextGameId) {
+        editGame(currentContextGameId);
+    }
+    hideContextMenu();
+}
+
+function contextDeleteGame() {
+    if (currentContextGameId) {
+        deleteGameConfirm(currentContextGameId);
+    }
+    hideContextMenu();
+}
+
+function contextShareGame() {
+    if (currentContextGameId) {
+        shareGame(currentContextGameId);
+    }
+    hideContextMenu();
+}
+
+function contextAddToWishlist() {
+    showNotification('Функция "Избранное" будет добавлена в следующей версии!', 'info');
+    hideContextMenu();
+}
+
+// ===== КОПИРОВАНИЕ В БУФЕР ОБМЕНА =====
+function copyToClipboard(text) {
+    // Пытаемся использовать современный Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text)
+            .then(() => {
+                showNotification('Скопировано в буфер обмена!', 'success');
+                return true;
+            })
+            .catch(err => {
+                console.error('Clipboard API не сработал:', err);
+                return fallbackCopyText(text);
+            });
+    } else {
+        // Используем старый метод
+        return fallbackCopyText(text);
+    }
+}
+
+// Старый метод копирования (fallback)
+function fallbackCopyText(text) {
+    try {
+        // Создаём временный textarea
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        
+        // Делаем невидимым
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        
+        // Выделяем текст
+        textArea.select();
+        textArea.setSelectionRange(0, 99999); // Для мобильных
+        
+        // Копируем
+        const successful = document.execCommand('copy');
+        
+        // Удаляем элемент
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            showNotification('Скопировано в буфер обмена!', 'success');
+            return true;
+        } else {
+            showNotification('Не удалось скопировать автоматически', 'error');
+            return false;
+        }
+    } catch (err) {
+        console.error('Ошибка при копировании:', err);
+        showNotification('Ошибка при копировании', 'error');
+        return false;
+    }
+}
+
+// ===== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ ИГР С КНОПКАМИ =====
+
+// Обновляем функцию renderGames для добавления кнопок действий
+const originalRenderGames = renderGames;
+window.renderGames = function() {
+    if (!filteredGames.length) {
+        elements.gameGrid.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
+                <h3>Игры не найдены</h3>
+                <p>Попробуйте изменить фильтры или поисковый запрос</p>
+            </div>
+        `;
+        return;
+    }
+    
+    elements.gameGrid.innerHTML = filteredGames.map(game => `
+        <div class="game-card" 
+             onclick="openGameDetails(${game.id})"
+             oncontextmenu="showGameContextMenu(${game.id}, event)">
+            <div class="game-actions">
+                <button class="action-btn edit-btn" onclick="event.stopPropagation(); editGame(${game.id})" title="Редактировать">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteGameConfirm(${game.id})" title="Удалить">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="action-btn share-btn" onclick="event.stopPropagation(); shareGame(${game.id})" title="Поделиться">
+                    <i class="fas fa-share"></i>
+                </button>
+            </div>
+            <img src="${game.coverImage}" 
+                 alt="${game.title}" 
+                 class="game-cover"
+                 onerror="this.onerror=null; this.src='https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png'">
+            <div class="game-info">
+                <h3 class="game-title">${game.title}</h3>
+                <div class="game-meta">
+                    <span class="game-platform">${getPlatformIcon(game.platform)} ${game.platformName || game.platform}</span>
+                    <span class="game-year">${game.releaseYear}</span>
+                </div>
+                <div class="game-condition">
+                    <i class="fas fa-box"></i> ${game.condition || 'Состояние не указано'}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ===== ОБНОВЛЯЕМ ФУНКЦИЮ ОТКРЫТИЯ ДЕТАЛЕЙ ИГРЫ =====
+
+const originalCreateGameDetailsHTML = createGameDetailsHTML;
+window.createGameDetailsHTML = function(game) {
+    return originalCreateGameDetailsHTML(game) + `
+        <div class="game-actions-detail">
+            <button class="btn-secondary" onclick="editGame(${game.id})">
+                <i class="fas fa-edit"></i> Редактировать
+            </button>
+            <button class="btn-danger" onclick="deleteGameConfirm(${game.id})">
+                <i class="fas fa-trash"></i> Удалить
+            </button>
+            <button class="btn-primary" onclick="shareGame(${game.id})">
+                <i class="fas fa-share"></i> Поделиться
+            </button>
+        </div>
+    `;
+}
+
+
+// ===== ОБНОВЛЯЕМ ФУНКЦИЮ scanBarcode =====
+
+window.scanBarcode = function() {
+    openBarcodeScanner();
+};
+
+// ===== ФУНКЦИИ ШАРИНГА И КОПИРОВАНИЯ =====
 
 // Копирование в буфер обмена
 function copyToClipboard(text) {
@@ -1279,5 +1381,101 @@ function shareGame(gameId) {
     }
 }
 
+// Шаринг всей коллекции
+function shareCollection(type = 'link') {
+    const shareText = `🎮 Моя игровая коллекция\n📀 ${collection.games.length} игр на дисках\n\nПосмотреть коллекцию: ${window.location.href}`;
+    
+    switch(type) {
+        case 'link':
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Моя игровая коллекция',
+                    text: shareText,
+                    url: window.location.href
+                })
+                .then(() => {
+                    showNotification('Коллекция отправлена!', 'success');
+                })
+                .catch(err => {
+                    console.log('Нативный шаринг не сработал:', err);
+                    copyToClipboard(shareText);
+                });
+            } else {
+                copyToClipboard(shareText);
+            }
+            break;
+            
+        case 'qr':
+            tg.showPopup({
+                title: 'QR-код коллекции',
+                message: 'Функция генерации QR-кода будет добавлена в следующем обновлении!',
+                buttons: [{id: 'ok', type: 'default'}]
+            });
+            break;
+            
+        case 'export':
+            exportForFriends();
+            break;
+            
+        default:
+            copyToClipboard(shareText);
+    }
+}
+
+// Экспорт для друзей (уже должна быть, проверьте)
+function exportForFriends() {
+    try {
+        const publicCollection = {
+            version: '1.0',
+            totalGames: collection.games.length,
+            games: collection.games.map(game => ({
+                title: game.title,
+                platform: game.platform,
+                platformName: game.platformName,
+                coverImage: game.coverImage,
+                releaseYear: game.releaseYear,
+                description: game.description,
+                details: {
+                    genre: game.details?.genre || [],
+                    edition: game.details?.edition || 'Standard'
+                }
+            }))
+        };
+        
+        const dataStr = JSON.stringify(publicCollection, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        const exportFileName = `game-collection-public-${new Date().toISOString().split('T')[0]}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileName);
+        linkElement.click();
+        
+        showNotification('Общедоступная версия экспортирована!', 'success');
+    } catch (error) {
+        console.error('Ошибка экспорта:', error);
+        showNotification('Ошибка при экспорте', 'error');
+    }
+}
+
+// Открытие модального окна шаринга
+function openShareModal() {
+    document.getElementById('shareModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Закрытие модального окна шаринга
+function closeShareModal() {
+    document.getElementById('shareModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
+
+
+
+
+
+
