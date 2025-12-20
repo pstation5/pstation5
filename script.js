@@ -1273,8 +1273,206 @@ window.scanBarcode = function() {
     openBarcodeScanner();
 };
 
+// ===== ФУНКЦИИ ШАРИНГА И КОПИРОВАНИЯ =====
+
+// Копирование в буфер обмена
+function copyToClipboard(text) {
+    // Пытаемся использовать современный Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text)
+            .then(() => {
+                showNotification('Скопировано в буфер обмена!', 'success');
+                return true;
+            })
+            .catch(err => {
+                console.error('Clipboard API не сработал:', err);
+                return fallbackCopyText(text);
+            });
+    } else {
+        // Используем старый метод
+        return fallbackCopyText(text);
+    }
+}
+
+// Старый метод копирования
+function fallbackCopyText(text) {
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            showNotification('Скопировано в буфер обмена!', 'success');
+            return true;
+        } else {
+            // Если не получилось, показываем текст для ручного копирования
+            showManualCopyPopup(text);
+            return false;
+        }
+    } catch (err) {
+        console.error('Ошибка при копировании:', err);
+        showManualCopyPopup(text);
+        return false;
+    }
+}
+
+// Показ попапа для ручного копирования
+function showManualCopyPopup(text) {
+    tg.showPopup({
+        title: 'Скопируйте текст',
+        message: `Автоматическое копирование не сработало.\n\nСкопируйте текст вручную:\n\n${text.substring(0, 150)}${text.length > 150 ? '...' : ''}`,
+        buttons: [
+            {
+                id: 'full',
+                type: 'default',
+                text: 'Показать полный текст'
+            },
+            {
+                id: 'cancel',
+                type: 'cancel'
+            }
+        ]
+    }, function(buttonId) {
+        if (buttonId === 'full') {
+            tg.showPopup({
+                title: 'Полный текст для копирования',
+                message: text,
+                buttons: [{id: 'close', type: 'cancel'}]
+            });
+        }
+    });
+}
+
+// Шаринг конкретной игры
+function shareGame(gameId) {
+    const game = collection.games.find(g => g.id === gameId);
+    if (!game) {
+        showNotification('Игра не найдена', 'error');
+        return;
+    }
+    
+    const shareText = `🎮 "${game.title}" (${game.platformName})\n📀 Из моей коллекции игр\n\nПосмотреть все игры: ${window.location.href}`;
+    
+    // Пробуем нативный шаринг
+    if (navigator.share) {
+        navigator.share({
+            title: `Игра: ${game.title}`,
+            text: shareText,
+            url: window.location.href
+        })
+        .then(() => {
+            showNotification('Игра отправлена!', 'success');
+        })
+        .catch(err => {
+            console.log('Нативный шаринг не сработал:', err);
+            copyToClipboard(shareText);
+        });
+    } else {
+        copyToClipboard(shareText);
+    }
+}
+
+// Шаринг всей коллекции
+function shareCollection(type = 'link') {
+    const shareText = `🎮 Моя игровая коллекция\n📀 ${collection.games.length} игр на дисках\n\nПосмотреть коллекцию: ${window.location.href}`;
+    
+    switch(type) {
+        case 'link':
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Моя игровая коллекция',
+                    text: shareText,
+                    url: window.location.href
+                })
+                .then(() => {
+                    showNotification('Коллекция отправлена!', 'success');
+                })
+                .catch(err => {
+                    console.log('Нативный шаринг не сработал:', err);
+                    copyToClipboard(shareText);
+                });
+            } else {
+                copyToClipboard(shareText);
+            }
+            break;
+            
+        case 'qr':
+            tg.showPopup({
+                title: 'QR-код коллекции',
+                message: 'Функция генерации QR-кода будет добавлена в следующем обновлении!',
+                buttons: [{id: 'ok', type: 'default'}]
+            });
+            break;
+            
+        case 'export':
+            exportForFriends();
+            break;
+            
+        default:
+            copyToClipboard(shareText);
+    }
+}
+
+// Экспорт для друзей (уже должна быть, проверьте)
+function exportForFriends() {
+    try {
+        const publicCollection = {
+            version: '1.0',
+            totalGames: collection.games.length,
+            games: collection.games.map(game => ({
+                title: game.title,
+                platform: game.platform,
+                platformName: game.platformName,
+                coverImage: game.coverImage,
+                releaseYear: game.releaseYear,
+                description: game.description,
+                details: {
+                    genre: game.details?.genre || [],
+                    edition: game.details?.edition || 'Standard'
+                }
+            }))
+        };
+        
+        const dataStr = JSON.stringify(publicCollection, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        const exportFileName = `game-collection-public-${new Date().toISOString().split('T')[0]}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileName);
+        linkElement.click();
+        
+        showNotification('Общедоступная версия экспортирована!', 'success');
+    } catch (error) {
+        console.error('Ошибка экспорта:', error);
+        showNotification('Ошибка при экспорте', 'error');
+    }
+}
+
+// Открытие модального окна шаринга
+function openShareModal() {
+    document.getElementById('shareModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Закрытие модального окна шаринга
+function closeShareModal() {
+    document.getElementById('shareModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
