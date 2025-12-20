@@ -985,21 +985,69 @@ function editUpcomingGame(upcomingId, event) {
     document.getElementById('upcomingGenre').value = upcoming.genre || '';
     document.getElementById('upcomingPlatform').value = upcoming.platform || 'ps5';
     
-    // Изменяем обработчик формы
-    const form = document.getElementById('addUpcomingForm');
-    form.onsubmit = function(e) {
-        e.preventDefault();
-        updateUpcomingGame(upcomingId);
+    // Скрываем кнопку "Добавить", показываем "Сохранить"
+    const submitBtn = document.querySelector('#addUpcomingForm button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-save"></i> Сохранить изменения';
+    
+    // Сохраняем ID редактируемой игры
+    document.getElementById('addUpcomingForm').dataset.editingId = upcomingId;
+}
+
+// Обновляем обработчик формы добавления/редактирования
+document.getElementById('addUpcomingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const editingId = this.dataset.editingId;
+    if (editingId) {
+        // Режим редактирования
+        updateUpcomingGame(parseInt(editingId));
+    } else {
+        // Режим добавления
+        addNewUpcomingGame();
+    }
+});
+
+// Функция добавления новой ожидаемой игры
+function addNewUpcomingGame() {
+    const newUpcoming = {
+        id: Date.now(),
+        title: document.getElementById('upcomingTitle').value.trim(),
+        cover: document.getElementById('upcomingCover').value.trim() ||
+               'https://via.placeholder.com/300x400/222/666?text=Coming+Soon',
+        developer: document.getElementById('upcomingDeveloper').value.trim(),
+        releaseDate: document.getElementById('upcomingReleaseDate').value,
+        genre: document.getElementById('upcomingGenre').value.trim(),
+        platform: document.getElementById('upcomingPlatform').value,
+        createdAt: new Date().toISOString()
     };
     
-    showNotification('Редактирование ожидаемой игры', 'info');
+    if (!newUpcoming.title) {
+        showNotification('Введите название игры', 'error');
+        return;
+    }
+    
+    if (!newUpcoming.releaseDate) {
+        showNotification('Выберите дату выхода', 'error');
+        return;
+    }
+    
+    collection.upcoming.unshift(newUpcoming);
+    
+    if (saveCollection()) {
+        upcomingGames = collection.upcoming;
+        renderUpcomingGames();
+        updateCollectionInfo();
+        
+        showNotification(`"${newUpcoming.title}" добавлена в ожидаемые!`, 'success');
+        closeAddUpcomingModal();
+    }
 }
 
 function updateUpcomingGame(upcomingId) {
     const upcomingIndex = collection.upcoming.findIndex(u => u.id === upcomingId);
     if (upcomingIndex === -1) return;
     
-    collection.upcoming[upcomingIndex] = {
+    const updatedUpcoming = {
         ...collection.upcoming[upcomingIndex],
         title: document.getElementById('upcomingTitle').value.trim(),
         cover: document.getElementById('upcomingCover').value.trim() || 
@@ -1011,6 +1059,18 @@ function updateUpcomingGame(upcomingId) {
         updatedAt: new Date().toISOString()
     };
     
+    if (!updatedUpcoming.title) {
+        showNotification('Введите название игры', 'error');
+        return;
+    }
+    
+    if (!updatedUpcoming.releaseDate) {
+        showNotification('Выберите дату выхода', 'error');
+        return;
+    }
+    
+    collection.upcoming[upcomingIndex] = updatedUpcoming;
+    
     if (saveCollection()) {
         upcomingGames = collection.upcoming;
         renderUpcomingGames();
@@ -1019,6 +1079,40 @@ function updateUpcomingGame(upcomingId) {
         showNotification('Ожидаемая игра обновлена!', 'success');
         closeAddUpcomingModal();
     }
+}
+
+// Обновляем функцию открытия модального окна для сброса формы
+function openAddUpcomingModal() {
+    document.getElementById('addUpcomingModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    // Сбрасываем форму
+    const form = document.getElementById('addUpcomingForm');
+    form.reset();
+    delete form.dataset.editingId;
+    
+    // Устанавливаем сегодняшнюю дату по умолчанию
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('upcomingReleaseDate').value = today;
+    
+    // Устанавливаем стандартный текст кнопки
+    const submitBtn = document.querySelector('#addUpcomingForm button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-plus"></i> Добавить';
+    
+    // Устанавливаем стандартный заголовок
+    document.querySelector('#addUpcomingModal .modal-header h2').innerHTML = 
+        '<i class="fas fa-calendar-plus"></i> Добавить ожидаемую игру';
+}
+
+// Обновляем функцию закрытия модального окна
+function closeAddUpcomingModal() {
+    document.getElementById('addUpcomingModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    
+    // Сбрасываем форму
+    const form = document.getElementById('addUpcomingForm');
+    form.reset();
+    delete form.dataset.editingId;
 }
 
 // Открытие деталей ожидаемой игры
@@ -1112,5 +1206,6 @@ function clearUpcomingGames() {
 }
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
