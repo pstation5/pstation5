@@ -13,39 +13,35 @@
 <body>
     <div class="container">
         <!-- Шапка с пользователем Telegram -->
- <!-- Шапка с пользователем Telegram -->
-<header class="header">
-    <div class="user-info">
-        <div class="avatar-placeholder" id="userAvatar">
-            <i class="fas fa-user"></i>
-        </div>
-        <div>
-            <h1 id="userGreeting">🎮 Моя коллекция игр</h1>
-            <p class="subtitle">Коллекция физических изданий на дисках</p>
-        </div>
-    </div>
-    
-    <div class="header-buttons">
-        <button class="manage-btn" onclick="openBarcodeScanner()" title="Сканировать штрих-код">
-            <i class="fas fa-barcode"></i>
-        </button>
-        <button class="manage-btn" onclick="openShareModal()" title="Поделиться коллекцией">
-            <i class="fas fa-share-alt"></i>
-        </button>
-        <button class="manage-btn" onclick="openStatsModal()" title="Статистика коллекции">
-            <i class="fas fa-chart-bar"></i>
-        </button>
-        <button class="manage-btn" onclick="openManageModal()" title="Управление коллекцией">
-            <i class="fas fa-cog"></i>
-        </button>
-        <button class="manage-btn" onclick="openSettingsModal()" title="Настройки коллекции">
-    <i class="fas fa-sliders-h"></i>
-</button>
-        <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
-            <i class="fas fa-moon"></i>
-        </button>
-    </div>
-</header>
+        <header class="header">
+            <div class="user-info">
+                <div class="avatar-placeholder" id="userAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <h1 id="userGreeting">🎮 Моя коллекция игр</h1>
+                    <p class="subtitle">Коллекция физических изданий на дисках</p>
+                </div>
+            </div>
+            
+            <div class="header-buttons">
+                <button class="manage-btn" onclick="openBarcodeScanner()" title="Сканировать штрих-код">
+                    <i class="fas fa-barcode"></i>
+                </button>
+                <button class="manage-btn" onclick="openShareModal()" title="Поделиться коллекцией">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <button class="manage-btn" onclick="openStatsModal()" title="Статистика коллекции">
+                    <i class="fas fa-chart-bar"></i>
+                </button>
+                <button class="manage-btn" onclick="openManageModal()" title="Управление коллекцией">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
 
         <!-- Статистика -->
         <div class="stats">
@@ -157,7 +153,6 @@
                             </div>
                         </div>
                         
-                        
                         <div class="form-group">
                             <label for="gamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
                             <input type="date" id="gamePurchaseDate" class="form-input">
@@ -169,17 +164,16 @@
                             <small class="form-hint">Можно загрузить фото в <a href="https://imgur.com" target="_blank">Imgur</a> и вставить ссылку</small>
                         </div>
 
-<!-- После блока с gameCover добавьте: -->
-<div class="form-group">
-    <label for="gameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
-    <input type="url" id="gameVideo" class="form-input" placeholder="https://youtube.com/embed/VIDEO_ID или https://youtube.com/watch?v=VIDEO_ID">
-    <small class="form-hint">
-        Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
-    </small>
-    <button type="button" class="btn-small" onclick="testVideo()" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
-        <i class="fas fa-play"></i> Проверить видео
-    </button>
-</div>
+                        <div class="form-group">
+                            <label for="gameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
+                            <input type="url" id="gameVideo" class="form-input" placeholder="https://youtube.com/embed/VIDEO_ID или https://youtube.com/watch?v=VIDEO_ID">
+                            <small class="form-hint">
+                                Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
+                            </small>
+                            <button type="button" class="btn-small" onclick="testVideo()" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
+                                <i class="fas fa-play"></i> Проверить видео
+                            </button>
+                        </div>
                         
                         <div class="form-group">
                             <label for="gameDescription"><i class="fas fa-align-left"></i> Описание</label>
@@ -260,6 +254,319 @@
         <!-- Скрытый input для импорта файлов -->
         <input type="file" id="importFileInput" accept=".json" style="display: none;">
 
+        <!-- Модальное окно редактирования игры -->
+        <div id="editGameModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-edit"></i> Редактировать игру</h2>
+                    <button class="close-modal" onclick="closeEditGameModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editGameForm" onsubmit="updateGame(event)">
+                        <input type="hidden" id="editGameId">
+                        
+                        <div class="form-group">
+                            <label for="editGameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
+                            <input type="text" id="editGameTitle" required class="form-input">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editGamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
+                                <select id="editGamePlatform" required class="form-input">
+                                    <option value="ps4">PlayStation 4</option>
+                                    <option value="ps5">PlayStation 5</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editGameYear"><i class="fas fa-calendar-alt"></i> Год выпуска</label>
+                                <input type="number" id="editGameYear" class="form-input" min="1990" max="2025">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editGamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
+                            <input type="date" id="editGamePurchaseDate" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editGameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
+                            <input type="url" id="editGameCover" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editGameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
+                            <input type="url" id="editGameVideo" class="form-input">
+                            <small class="form-hint">
+                                Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
+                            </small>
+                            <button type="button" class="btn-small" onclick="testVideo(true)" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
+                                <i class="fas fa-play"></i> Проверить видео
+                            </button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editGameDescription"><i class="fas fa-align-left"></i> Описание</label>
+                            <textarea id="editGameDescription" class="form-input" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editGameNotes"><i class="fas fa-sticky-note"></i> Личные заметки</label>
+                            <textarea id="editGameNotes" class="form-input" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-danger" onclick="deleteGame()" style="background: #ff4757;">
+                                <i class="fas fa-trash"></i> Удалить игру
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="closeEditGameModal()">Отмена</button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно статистики -->
+        <div id="statsModal" class="modal">
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-chart-bar"></i> Статистика коллекции</h2>
+                    <button class="close-modal" onclick="closeStatsModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3><i class="fas fa-gamepad"></i> По платформам</h3>
+                            <div id="platformChart" class="chart-placeholder"></div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <h3><i class="fas fa-calendar"></i> По годам выпуска</h3>
+                            <div id="yearChart" class="chart-placeholder"></div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <h3><i class="fas fa-box"></i> По состоянию</h3>
+                            <div id="conditionChart" class="chart-placeholder"></div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <h3><i class="fas fa-chart-pie"></i> Распределение</h3>
+                            <div id="pieChart" class="chart-placeholder"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="advanced-stats">
+                        <h3><i class="fas fa-chart-line"></i> Расширенная статистика</h3>
+                        <div class="advanced-stats-grid">
+                            <div class="advanced-stat">
+                                <span class="stat-label">Средний год выпуска</span>
+                                <span class="stat-value" id="avgYear">-</span>
+                            </div>
+                            <div class="advanced-stat">
+                                <span class="stat-label">Самая старая игра</span>
+                                <span class="stat-value" id="oldestGame">-</span>
+                            </div>
+                            <div class="advanced-stat">
+                                <span class="stat-label">Самая новая игра</span>
+                                <span class="stat-value" id="newestGame">-</span>
+                            </div>
+                            <div class="advanced-stat">
+                                <span class="stat-label">Чаще всего издатель</span>
+                                <span class="stat-value" id="topPublisher">-</span>
+                            </div>
+                            <div class="advanced-stat">
+                                <span class="stat-label">Всего потрачено</span>
+                                <span class="stat-value" id="totalSpent">-</span>
+                            </div>
+                            <div class="advanced-stat">
+                                <span class="stat-label">Средняя цена за игру</span>
+                                <span class="stat-value" id="avgPrice">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно шаринга -->
+        <div id="shareModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-share-alt"></i> Поделиться коллекцией</h2>
+                    <button class="close-modal" onclick="closeShareModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="share-options">
+                        <button class="share-option" onclick="shareCollection('link')">
+                            <i class="fas fa-link"></i>
+                            <span>Поделиться ссылкой</span>
+                            <small>Отправить приглашение в Telegram</small>
+                        </button>
+                        
+                        <button class="share-option" onclick="shareCollection('qr')">
+                            <i class="fas fa-qrcode"></i>
+                            <span>QR-код коллекции</span>
+                            <small>Сканировать для доступа</small>
+                        </button>
+                        
+                        <button class="share-option" onclick="shareCollection('export')">
+                            <i class="fas fa-file-export"></i>
+                            <span>Экспорт для друзей</span>
+                            <small>Создать общедоступную версию</small>
+                        </button>
+                    </div>
+                    
+                    <div class="share-info">
+                        <h3><i class="fas fa-info-circle"></i> Как это работает</h3>
+                        <ul>
+                            <li>Друзья увидят вашу коллекцию в режиме только для чтения</li>
+                            <li>Они смогут фильтровать и сортировать игры</li>
+                            <li>Ваши личные заметки и данные покупок скрыты</li>
+                            <li>Вы можете отозвать доступ в любой момент</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Штрих-код сканер -->
+        <div id="barcodeScanner" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-barcode"></i> Сканировать штрих-код</h2>
+                    <button class="close-modal" onclick="closeBarcodeScanner()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="scanner-container">
+                        <div id="scanner-placeholder" class="scanner-placeholder">
+                            <i class="fas fa-camera" style="font-size: 3rem; color: var(--primary-color);"></i>
+                            <p>Подготовка камеры...</p>
+                        </div>
+                        <video id="scanner-video" style="display: none; width: 100%; border-radius: 10px;"></video>
+                        <canvas id="scanner-canvas" style="display: none;"></canvas>
+                    </div>
+                    
+                    <div class="barcode-result" id="barcodeResult" style="display: none;">
+                        <h3>Найден штрих-код: <span id="barcodeValue"></span></h3>
+                        <p>Поиск информации об игре...</p>
+                        <div id="gameSearchResults"></div>
+                    </div>
+                    
+                    <div class="scanner-controls">
+                        <button id="startScannerBtn" class="btn-primary" onclick="startBarcodeScanner()">
+                            <i class="fas fa-play"></i> Запустить сканер
+                        </button>
+                        <button id="stopScannerBtn" class="btn-secondary" onclick="stopBarcodeScanner()" style="display: none;">
+                            <i class="fas fa-stop"></i> Остановить сканер
+                        </button>
+                        <button class="btn-secondary" onclick="closeBarcodeScanner()">
+                            <i class="fas fa-times"></i> Отмена
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контекстное меню для игры -->
+        <div id="gameContextMenu" class="context-menu">
+            <div class="context-item" onclick="contextEditGame()">
+                <i class="fas fa-edit"></i> Редактировать
+            </div>
+            <div class="context-item" onclick="contextDeleteGame()">
+                <i class="fas fa-trash"></i> Удалить
+            </div>
+            <div class="context-item" onclick="contextShareGame()">
+                <i class="fas fa-share"></i> Поделиться
+            </div>
+            <div class="context-item" onclick="contextAddToWishlist()">
+                <i class="fas fa-heart"></i> В избранное
+            </div>
+        </div>
+
+        <!-- Модальное окно настройки коллекции -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-cog"></i> Настройки коллекции</h2>
+                    <button class="close-modal" onclick="closeSettingsModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="settingsForm" onsubmit="saveSettings(event)">
+                        <div class="form-group">
+                            <label for="collectionName"><i class="fas fa-heading"></i> Название коллекции</label>
+                            <input type="text" id="collectionName" class="form-input" 
+                                   placeholder="Моя коллекция PlayStation">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="collectionStartDate"><i class="fas fa-calendar-plus"></i> Дата начала коллекции</label>
+                            <input type="date" id="collectionStartDate" class="form-input" 
+                                   value="2025-02-14">
+                            <small class="form-hint">
+                                Когда вы начали собирать игры? (Дата покупки консоли)
+                            </small>
+                        </div>
+                        
+                        <div class="collection-info-preview">
+                            <h3><i class="fas fa-eye"></i> Предпросмотр:</h3>
+                            <p>Коллекция: <strong id="previewName">Моя коллекция PlayStation</strong></p>
+                            <p>Начало: <strong id="previewDate">14 февраля 2025</strong></p>
+                            <p>Стаж коллекционера: <strong id="previewYears">1 год</strong></p>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeSettingsModal()">
+                                Отмена
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Сохранить настройки
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Подсказка по видео -->
+        <div id="videoHelp" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-question-circle"></i> Как добавить видео</h2>
+                    <button class="close-modal" onclick="document.getElementById('videoHelp').style.display='none'">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ol style="padding-left: 20px; margin-bottom: 20px;">
+                        <li>На YouTube найдите нужное видео</li>
+                        <li>Нажмите кнопку <strong>"Поделиться"</strong> под видео</li>
+                        <li>Выберите <strong>"Встроить"</strong> (код iframe)</li>
+                        <li>Скопируйте ссылку из <code>src="..."</code></li>
+                        <li>Вставьте в поле "Ссылка на видео YouTube"</li>
+                    </ol>
+                    <p><strong>Или просто:</strong> вставьте обычную ссылку на видео YouTube</p>
+                    <button class="btn-primary" onclick="document.getElementById('videoHelp').style.display='none'" style="width: 100%; margin-top: 20px;">
+                        <i class="fas fa-check"></i> Понятно
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Уведомления -->
         <div id="notification" class="notification"></div>
 
@@ -277,342 +584,7 @@
         </footer>
     </div>
 
-<!-- Модальное окно редактирования игры -->
-<div id="editGameModal" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-edit"></i> Редактировать игру</h2>
-            <button class="close-modal" onclick="closeEditGameModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="editGameForm" onsubmit="updateGame(event)">
-                <input type="hidden" id="editGameId">
-                
-                <div class="form-group">
-                    <label for="editGameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
-                    <input type="text" id="editGameTitle" required class="form-input">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editGamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
-                        <select id="editGamePlatform" required class="form-input">
-                            <option value="ps4">PlayStation 4</option>
-                            <option value="ps5">PlayStation 5</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editGameYear"><i class="fas fa-calendar-alt"></i> Год выпуска</label>
-                        <input type="number" id="editGameYear" class="form-input" min="1990" max="2025">
-                    </div>
-                </div>
-                
-                
-                <div class="form-group">
-                    <label for="editGamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
-                    <input type="date" id="editGamePurchaseDate" class="form-input">
-                </div>
-                
-                <div class="form-group">
-                    <label for="editGameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
-                    <input type="url" id="editGameCover" class="form-input">
-                </div>
-
-<div class="form-group">
-    <label for="editGameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
-    <input type="url" id="editGameVideo" class="form-input">
-    <small class="form-hint">
-        Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
-    </small>
-    <button type="button" class="btn-small" onclick="testVideo(true)" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
-        <i class="fas fa-play"></i> Проверить видео
-    </button>
-</div>
-                
-                <div class="form-group">
-                    <label for="editGameDescription"><i class="fas fa-align-left"></i> Описание</label>
-                    <textarea id="editGameDescription" class="form-input" rows="3"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="editGameNotes"><i class="fas fa-sticky-note"></i> Личные заметки</label>
-                    <textarea id="editGameNotes" class="form-input" rows="2"></textarea>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn-danger" onclick="deleteGame()" style="background: #ff4757;">
-                        <i class="fas fa-trash"></i> Удалить игру
-                    </button>
-                    <button type="button" class="btn-secondary" onclick="closeEditGameModal()">Отмена</button>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-save"></i> Сохранить изменения
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно статистики -->
-<div id="statsModal" class="modal">
-    <div class="modal-content" style="max-width: 700px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-chart-bar"></i> Статистика коллекции</h2>
-            <button class="close-modal" onclick="closeStatsModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3><i class="fas fa-gamepad"></i> По платформам</h3>
-                    <div id="platformChart" class="chart-placeholder"></div>
-                </div>
-                
-                <div class="stat-card">
-                    <h3><i class="fas fa-calendar"></i> По годам выпуска</h3>
-                    <div id="yearChart" class="chart-placeholder"></div>
-                </div>
-                
-                <div class="stat-card">
-                    <h3><i class="fas fa-box"></i> По состоянию</h3>
-                    <div id="conditionChart" class="chart-placeholder"></div>
-                </div>
-                
-                <div class="stat-card">
-                    <h3><i class="fas fa-chart-pie"></i> Распределение</h3>
-                    <div id="pieChart" class="chart-placeholder"></div>
-                </div>
-            </div>
-            
-            <div class="advanced-stats">
-                <h3><i class="fas fa-chart-line"></i> Расширенная статистика</h3>
-                <div class="advanced-stats-grid">
-                    <div class="advanced-stat">
-                        <span class="stat-label">Средний год выпуска</span>
-                        <span class="stat-value" id="avgYear">-</span>
-                    </div>
-                    <div class="advanced-stat">
-                        <span class="stat-label">Самая старая игра</span>
-                        <span class="stat-value" id="oldestGame">-</span>
-                    </div>
-                    <div class="advanced-stat">
-                        <span class="stat-label">Самая новая игра</span>
-                        <span class="stat-value" id="newestGame">-</span>
-                    </div>
-                    <div class="advanced-stat">
-                        <span class="stat-label">Чаще всего издатель</span>
-                        <span class="stat-value" id="topPublisher">-</span>
-                    </div>
-                    <div class="advanced-stat">
-                        <span class="stat-label">Всего потрачено</span>
-                        <span class="stat-value" id="totalSpent">-</span>
-                    </div>
-                    <div class="advanced-stat">
-                        <span class="stat-label">Средняя цена за игру</span>
-                        <span class="stat-value" id="avgPrice">-</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно шаринга -->
-<div id="shareModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-share-alt"></i> Поделиться коллекцией</h2>
-            <button class="close-modal" onclick="closeShareModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="share-options">
-                <button class="share-option" onclick="shareCollection('link')">
-                    <i class="fas fa-link"></i>
-                    <span>Поделиться ссылкой</span>
-                    <small>Отправить приглашение в Telegram</small>
-                </button>
-                
-                <button class="share-option" onclick="shareCollection('qr')">
-                    <i class="fas fa-qrcode"></i>
-                    <span>QR-код коллекции</span>
-                    <small>Сканировать для доступа</small>
-                </button>
-                
-                <button class="share-option" onclick="shareCollection('export')">
-                    <i class="fas fa-file-export"></i>
-                    <span>Экспорт для друзей</span>
-                    <small>Создать общедоступную версию</small>
-                </button>
-            </div>
-            
-            <div class="share-info">
-                <h3><i class="fas fa-info-circle"></i> Как это работает</h3>
-                <ul>
-                    <li>Друзья увидят вашу коллекцию в режиме только для чтения</li>
-                    <li>Они смогут фильтровать и сортировать игры</li>
-                    <li>Ваши личные заметки и данные покупок скрыты</li>
-                    <li>Вы можете отозвать доступ в любой момент</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Штрих-код сканер -->
-<div id="barcodeScanner" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-barcode"></i> Сканировать штрих-код</h2>
-            <button class="close-modal" onclick="closeBarcodeScanner()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="scanner-container">
-                <div id="scanner-placeholder" class="scanner-placeholder">
-                    <i class="fas fa-camera" style="font-size: 3rem; color: var(--primary-color);"></i>
-                    <p>Подготовка камеры...</p>
-                </div>
-                <video id="scanner-video" style="display: none; width: 100%; border-radius: 10px;"></video>
-                <canvas id="scanner-canvas" style="display: none;"></canvas>
-            </div>
-            
-            <div class="barcode-result" id="barcodeResult" style="display: none;">
-                <h3>Найден штрих-код: <span id="barcodeValue"></span></h3>
-                <p>Поиск информации об игре...</p>
-                <div id="gameSearchResults"></div>
-            </div>
-            
-            <div class="scanner-controls">
-                <button id="startScannerBtn" class="btn-primary" onclick="startBarcodeScanner()">
-                    <i class="fas fa-play"></i> Запустить сканер
-                </button>
-                <button id="stopScannerBtn" class="btn-secondary" onclick="stopBarcodeScanner()" style="display: none;">
-                    <i class="fas fa-stop"></i> Остановить сканер
-                </button>
-                <button class="btn-secondary" onclick="closeBarcodeScanner()">
-                    <i class="fas fa-times"></i> Отмена
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Новые кнопки в шапке -->
-<template id="gameActionsTemplate">
-    <div class="game-actions">
-        <button class="action-btn edit-btn" onclick="editGame({id})" title="Редактировать">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button class="action-btn delete-btn" onclick="deleteGameConfirm({id})" title="Удалить">
-            <i class="fas fa-trash"></i>
-        </button>
-        <button class="action-btn share-btn" onclick="shareGame({id})" title="Поделиться">
-            <i class="fas fa-share"></i>
-        </button>
-    </div>
-</template>
-
-<!-- Контекстное меню для игры -->
-<div id="gameContextMenu" class="context-menu">
-    <div class="context-item" onclick="contextEditGame()">
-        <i class="fas fa-edit"></i> Редактировать
-    </div>
-    <div class="context-item" onclick="contextDeleteGame()">
-        <i class="fas fa-trash"></i> Удалить
-    </div>
-    <div class="context-item" onclick="contextShareGame()">
-        <i class="fas fa-share"></i> Поделиться
-    </div>
-    <div class="context-item" onclick="contextAddToWishlist()">
-        <i class="fas fa-heart"></i> В избранное
-    </div>
-</div>
-    
     <!-- Наш JavaScript -->
     <script src="script.js"></script>
-
-    <!-- Модальное окно настройки коллекции -->
-<div id="settingsModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-cog"></i> Настройки коллекции</h2>
-            <button class="close-modal" onclick="closeSettingsModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="settingsForm" onsubmit="saveSettings(event)">
-                <div class="form-group">
-                    <label for="collectionName"><i class="fas fa-heading"></i> Название коллекции</label>
-                    <input type="text" id="collectionName" class="form-input" 
-                           placeholder="Моя коллекция PlayStation">
-                </div>
-                
-                <div class="form-group">
-                    <label for="collectionStartDate"><i class="fas fa-calendar-plus"></i> Дата начала коллекции</label>
-                    <input type="date" id="collectionStartDate" class="form-input" 
-                           value="2025-02-14">
-                    <small class="form-hint">
-                        Когда вы начали собирать игры? (Дата покупки консоли)
-                    </small>
-                </div>
-                
-                <div class="collection-info-preview">
-                    <h3><i class="fas fa-eye"></i> Предпросмотр:</h3>
-                    <p>Коллекция: <strong id="previewName">Моя коллекция PlayStation</strong></p>
-                    <p>Начало: <strong id="previewDate">14 февраля 2025</strong></p>
-                    <p>Стаж коллекционера: <strong id="previewYears">1 год</strong></p>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="closeSettingsModal()">
-                        Отмена
-                    </button>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-save"></i> Сохранить настройки
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-    <!-- Подсказка по видео -->
-<div id="videoHelp" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-question-circle"></i> Как добавить видео</h2>
-            <button class="close-modal" onclick="document.getElementById('videoHelp').style.display='none'">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <ol style="padding-left: 20px; margin-bottom: 20px;">
-                <li>На YouTube найдите нужное видео</li>
-                <li>Нажмите кнопку <strong>"Поделиться"</strong> под видео</li>
-                <li>Выберите <strong>"Встроить"</strong> (код iframe)</li>
-                <li>Скопируйте ссылку из <code>src="..."</code></li>
-                <li>Вставьте в поле "Ссылка на видео YouTube"</li>
-            </ol>
-            <p><strong>Или просто:</strong> вставьте обычную ссылку на видео YouTube</p>
-            <button class="btn-primary" onclick="document.getElementById('videoHelp').style.display='none'" style="width: 100%; margin-top: 20px;">
-                <i class="fas fa-check"></i> Понятно
-            </button>
-        </div>
-    </div>
-</div>
 </body>
 </html>
-
-
-
-
-
-
-
