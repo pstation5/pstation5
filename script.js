@@ -1,5 +1,12 @@
 // Инициализация Telegram WebApp
-const tg = window.Telegram.WebApp;
+const tg = window.Telegram && window.Telegram.WebApp
+    ? window.Telegram.WebApp
+    : {
+        initDataUnsafe: {},
+        expand() {},
+        setHeaderColor() {},
+        setBackgroundColor() {}
+    };
 
 // DOM элементы
 const elements = {
@@ -1388,6 +1395,7 @@ function createPieChart(data) {
 }
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
