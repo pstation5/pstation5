@@ -1062,17 +1062,30 @@ function copyToClipboard(text) {
 // Шаринг конкретной игры
 function shareGame(gameId) {
     const game = collection.games.find(g => g.id === gameId);
-    if (!game) return;
+    if (!game) {
+        showNotification('Игра не найдена', 'error');
+        return;
+    }
     
-    const shareText = `Посмотри игру "${game.title}" (${game.platformName}) из моей коллекции!`;
+    const shareText = `🎮 "${game.title}" (${game.platformName})\n📀 Из моей коллекции игр\n\nПосмотреть все игры: ${window.location.href}`;
     
+    // Пробуем нативный шаринг (работает на телефонах)
     if (navigator.share) {
         navigator.share({
-            title: game.title,
+            title: `Игра: ${game.title}`,
             text: shareText,
-            url: window.location.href + `?game=${gameId}`
+            url: window.location.href
+        })
+        .then(() => {
+            showNotification('Игра отправлена!', 'success');
+        })
+        .catch(err => {
+            console.log('Нативный шаринг не сработал, копируем в буфер:', err);
+            // Если шаринг не сработал, копируем в буфер
+            copyToClipboard(shareText);
         });
     } else {
+        // Если нативный шаринг не поддерживается (компьютеры)
         copyToClipboard(shareText);
     }
 }
@@ -1262,6 +1275,7 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
