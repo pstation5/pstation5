@@ -887,5 +887,210 @@ window.onclick = function(event) {
     });
 };
 
+// Удаление ожидаемой игры
+function deleteUpcomingGame(upcomingId) {
+    const upcomingIndex = collection.upcoming.findIndex(u => u.id === upcomingId);
+    if (upcomingIndex === -1) return;
+    
+    const gameTitle = collection.upcoming[upcomingIndex].title;
+    collection.upcoming.splice(upcomingIndex, 1);
+    
+    if (saveCollection()) {
+        upcomingGames = collection.upcoming;
+        renderUpcomingGames();
+        updateCollectionInfo();
+        showNotification(`"${gameTitle}" удалена из ожидаемых`, 'success');
+    }
+}
+
+// Подтверждение удаления ожидаемой игры
+function deleteUpcomingConfirm(upcomingId, event) {
+    if (event) event.stopPropagation();
+    
+    const upcoming = collection.upcoming.find(u => u.id === upcomingId);
+    if (!upcoming) return;
+    
+    if (confirm(`Удалить "${upcoming.title}" из ожидаемых игр?`)) {
+        deleteUpcomingGame(upcomingId);
+    }
+}
+
+// Обновляем renderUpcomingGames для добавления кнопки удаления
+function renderUpcomingGames() {
+    if (!upcomingGames.length) {
+        elements.upcomingSlider.innerHTML = `
+            <div class="no-upcoming">
+                <i class="fas fa-calendar-alt"></i>
+                <p>Нет ожидаемых игр</p>
+            </div>
+        `;
+        return;
+    }
+    
+    elements.upcomingSlider.innerHTML = upcomingGames.map(game => `
+        <div class="upcoming-card" onclick="openUpcomingDetails(${game.id})">
+            <div class="upcoming-actions">
+                <button class="upcoming-action-btn delete-btn" 
+                        onclick="deleteUpcomingConfirm(${game.id}, event)"
+                        title="Удалить из ожидаемых">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="upcoming-action-btn edit-btn" 
+                        onclick="editUpcomingGame(${game.id}, event)"
+                        title="Редактировать">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+            <img src="${game.cover || 'https://via.placeholder.com/300x400/222/666?text=Coming+Soon'}" 
+                 alt="${game.title}" 
+                 class="upcoming-cover">
+            <div class="upcoming-info">
+                <h3>${game.title}</h3>
+                <div class="upcoming-details">
+                    <span class="upcoming-date">
+                        <i class="fas fa-calendar-day"></i> ${formatDate(game.releaseDate)}
+                    </span>
+                    <span class="upcoming-platform">
+                        <i class="fas fa-tv"></i> ${getPlatformName(game.platform)}
+                    </span>
+                </div>
+                <p class="upcoming-developer">${game.developer || 'Не указан'}</p>
+                <div class="upcoming-buttons">
+                    <button class="btn-small" onclick="addUpcomingToCollection(${game.id})">
+                        <i class="fas fa-plus"></i> В коллекцию
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Редактирование ожидаемой игры
+function editUpcomingGame(upcomingId, event) {
+    if (event) event.stopPropagation();
+    
+    const upcoming = collection.upcoming.find(u => u.id === upcomingId);
+    if (!upcoming) {
+        showNotification('Игра не найдена', 'error');
+        return;
+    }
+    
+    openAddUpcomingModal();
+    
+    // Заполняем форму данными
+    document.getElementById('upcomingTitle').value = upcoming.title;
+    document.getElementById('upcomingCover').value = upcoming.cover || '';
+    document.getElementById('upcomingDeveloper').value = upcoming.developer || '';
+    document.getElementById('upcomingReleaseDate').value = upcoming.releaseDate || '';
+    document.getElementById('upcomingGenre').value = upcoming.genre || '';
+    document.getElementById('upcomingPlatform').value = upcoming.platform || 'ps5';
+    
+    // Изменяем обработчик формы
+    const form = document.getElementById('addUpcomingForm');
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        updateUpcomingGame(upcomingId);
+    };
+    
+    showNotification('Редактирование ожидаемой игры', 'info');
+}
+
+function updateUpcomingGame(upcomingId) {
+    const upcomingIndex = collection.upcoming.findIndex(u => u.id === upcomingId);
+    if (upcomingIndex === -1) return;
+    
+    collection.upcoming[upcomingIndex] = {
+        ...collection.upcoming[upcomingIndex],
+        title: document.getElementById('upcomingTitle').value.trim(),
+        cover: document.getElementById('upcomingCover').value.trim() || 
+               'https://via.placeholder.com/300x400/222/666?text=Coming+Soon',
+        developer: document.getElementById('upcomingDeveloper').value.trim(),
+        releaseDate: document.getElementById('upcomingReleaseDate').value,
+        genre: document.getElementById('upcomingGenre').value.trim(),
+        platform: document.getElementById('upcomingPlatform').value,
+        updatedAt: new Date().toISOString()
+    };
+    
+    if (saveCollection()) {
+        upcomingGames = collection.upcoming;
+        renderUpcomingGames();
+        updateCollectionInfo();
+        
+        showNotification('Ожидаемая игра обновлена!', 'success');
+        closeAddUpcomingModal();
+    }
+}
+
+// Открытие деталей ожидаемой игры
+function openUpcomingDetails(upcomingId) {
+    const upcoming = collection.upcoming.find(u => u.id === upcomingId);
+    if (!upcoming) {
+        showNotification('Игра не найдена', 'error');
+        return;
+    }
+    
+    document.getElementById('modalTitle').textContent = upcoming.title;
+    document.getElementById('modalBody').innerHTML = createUpcomingDetailsHTML(upcoming);
+    document.getElementById('gameModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function createUpcomingDetailsHTML(upcoming) {
+    return `
+        <div class="upcoming-detail-view">
+            <div class="detail-header">
+                <img src="${upcoming.cover || 'https://via.placeholder.com/400x500/222/666?text=Coming+Soon'}" 
+                     alt="${upcoming.title}" 
+                     class="detail-cover">
+                <div class="detail-meta">
+                    <h3>${upcoming.title}</h3>
+                    <div class="detail-info">
+                        <div class="info-item">
+                            <span class="info-label">Разработчик:</span>
+                            <span class="info-value">${upcoming.developer || 'Не указан'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Дата выхода:</span>
+                            <span class="info-value">${formatDate(upcoming.releaseDate)}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Платформа:</span>
+                            <span class="info-value">${getPlatformName(upcoming.platform)}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Жанр:</span>
+                            <span class="info-value">${upcoming.genre || 'Horror'}</span>
+                        </div>
+                    </div>
+                    <div class="detail-actions">
+                        <button class="btn-primary" onclick="addUpcomingToCollection(${upcoming.id}); closeModal()">
+                            <i class="fas fa-plus"></i> Добавить в коллекцию
+                        </button>
+                        <button class="btn-secondary" onclick="editUpcomingGame(${upcoming.id})">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            ${upcoming.description ? `
+            <div class="detail-section">
+                <h4><i class="fas fa-align-left"></i> Описание</h4>
+                <p>${upcoming.description}</p>
+            </div>
+            ` : ''}
+            
+            <div class="detail-section danger-section">
+                <h4><i class="fas fa-exclamation-triangle"></i> Опасная зона</h4>
+                <button class="btn-danger" onclick="deleteUpcomingConfirm(${upcoming.id})">
+                    <i class="fas fa-trash"></i> Удалить из ожидаемых
+                </button>
+                <p class="danger-note">Это действие нельзя отменить. Игра будет удалена из списка ожидаемых.</p>
+            </div>
+        </div>
+    `;
+}
+
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
+
