@@ -429,6 +429,7 @@ function closeAddGameModal() {
 function addNewGame(event) {
     event.preventDefault();
     
+    // Получение данных из формы
     const newGame = {
         id: Date.now(),
         title: document.getElementById('gameTitle').value.trim(),
@@ -454,9 +455,42 @@ function addNewGame(event) {
         personalNotes: document.getElementById('gameNotes').value.trim()
     };
     
+    // Добавление фото обложки в медиа, если указана
     if (newGame.coverImage && newGame.coverImage !== 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png') {
         newGame.media.photos.push(newGame.coverImage);
     }
+    
+    // ===== ДОБАВЛЕНИЕ ВИДЕО (НОВЫЙ КОД) =====
+    const videoUrl = document.getElementById('gameVideo').value.trim();
+    if (videoUrl) {
+        const embedUrl = convertToEmbedUrl(videoUrl);
+        if (embedUrl) {
+            newGame.media.videos.push(embedUrl);
+        } else {
+            showNotification('Неверный формат ссылки YouTube', 'warning');
+        }
+    }
+    // ===== КОНЕЦ НОВОГО КОДА =====
+    
+    // Добавление игры в коллекцию
+    collection.games.unshift(newGame);
+    
+    // Сохранение в localStorage
+    if (saveCollectionToStorage()) {
+        // Обновление отображения
+        games = collection.games;
+        filteredGames = [...games];
+        updateStats();
+        renderGames();
+        updateCollectionStats();
+        
+        // Показ уведомления
+        showNotification(`Игра "${newGame.title}" добавлена в коллекцию!`, 'success');
+        
+        // Закрытие модального окна
+        closeAddGameModal();
+    }
+}
     
     collection.games.unshift(newGame);
     
@@ -1206,6 +1240,7 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
