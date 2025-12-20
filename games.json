@@ -1,35 +1,73 @@
-[
-  {
-    "id": 1,
-    "title": "Resident Evil Village",
-    "platform": ["PS5", "PS4"],
-    "genre": ["Survival Horror", "Action"],
-    "year": 2021,
-    "developer": "Capcom",
-    "cover": "https://example.com/re8.jpg",
-    "screenshots": [
-      "https://example.com/re8_1.jpg",
-      "https://example.com/re8_2.jpg"
-    ],
-    "description": "Жители деревни, похоже, поклоняются существу по имени Мать Миранда...",
-    "rating": 4.8,
-    "status": "completed",
-    "upcoming": false,
-    "releaseDate": "2021-05-07"
-  },
-  {
-    "id": 2,
-    "title": "Silent Hill 2 Remake",
-    "platform": ["PS5"],
-    "genre": ["Psychological Horror"],
-    "year": 2024,
-    "developer": "Bloober Team",
-    "cover": "https://example.com/sh2.jpg",
-    "screenshots": [],
-    "description": "Ремейк культовой игры про Джеймса Сандерленда...",
-    "rating": 0,
-    "status": "upcoming",
-    "upcoming": true,
-    "releaseDate": "2024-10-XX"
-  }
-]
+{
+  "upcoming": [
+    {
+      "id": "upc-1",
+      "title": "Silent Hills: Nightmare",
+      "releaseDate": "2026-10-31",
+      "platforms": ["ps5"],
+      "developer": "Phantom Studio",
+      "genre": "Psychological Horror",
+      "cover": "images/silent-hills-nightmare.jpg",
+      "screenshots": [
+        "images/silent-hills-nightmare-1.jpg",
+        "images/silent-hills-nightmare-2.jpg"
+      ],
+      "description": "Atmospheric psychological horror with dense fog, narrow streets and distorted reality.",
+      "rating": 0,
+      "status": "planned"
+    }
+  ],
+  "games": [
+    {
+      "id": "g-1",
+      "title": "Resident Evil 2",
+      "platform": "ps4",
+      "releaseDate": "2019-01-25",
+      "developer": "Capcom",
+      "genre": "Survival Horror",
+      "cover": "images/re2.jpg",
+      "screenshots": [
+        "images/re2-1.jpg",
+        "images/re2-2.jpg"
+      ],
+      "description": "Remake of the classic survival horror with modern graphics and over-the-shoulder camera.",
+      "rating": 9,
+      "status": "completed",
+      "inCollection": true
+    },
+    {
+      "id": "g-2",
+      "title": "The Last of Us Part II",
+      "platform": "ps4",
+      "releaseDate": "2020-06-19",
+      "developer": "Naughty Dog",
+      "genre": "Action Horror",
+      "cover": "images/tlou2.jpg",
+      "screenshots": [
+        "images/tlou2-1.jpg",
+        "images/tlou2-2.jpg"
+      ],
+      "description": "Dark story-driven action horror with stealth, crafting and brutal combat.",
+      "rating": 8,
+      "status": "in-progress",
+      "inCollection": false
+    },
+    {
+      "id": "g-3",
+      "title": "Demon's Souls",
+      "platform": "ps5",
+      "releaseDate": "2020-11-12",
+      "developer": "Bluepoint Games",
+      "genre": "Dark Fantasy",
+      "cover": "images/demons-souls.jpg",
+      "screenshots": [
+        "images/demons-souls-1.jpg",
+        "images/demons-souls-2.jpg"
+      ],
+      "description": "Remake of the brutal dark fantasy action RPG set in the cursed kingdom of Boletaria.",
+      "rating": 0,
+      "status": "planned",
+      "inCollection": false
+    }
+  ]
+}
