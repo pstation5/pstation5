@@ -780,6 +780,18 @@ function updateGame(event) {
     }
     
     // Обновляем данные игры
+function updateGame(event) {
+    event.preventDefault();
+    
+    const gameId = parseInt(document.getElementById('editGameId').value);
+    const gameIndex = collection.games.findIndex(g => g.id === gameId);
+    
+    if (gameIndex === -1) {
+        showNotification('Игра не найдена', 'error');
+        return;
+    }
+    
+    // Обновляем данные игры
     collection.games[gameIndex] = {
         ...collection.games[gameIndex],
         title: document.getElementById('editGameTitle').value.trim(),
@@ -792,6 +804,21 @@ function updateGame(event) {
         description: document.getElementById('editGameDescription').value.trim() || collection.games[gameIndex].description,
         personalNotes: document.getElementById('editGameNotes').value.trim() || collection.games[gameIndex].personalNotes
     };
+    
+    // ===== ОБНОВЛЯЕМ ВИДЕО (НОВЫЙ КОД) =====
+    const videoUrl = document.getElementById('editGameVideo').value.trim();
+    if (videoUrl) {
+        const embedUrl = convertToEmbedUrl(videoUrl);
+        if (embedUrl) {
+            collection.games[gameIndex].media.videos = [embedUrl];
+        } else {
+            showNotification('Неверный формат ссылки YouTube', 'warning');
+            collection.games[gameIndex].media.videos = [];
+        }
+    } else {
+        collection.games[gameIndex].media.videos = [];
+    }
+    // ===== КОНЕЦ НОВОГО КОДА =====
     
     // Сохраняем изменения
     if (saveCollectionToStorage()) {
