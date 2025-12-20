@@ -168,6 +168,18 @@
                             <input type="url" id="gameCover" class="form-input" placeholder="https://example.com/cover.jpg">
                             <small class="form-hint">Можно загрузить фото в <a href="https://imgur.com" target="_blank">Imgur</a> и вставить ссылку</small>
                         </div>
+
+<!-- После блока с gameCover добавьте: -->
+<div class="form-group">
+    <label for="gameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
+    <input type="url" id="gameVideo" class="form-input" placeholder="https://youtube.com/embed/VIDEO_ID или https://youtube.com/watch?v=VIDEO_ID">
+    <small class="form-hint">
+        Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
+    </small>
+    <button type="button" class="btn-small" onclick="testVideo()" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
+        <i class="fas fa-play"></i> Проверить видео
+    </button>
+</div>
                         
                         <div class="form-group">
                             <label for="gameDescription"><i class="fas fa-align-left"></i> Описание</label>
@@ -298,16 +310,6 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="editGameCondition"><i class="fas fa-box"></i> Состояние</label>
-                    <select id="editGameCondition" class="form-input">
-                        <option value="Новая, в запайке">Новая, в запайке</option>
-                        <option value="Новая">Новая</option>
-                        <option value="Б/у, отличное">Б/у, отличное</option>
-                        <option value="Б/у, хорошее">Б/у, хорошее</option>
-                        <option value="Б/у, удовлетворительное">Б/у, удовлетворительное</option>
-                    </select>
-                </div>
                 
                 <div class="form-group">
                     <label for="editGamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
@@ -318,6 +320,17 @@
                     <label for="editGameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
                     <input type="url" id="editGameCover" class="form-input">
                 </div>
+
+<div class="form-group">
+    <label for="editGameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
+    <input type="url" id="editGameVideo" class="form-input">
+    <small class="form-hint">
+        Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
+    </small>
+    <button type="button" class="btn-small" onclick="testVideo(true)" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
+        <i class="fas fa-play"></i> Проверить видео
+    </button>
+</div>
                 
                 <div class="form-group">
                     <label for="editGameDescription"><i class="fas fa-align-left"></i> Описание</label>
@@ -572,6 +585,7 @@
 </div>
 </body>
 </html>
+
 
 
 
