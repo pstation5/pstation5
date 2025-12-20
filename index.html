@@ -156,6 +156,139 @@
             </div>
         </div>
 
+<!-- Модальное окно статистики -->
+<div id="statsModal" class="modal">
+    <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-chart-bar"></i> Статистика коллекции Horror игр</h2>
+            <button class="close-modal" onclick="closeStatsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Быстрая статистика -->
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <i class="fas fa-ghost"></i>
+                    <span class="stat-number">${collection.games.length}</span>
+                    <span class="stat-label">Всего игр</span>
+                </div>
+                <div class="quick-stat">
+                    <i class="fas fa-calendar-star"></i>
+                    <span class="stat-number">${collection.upcoming.length}</span>
+                    <span class="stat-label">Ожидаемых</span>
+                </div>
+                <div class="quick-stat">
+                    <i class="fas fa-playstation"></i>
+                    <span class="stat-number">${new Set(collection.games.map(g => g.platform)).size}</span>
+                    <span class="stat-label">Платформ</span>
+                </div>
+                <div class="quick-stat">
+                    <i class="fas fa-star"></i>
+                    <span class="stat-number">
+                        ${collection.games.filter(g => g.rating).length > 0 
+                            ? (collection.games.filter(g => g.rating).reduce((sum, g) => sum + g.rating, 0) / 
+                               collection.games.filter(g => g.rating).length).toFixed(1) 
+                            : '0.0'}
+                    </span>
+                    <span class="stat-label">Средний рейтинг</span>
+                </div>
+            </div>
+
+            <!-- Основные графики -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3><i class="fas fa-tv"></i> Распределение по платформам</h3>
+                    <div id="platformChart" class="chart-container">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>Загрузка данных...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3><i class="fas fa-flag"></i> Статус игр</h3>
+                    <div id="statusChart" class="chart-container">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-bar"></i>
+                            <p>Загрузка данных...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3><i class="fas fa-calendar-alt"></i> По годам выпуска</h3>
+                    <div id="yearChart" class="chart-container">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-line"></i>
+                            <p>Загрузка данных...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3><i class="fas fa-theater-masks"></i> Жанры</h3>
+                    <div id="genreChart" class="chart-container">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>Загрузка данных...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Расширенная статистика -->
+            <div class="detailed-stats">
+                <h3><i class="fas fa-chart-line"></i> Подробная статистика</h3>
+                <div class="detailed-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Самый старый релиз:</span>
+                        <span class="detail-value" id="oldestRelease">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Самый новый релиз:</span>
+                        <span class="detail-value" id="newestRelease">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Самый частый разработчик:</span>
+                        <span class="detail-value" id="topDeveloper">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Чаще всего платформа:</span>
+                        <span class="detail-value" id="topPlatform">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Пройдено игр:</span>
+                        <span class="detail-value" id="completedCount">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">В процессе:</span>
+                        <span class="detail-value" id="playingCount">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">В планах:</span>
+                        <span class="detail-value" id="plannedCount">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Средняя оценка:</span>
+                        <span class="detail-value" id="averageRating">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Интересные факты -->
+            <div class="fun-facts">
+                <h3><i class="fas fa-lightbulb"></i> Интересные факты</h3>
+                <div class="facts-grid" id="funFacts">
+                    <!-- Факты будут добавляться через JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        
         <div id="addGameModal" class="modal">
             <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
@@ -427,5 +560,6 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
