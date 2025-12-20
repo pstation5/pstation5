@@ -785,10 +785,14 @@ function deleteGameConfirm(gameId) {
     });
 }
 
-// Удаление игры
-function deleteGame() {
-    const gameId = parseInt(document.getElementById('editGameId').value);
-    const gameIndex = collection.games.findIndex(g => g.id === gameId);
+function deleteGame(gameId = null) {
+    // Если gameId не передан, берем из формы (для удаления из модалки редактирования)
+    let idToDelete = gameId;
+    if (idToDelete === null) {
+        idToDelete = parseInt(document.getElementById('editGameId').value);
+    }
+    
+    const gameIndex = collection.games.findIndex(g => g.id === idToDelete);
     
     if (gameIndex === -1) {
         showNotification('Игра не найдена', 'error');
@@ -809,7 +813,14 @@ function deleteGame() {
         updateCollectionStats();
         
         showNotification(`Игра "${gameTitle}" удалена из коллекции`, 'success');
-        closeEditGameModal();
+        
+        // Закрываем модальное окно, если оно открыто
+        if (document.getElementById('editGameModal').style.display === 'block') {
+            closeEditGameModal();
+        }
+        if (document.getElementById('gameModal').style.display === 'block') {
+            closeModal();
+        }
     }
 }
 
@@ -1237,4 +1248,5 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
