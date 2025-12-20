@@ -1,73 +1,286 @@
 {
-  "upcoming": [
-    {
-      "id": "upc-1",
-      "title": "Silent Hills: Nightmare",
-      "releaseDate": "2026-10-31",
-      "platforms": ["ps5"],
-      "developer": "Phantom Studio",
-      "genre": "Psychological Horror",
-      "cover": "images/silent-hills-nightmare.jpg",
-      "screenshots": [
-        "images/silent-hills-nightmare-1.jpg",
-        "images/silent-hills-nightmare-2.jpg"
-      ],
-      "description": "Atmospheric psychological horror with dense fog, narrow streets and distorted reality.",
-      "rating": 0,
-      "status": "planned"
-    }
-  ],
+  "lastUpdated": "2024-03-15",
+  "totalGames": 12,
   "games": [
     {
-      "id": "g-1",
-      "title": "Resident Evil 2",
+      "id": 1,
+      "title": "Resident Evil 7: Biohazard",
       "platform": "ps4",
-      "releaseDate": "2019-01-25",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8d.jpg",
+      "releaseYear": 2017,
       "developer": "Capcom",
-      "genre": "Survival Horror",
-      "cover": "images/re2.jpg",
-      "screenshots": [
-        "images/re2-1.jpg",
-        "images/re2-2.jpg"
-      ],
-      "description": "Remake of the classic survival horror with modern graphics and over-the-shoulder camera.",
-      "rating": 9,
-      "status": "completed",
-      "inCollection": true
+      "publisher": "Capcom",
+      "description": "Возвращение к корням серии Resident Evil. Игра от первого лица в жанре survival horror в заброшенном поместье в Луизиане.",
+      "details": {
+        "genre": ["Survival Horror", "Шутер"],
+        "region": "PAL",
+        "edition": "Gold Edition",
+        "playtime": "10-15 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6l6e.jpg",
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6l6f.jpg"
+        ],
+        "videos": [
+          "https://www.youtube.com/embed/W1OUs3HwIuo"
+        ]
+      },
+      "rating": 4.5
     },
     {
-      "id": "g-2",
+      "id": 2,
       "title": "The Last of Us Part II",
       "platform": "ps4",
-      "releaseDate": "2020-06-19",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
+      "releaseYear": 2020,
       "developer": "Naughty Dog",
-      "genre": "Action Horror",
-      "cover": "images/tlou2.jpg",
-      "screenshots": [
-        "images/tlou2-1.jpg",
-        "images/tlou2-2.jpg"
-      ],
-      "description": "Dark story-driven action horror with stealth, crafting and brutal combat.",
-      "rating": 8,
-      "status": "in-progress",
-      "inCollection": false
+      "publisher": "Sony Interactive Entertainment",
+      "description": "Приключенческий экшен с элементами хоррора. Продолжение истории Элли и Джоэла в постапокалиптическом мире.",
+      "details": {
+        "genre": ["Экшен", "Приключения", "Хоррор"],
+        "region": "PAL",
+        "edition": "Remastered Edition",
+        "playtime": "25-30 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6n8t.jpg"
+        ]
+      },
+      "rating": 4.8
     },
     {
-      "id": "g-3",
-      "title": "Demon's Souls",
+      "id": 3,
+      "title": "Resident Evil Village",
       "platform": "ps5",
-      "releaseDate": "2020-11-12",
-      "developer": "Bluepoint Games",
-      "genre": "Dark Fantasy",
-      "cover": "images/demons-souls.jpg",
-      "screenshots": [
-        "images/demons-souls-1.jpg",
-        "images/demons-souls-2.jpg"
-      ],
-      "description": "Remake of the brutal dark fantasy action RPG set in the cursed kingdom of Boletaria.",
-      "rating": 0,
-      "status": "planned",
-      "inCollection": false
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r4x.jpg",
+      "releaseYear": 2021,
+      "developer": "Capcom",
+      "publisher": "Capcom",
+      "description": "Итан Уинтерс отправляется в деревню, полную ужасов, чтобы спасти свою дочь. Продолжение RE7.",
+      "details": {
+        "genre": ["Survival Horror", "Шутер"],
+        "region": "PAL",
+        "edition": "Gold Edition",
+        "playtime": "10-12 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6v1k.jpg"
+        ]
+      },
+      "rating": 4.6
+    },
+    {
+      "id": 4,
+      "title": "Dead Space Remake",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5hkp.jpg",
+      "releaseYear": 2023,
+      "developer": "Motive Studio",
+      "publisher": "Electronic Arts",
+      "description": "Ремейк культового космического хоррора. Инженер Айзек Кларк борется с некроморфами на заброшенном космическом корабле.",
+      "details": {
+        "genre": ["Survival Horror", "Шутер"],
+        "region": "PAL",
+        "edition": "Standard Edition",
+        "playtime": "12-15 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9vus.jpg"
+        ]
+      },
+      "rating": 4.7
+    },
+    {
+      "id": 5,
+      "title": "Alien: Isolation",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r4b.jpg",
+      "releaseYear": 2014,
+      "developer": "Creative Assembly",
+      "publisher": "Sega",
+      "description": "Стелс-хоррор по мотивам фильма 'Чужой'. Аманда Рипли ищет свою мать на заброшенной космической станции.",
+      "details": {
+        "genre": ["Survival Horror", "Стелс"],
+        "region": "PAL",
+        "edition": "The Collection",
+        "playtime": "15-20 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5j8h.jpg"
+        ]
+      },
+      "rating": 4.4
+    },
+    {
+      "id": 6,
+      "title": "The Evil Within 2",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8m.jpg",
+      "releaseYear": 2017,
+      "developer": "Tango Gameworks",
+      "publisher": "Bethesda Softworks",
+      "description": "Психологический хоррор от создателя Resident Evil. Себастьян Кастелланос ищет свою дочь в кошмарном мире STEM.",
+      "details": {
+        "genre": ["Survival Horror", "Экшен"],
+        "region": "PAL",
+        "edition": "Standard Edition",
+        "playtime": "15-18 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5vih.jpg"
+        ]
+      },
+      "rating": 4.3
+    },
+    {
+      "id": 7,
+      "title": "Outlast 2",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8t.jpg",
+      "releaseYear": 2017,
+      "developer": "Red Barrels",
+      "publisher": "Red Barrels",
+      "description": "Хоррор от первого лица. Журналист Блейк Лэнгерманн и его жена попадают в адскую деревню в Аризоне.",
+      "details": {
+        "genre": ["Survival Horror", "Психологический хоррор"],
+        "region": "PAL",
+        "edition": "Standard Edition",
+        "playtime": "8-10 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5x7n.jpg"
+        ]
+      },
+      "rating": 4.0
+    },
+    {
+      "id": 8,
+      "title": "Until Dawn",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r90.jpg",
+      "releaseYear": 2015,
+      "developer": "Supermassive Games",
+      "publisher": "Sony Interactive Entertainment",
+      "description": "Интерактивный фильм ужасов. Группа подростков проводит ночь в заснеженном шале, где на них охотится маньяк.",
+      "details": {
+        "genre": ["Интерактивная драма", "Хоррор"],
+        "region": "PAL",
+        "edition": "Extended Edition",
+        "playtime": "8-10 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5zhh.jpg"
+        ]
+      },
+      "rating": 4.2
+    },
+    {
+      "id": 9,
+      "title": "Resident Evil 2 Remake",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8e.jpg",
+      "releaseYear": 2019,
+      "developer": "Capcom",
+      "publisher": "Capcom",
+      "description": "Ремейк классического survival horror. Леон Кеннеди и Клэр Редфилд выживают во время зомби-апокалипсиса в Раккун-Сити.",
+      "details": {
+        "genre": ["Survival Horror", "Шутер"],
+        "region": "PAL",
+        "edition": "Deluxe Edition",
+        "playtime": "8-10 часов на кампанию"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6l6h.jpg"
+        ]
+      },
+      "rating": 4.8
+    },
+    {
+      "id": 10,
+      "title": "The Dark Pictures Anthology: House of Ashes",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3gtg.jpg",
+      "releaseYear": 2021,
+      "developer": "Supermassive Games",
+      "publisher": "Bandai Namco Entertainment",
+      "description": "Интерактивный хоррор о группе солдат, попавших в подземный храм во время войны в Ираке.",
+      "details": {
+        "genre": ["Интерактивная драма", "Хоррор"],
+        "region": "PAL",
+        "edition": "Standard Edition",
+        "playtime": "5-7 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9v6a.jpg"
+        ]
+      },
+      "rating": 4.1
+    },
+    {
+      "id": 11,
+      "title": "SOMA",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8x.jpg",
+      "releaseYear": 2015,
+      "developer": "Frictional Games",
+      "publisher": "Frictional Games",
+      "description": "Психологический хоррор от создателей Amnesia. Исследование подводной станции и вопросы сознания и человечности.",
+      "details": {
+        "genre": ["Психологический хоррор", "Научная фантастика"],
+        "region": "PAL",
+        "edition": "Standard Edition",
+        "playtime": "8-10 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5zn3.jpg"
+        ]
+      },
+      "rating": 4.5
+    },
+    {
+      "id": 12,
+      "title": "Observer: System Redux",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r53.jpg",
+      "releaseYear": 2020,
+      "developer": "Bloober Team",
+      "publisher": "Bloober Team",
+      "description": "Киберпанк-хоррор. Детектив-обсервер расследует преступления в дистопическом будущем.",
+      "details": {
+        "genre": ["Психологический хоррор", "Киберпанк"],
+        "region": "PAL",
+        "edition": "Enhanced Edition",
+        "playtime": "8-10 часов"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9v9a.jpg"
+        ]
+      },
+      "rating": 4.2
     }
   ]
 }
