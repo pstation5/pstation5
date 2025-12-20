@@ -1048,7 +1048,194 @@ function copyToClipboard(text) {
 }
 
 // Шаринг конкретной игры
+function shareGame(gameId) {
+    const game = collection.games.find(g => g.id === gameId);
+    if (!game) return;
+    
+    const shareText = `Посмотри игру "${game.title}" (${game.platformName}) из моей коллекции!`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: game.title,
+            text: shareText,
+            url: window.location.href + `?game=${gameId}`
+        });
+    } else {
+        copyToClipboard(shareText);
+    }
+}
+
+// Контекстное меню для игр
+let currentContextGameId = null;
+
+// Показ контекстного меню
+function showGameContextMenu(gameId, event) {
+    event.preventDefault();
+    currentContextGameId = gameId;
+    
+    const contextMenu = document.getElementById('gameContextMenu');
+    contextMenu.style.display = 'block';
+    contextMenu.style.left = `${event.clientX}px`;
+    contextMenu.style.top = `${event.clientY}px`;
+    
+    // Скрываем меню при клике вне его
+    setTimeout(() => {
+        document.addEventListener('click', hideContextMenu);
+    }, 100);
+}
+
+// Скрытие контекстного меню
+function hideContextMenu() {
+    document.getElementById('gameContextMenu').style.display = 'none';
+    document.removeEventListener('click', hideContextMenu);
+}
+
+// Обработчики контекстного меню
+function contextEditGame() {
+    if (currentContextGameId) {
+        editGame(currentContextGameId);
+    }
+    hideContextMenu();
+}
+
+function contextDeleteGame() {
+    if (currentContextGameId) {
+        deleteGameConfirm(currentContextGameId);
+    }
+    hideContextMenu();
+}
+
+function contextShareGame() {
+    if (currentContextGameId) {
+        shareGame(currentContextGameId);
+    }
+    hideContextMenu();
+}
+
+function contextAddToWishlist() {
+    showNotification('Функция "Избранное" будет добавлена в следующей версии!', 'info');
+    hideContextMenu();
+}
+
+// ===== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ ИГР С КНОПКАМИ =====
+
+// Обновляем функцию renderGames для добавления кнопок действий
+const originalRenderGames = renderGames;
+window.renderGames = function() {
+    if (!filteredGames.length) {
+        elements.gameGrid.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
+                <h3>Игры не найдены</h3>
+                <p>Попробуйте изменить фильтры или поисковый запрос</p>
+            </div>
+        `;
+        return;
+    }
+    
+    elements.gameGrid.innerHTML = filteredGames.map(game => `
+        <div class="game-card" 
+             onclick="openGameDetails(${game.id})"
+             oncontextmenu="showGameContextMenu(${game.id}, event)">
+            <div class="game-actions">
+                <button class="action-btn edit-btn" onclick="event.stopPropagation(); editGame(${game.id})" title="Редактировать">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteGameConfirm(${game.id})" title="Удалить">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="action-btn share-btn" onclick="event.stopPropagation(); shareGame(${game.id})" title="Поделиться">
+                    <i class="fas fa-share"></i>
+                </button>
+            </div>
+            <img src="${game.coverImage}" 
+                 alt="${game.title}" 
+                 class="game-cover"
+                 onerror="this.onerror=null; this.src='https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png'">
+            <div class="game-info">
+                <h3 class="game-title">${game.title}</h3>
+                <div class="game-meta">
+                    <span class="game-platform">${getPlatformIcon(game.platform)} ${game.platformName || game.platform}</span>
+                    <span class="game-year">${game.releaseYear}</span>
+                </div>
+                <div class="game-condition">
+                    <i class="fas fa-box"></i> ${game.condition || 'Состояние не указано'}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ===== ОБНОВЛЯЕМ ФУНКЦИЮ ОТКРЫТИЯ ДЕТАЛЕЙ ИГРЫ =====
+
+const originalCreateGameDetailsHTML = createGameDetailsHTML;
+window.createGameDetailsHTML = function(game) {
+    return originalCreateGameDetailsHTML(game) + `
+        <div class="game-actions-detail">
+            <button class="btn-secondary" onclick="editGame(${game.id})">
+                <i class="fas fa-edit"></i> Редактировать
+            </button>
+            <button class="btn-danger" onclick="deleteGameConfirm(${game.id})">
+                <i class="fas fa-trash"></i> Удалить
+            </button>
+            <button class="btn-primary" onclick="shareGame(${game.id})">
+                <i class="fas fa-share"></i> Поделиться
+            </button>
+        </div>
+    `;
+}
+
+// ===== ДОБАВЛЯЕМ НОВЫЕ КНОПКИ В ШАПКУ =====
+
+// Обновляем initApp для добавления новых кнопок
+const originalInitApp = initApp;
+window.initApp = function() {
+    originalInitApp();
+    
+    // Добавляем новые кнопки в шапку
+    addHeaderButtons();
+};
+
+function addHeaderButtons() {
+    const header = document.querySelector('.header');
+    
+    // Кнопка статистики
+    const statsBtn = document.createElement('button');
+    statsBtn.className = 'manage-btn';
+    statsBtn.title = 'Статистика коллекции';
+    statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
+    statsBtn.onclick = openStatsModal;
+    statsBtn.style.right = '130px';
+    
+    // Кнопка шаринга
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'manage-btn';
+    shareBtn.title = 'Поделиться коллекцией';
+    shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
+    shareBtn.onclick = openShareModal;
+    shareBtn.style.right = '180px';
+    
+    // Кнопка сканера
+    const scannerBtn = document.createElement('button');
+    scannerBtn.className = 'manage-btn';
+    scannerBtn.title = 'Сканировать штрих-код';
+    scannerBtn.innerHTML = '<i class="fas fa-barcode"></i>';
+    scannerBtn.onclick = openBarcodeScanner;
+    scannerBtn.style.right = '230px';
+    
+    // Добавляем кнопки в шапку
+    header.appendChild(statsBtn);
+    header.appendChild(shareBtn);
+    header.appendChild(scannerBtn);
+}
+
+// ===== ОБНОВЛЯЕМ ФУНКЦИЮ scanBarcode =====
+
+window.scanBarcode = function() {
+    openBarcodeScanner();
+};
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
