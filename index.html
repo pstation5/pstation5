@@ -249,48 +249,53 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="addUpcomingForm" onsubmit="addUpcomingGame(event)">
-                        <div class="form-group">
-                            <label for="upcomingTitle">Название *</label>
-                            <input type="text" id="upcomingTitle" required class="form-input" placeholder="Silent Hill 2 Remake">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="upcomingCover">Обложка (URL)</label>
-                            <input type="url" id="upcomingCover" class="form-input" placeholder="https://example.com/cover.jpg">
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="upcomingDeveloper">Разработчик</label>
-                                <input type="text" id="upcomingDeveloper" class="form-input" placeholder="Bloober Team">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="upcomingReleaseDate">Дата выхода *</label>
-                                <input type="date" id="upcomingReleaseDate" required class="form-input">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="upcomingGenre">Жанр</label>
-                            <input type="text" id="upcomingGenre" class="form-input" placeholder="Psychological Horror">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="upcomingPlatform">Платформа</label>
-                            <select id="upcomingPlatform" class="form-input">
-                                <option value="ps5">PS5</option>
-                                <option value="ps4">PS4</option>
-                                <option value="ps4-ps5">PS4 + PS5</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn-secondary" onclick="closeAddUpcomingModal()">Отмена</button>
-                            <button type="submit" class="btn-primary">Добавить</button>
-                        </div>
-                    </form>
+<!-- Заменяем старую форму на эту -->
+<form id="addUpcomingForm">
+    <div class="form-group">
+        <label for="upcomingTitle">Название *</label>
+        <input type="text" id="upcomingTitle" required class="form-input" placeholder="Silent Hill 2 Remake">
+    </div>
+    
+    <div class="form-group">
+        <label for="upcomingCover">Обложка (URL)</label>
+        <input type="url" id="upcomingCover" class="form-input" placeholder="https://example.com/cover.jpg">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label for="upcomingDeveloper">Разработчик</label>
+            <input type="text" id="upcomingDeveloper" class="form-input" placeholder="Bloober Team">
+        </div>
+        
+        <div class="form-group">
+            <label for="upcomingReleaseDate">Дата выхода *</label>
+            <input type="date" id="upcomingReleaseDate" required class="form-input">
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="upcomingGenre">Жанр</label>
+        <input type="text" id="upcomingGenre" class="form-input" placeholder="Psychological Horror">
+    </div>
+    
+    <div class="form-group">
+        <label for="upcomingPlatform">Платформа</label>
+        <select id="upcomingPlatform" class="form-input">
+            <option value="ps5">PS5</option>
+            <option value="ps4">PS4</option>
+            <option value="ps4-ps5">PS4 + PS5</option>
+        </select>
+    </div>
+    
+    <div class="form-actions">
+        <button type="button" class="btn-secondary" onclick="closeAddUpcomingModal()">
+            Отмена
+        </button>
+        <button type="submit" class="btn-primary">
+            <i class="fas fa-plus"></i> Добавить
+        </button>
+    </div>
+</form>
                 </div>
             </div>
         </div>
@@ -422,4 +427,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
