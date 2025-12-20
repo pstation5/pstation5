@@ -1,286 +1,185 @@
 {
   "lastUpdated": "2024-03-15",
-  "totalGames": 12,
+  "settings": {
+    "collectionName": "Horror | PS4 | PS5",
+    "adminMode": true
+  },
   "games": [
     {
       "id": 1,
-      "title": "Resident Evil 7: Biohazard",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8d.jpg",
-      "releaseYear": 2017,
+      "title": "Resident Evil Village",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0x.jpg",
+      "releaseYear": 2021,
+      "status": "completed",
+      "rating": 9,
       "developer": "Capcom",
+      "genre": "survival-horror",
+      "description": "Этан Уинтерс возвращается в новом захватывающем приключении серии Resident Evil. На этот раз его ждет загадочная деревня в Трансильвании, где правят страшные существа.",
+      "purchaseDate": "2023-05-15",
+      "discCondition": "Новая",
       "publisher": "Capcom",
-      "description": "Возвращение к корням серии Resident Evil. Игра от первого лица в жанре survival horror в заброшенном поместье в Луизиане.",
-      "details": {
-        "genre": ["Survival Horror", "Шутер"],
-        "region": "PAL",
-        "edition": "Gold Edition",
-        "playtime": "10-15 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6l6e.jpg",
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6l6f.jpg"
-        ],
-        "videos": [
-          "https://www.youtube.com/embed/W1OUs3HwIuo"
-        ]
-      },
-      "rating": 4.5
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9m0f.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9m0g.jpg"
+      ],
+      "notes": "Отличный хоррор с атмосферной графикой. Леди Димитреску - лучший персонаж!"
     },
     {
       "id": 2,
       "title": "The Last of Us Part II",
       "platform": "ps4",
       "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r28.jpg",
       "releaseYear": 2020,
+      "status": "completed",
+      "rating": 10,
       "developer": "Naughty Dog",
+      "genre": "action-horror",
+      "description": "Элли отправляется в путешествие мести через разрушенный мир. Игра сочетает напряженный экшен с глубокой эмоциональной историей.",
+      "purchaseDate": "2023-02-20",
+      "discCondition": "Б/у, отличное",
       "publisher": "Sony Interactive Entertainment",
-      "description": "Приключенческий экшен с элементами хоррора. Продолжение истории Элли и Джоэла в постапокалиптическом мире.",
-      "details": {
-        "genre": ["Экшен", "Приключения", "Хоррор"],
-        "region": "PAL",
-        "edition": "Remastered Edition",
-        "playtime": "25-30 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6n8t.jpg"
-        ]
-      },
-      "rating": 4.8
+      "screenshots": [],
+      "notes": "Эмоционально тяжелая, но гениальная игра. Графика на PS4 впечатляет."
     },
     {
       "id": 3,
-      "title": "Resident Evil Village",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r4x.jpg",
-      "releaseYear": 2021,
-      "developer": "Capcom",
-      "publisher": "Capcom",
-      "description": "Итан Уинтерс отправляется в деревню, полную ужасов, чтобы спасти свою дочь. Продолжение RE7.",
-      "details": {
-        "genre": ["Survival Horror", "Шутер"],
-        "region": "PAL",
-        "edition": "Gold Edition",
-        "playtime": "10-12 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6v1k.jpg"
-        ]
-      },
-      "rating": 4.6
+      "title": "Silent Hill 2",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1w3t.jpg",
+      "releaseYear": 2001,
+      "status": "playing",
+      "rating": 10,
+      "developer": "Konami",
+      "genre": "psychological",
+      "description": "Культовая игра в жанре психологического хоррора. Джеймс Сандерланд получает письмо от своей покойной жены и отправляется в город Сайлент Хилл.",
+      "purchaseDate": "2023-11-10",
+      "discCondition": "Коллекционное издание",
+      "publisher": "Konami",
+      "screenshots": [],
+      "notes": "Ремейк выходит в 2024! Жду с нетерпением."
     },
     {
       "id": 4,
       "title": "Dead Space Remake",
       "platform": "ps5",
       "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5hkp.jpg",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5b8z.jpg",
       "releaseYear": 2023,
+      "status": "completed",
+      "rating": 9,
       "developer": "Motive Studio",
+      "genre": "survival-horror",
+      "description": "Ремейк классического космического хоррора. Инженер Айзек Кларк борется за выживание на заброшенном космическом корабле, кишащем некроморфами.",
+      "purchaseDate": "2024-01-27",
+      "discCondition": "Новая",
       "publisher": "Electronic Arts",
-      "description": "Ремейк культового космического хоррора. Инженер Айзек Кларк борется с некроморфами на заброшенном космическом корабле.",
-      "details": {
-        "genre": ["Survival Horror", "Шутер"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "playtime": "12-15 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9vus.jpg"
-        ]
-      },
-      "rating": 4.7
+      "screenshots": [],
+      "notes": "Идеальный ремейк. Графика и звук на PS5 - невероятные."
     },
     {
       "id": 5,
-      "title": "Alien: Isolation",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r4b.jpg",
-      "releaseYear": 2014,
-      "developer": "Creative Assembly",
-      "publisher": "Sega",
-      "description": "Стелс-хоррор по мотивам фильма 'Чужой'. Аманда Рипли ищет свою мать на заброшенной космической станции.",
-      "details": {
-        "genre": ["Survival Horror", "Стелс"],
-        "region": "PAL",
-        "edition": "The Collection",
-        "playtime": "15-20 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5j8h.jpg"
-        ]
-      },
-      "rating": 4.4
+      "title": "Alan Wake II",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6wj3.jpg",
+      "releaseYear": 2023,
+      "status": "playing",
+      "rating": 8,
+      "developer": "Remedy Entertainment",
+      "genre": "psychological",
+      "description": "Секретный агент ФБР Сага Андерсон расследует серию ритуальных убийств в Брайт Фоллз, в то время как Алан Уэйк пишет историю, чтобы сбежать из Тёмного Места.",
+      "purchaseDate": "2023-10-27",
+      "discCondition": "Новая",
+      "publisher": "Epic Games Publishing",
+      "screenshots": [],
+      "notes": "Инновационный хоррор с уникальным стилем. Саундтрек - огонь!"
     },
     {
       "id": 6,
-      "title": "The Evil Within 2",
+      "title": "Outlast Trinity",
       "platform": "ps4",
       "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8m.jpg",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rbg.jpg",
       "releaseYear": 2017,
-      "developer": "Tango Gameworks",
-      "publisher": "Bethesda Softworks",
-      "description": "Психологический хоррор от создателя Resident Evil. Себастьян Кастелланос ищет свою дочь в кошмарном мире STEM.",
-      "details": {
-        "genre": ["Survival Horror", "Экшен"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "playtime": "15-18 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5vih.jpg"
-        ]
-      },
-      "rating": 4.3
+      "status": "completed",
+      "rating": 8,
+      "developer": "Red Barrels",
+      "genre": "survival-horror",
+      "description": "Сборник трех игр серии Outlast. Исследуйте психиатрическую лечебницу, секретную деревню и испытайте чистый ужас без возможности дать отпор.",
+      "purchaseDate": "2022-08-15",
+      "discCondition": "Б/у, хорошее",
+      "publisher": "Red Barrels",
+      "screenshots": [],
+      "notes": "Самый страшный хоррор в моей коллекции. Играть только при свете!"
     },
     {
       "id": 7,
-      "title": "Outlast 2",
+      "title": "The Evil Within 2",
       "platform": "ps4",
       "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8t.jpg",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1l1w.jpg",
       "releaseYear": 2017,
-      "developer": "Red Barrels",
-      "publisher": "Red Barrels",
-      "description": "Хоррор от первого лица. Журналист Блейк Лэнгерманн и его жена попадают в адскую деревню в Аризоне.",
-      "details": {
-        "genre": ["Survival Horror", "Психологический хоррор"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "playtime": "8-10 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5x7n.jpg"
-        ]
-      },
-      "rating": 4.0
+      "status": "planned",
+      "rating": null,
+      "developer": "Tango Gameworks",
+      "genre": "survival-horror",
+      "description": "Себастьян Кастелланос возвращается в кошмарный мир STEM, чтобы спасти свою дочь. От создателя Resident Evil Синдзи Миками.",
+      "purchaseDate": "2023-12-05",
+      "discCondition": "Новая",
+      "publisher": "Bethesda Softworks",
+      "screenshots": [],
+      "notes": "Купил по распродаже. Говорят, лучше первой части."
     },
     {
       "id": 8,
       "title": "Until Dawn",
       "platform": "ps4",
       "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r90.jpg",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7i.jpg",
       "releaseYear": 2015,
+      "status": "completed",
+      "rating": 9,
       "developer": "Supermassive Games",
-      "publisher": "Sony Interactive Entertainment",
-      "description": "Интерактивный фильм ужасов. Группа подростков проводит ночь в заснеженном шале, где на них охотится маньяк.",
-      "details": {
-        "genre": ["Интерактивная драма", "Хоррор"],
-        "region": "PAL",
-        "edition": "Extended Edition",
-        "playtime": "8-10 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5zhh.jpg"
-        ]
-      },
-      "rating": 4.2
-    },
+      "genre": "horror-adventure",
+      "description": "Интерактивный хоррор в стиле слэшеров. Восемь друзей оказываются в заснеженной горной хижине, где за каждым решением стоит жизнь.",
+      "purchaseDate": "2022-10-31",
+      "discCondition": "Б/у, отличное",
+      "publisher": "Sony Computer Entertainment",
+      "screenshots": [],
+      "notes": "Отлично провели время с друзьями, проходя вместе. Каждый выбор имеет значение!"
+    }
+  ],
+  "upcoming": [
     {
-      "id": 9,
-      "title": "Resident Evil 2 Remake",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8e.jpg",
-      "releaseYear": 2019,
-      "developer": "Capcom",
-      "publisher": "Capcom",
-      "description": "Ремейк классического survival horror. Леон Кеннеди и Клэр Редфилд выживают во время зомби-апокалипсиса в Раккун-Сити.",
-      "details": {
-        "genre": ["Survival Horror", "Шутер"],
-        "region": "PAL",
-        "edition": "Deluxe Edition",
-        "playtime": "8-10 часов на кампанию"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6l6h.jpg"
-        ]
-      },
-      "rating": 4.8
-    },
-    {
-      "id": 10,
-      "title": "The Dark Pictures Anthology: House of Ashes",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3gtg.jpg",
-      "releaseYear": 2021,
-      "developer": "Supermassive Games",
-      "publisher": "Bandai Namco Entertainment",
-      "description": "Интерактивный хоррор о группе солдат, попавших в подземный храм во время войны в Ираке.",
-      "details": {
-        "genre": ["Интерактивная драма", "Хоррор"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "playtime": "5-7 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9v6a.jpg"
-        ]
-      },
-      "rating": 4.1
-    },
-    {
-      "id": 11,
-      "title": "SOMA",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8x.jpg",
-      "releaseYear": 2015,
-      "developer": "Frictional Games",
-      "publisher": "Frictional Games",
-      "description": "Психологический хоррор от создателей Amnesia. Исследование подводной станции и вопросы сознания и человечности.",
-      "details": {
-        "genre": ["Психологический хоррор", "Научная фантастика"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "playtime": "8-10 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5zn3.jpg"
-        ]
-      },
-      "rating": 4.5
-    },
-    {
-      "id": 12,
-      "title": "Observer: System Redux",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r53.jpg",
-      "releaseYear": 2020,
+      "id": 101,
+      "title": "Silent Hill 2 Remake",
+      "cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6wvd.jpg",
       "developer": "Bloober Team",
-      "publisher": "Bloober Team",
-      "description": "Киберпанк-хоррор. Детектив-обсервер расследует преступления в дистопическом будущем.",
-      "details": {
-        "genre": ["Психологический хоррор", "Киберпанк"],
-        "region": "PAL",
-        "edition": "Enhanced Edition",
-        "playtime": "8-10 часов"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9v9a.jpg"
-        ]
-      },
-      "rating": 4.2
+      "releaseDate": "2024-10-08",
+      "genre": "Psychological Horror",
+      "platform": "ps5"
+    },
+    {
+      "id": 102,
+      "title": "Alone in the Dark",
+      "cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6ogv.jpg",
+      "developer": "Pieces Interactive",
+      "releaseDate": "2024-03-20",
+      "genre": "Survival Horror",
+      "platform": "ps5"
+    },
+    {
+      "id": 103,
+      "title": "The Outlast Trials",
+      "cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co4drm.jpg",
+      "developer": "Red Barrels",
+      "releaseDate": "2024-05-15",
+      "genre": "Survival Horror",
+      "platform": "ps5"
     }
   ]
 }
