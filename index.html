@@ -583,8 +583,33 @@
         </div>
     </div>
 </div>
+    <!-- Подсказка по видео -->
+<div id="videoHelp" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-question-circle"></i> Как добавить видео</h2>
+            <button class="close-modal" onclick="document.getElementById('videoHelp').style.display='none'">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <ol style="padding-left: 20px; margin-bottom: 20px;">
+                <li>На YouTube найдите нужное видео</li>
+                <li>Нажмите кнопку <strong>"Поделиться"</strong> под видео</li>
+                <li>Выберите <strong>"Встроить"</strong> (код iframe)</li>
+                <li>Скопируйте ссылку из <code>src="..."</code></li>
+                <li>Вставьте в поле "Ссылка на видео YouTube"</li>
+            </ol>
+            <p><strong>Или просто:</strong> вставьте обычную ссылку на видео YouTube</p>
+            <button class="btn-primary" onclick="document.getElementById('videoHelp').style.display='none'" style="width: 100%; margin-top: 20px;">
+                <i class="fas fa-check"></i> Понятно
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
 
 
 
