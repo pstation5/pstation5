@@ -4,62 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎮 Моя коллекция игр</title>
-    <!-- Подключаем Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Наши стили -->
     <link rel="stylesheet" href="style.css">
-    <!-- Иконка для вкладки -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+    <!-- Иконки FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <!-- Шапка приложения -->
+        <!-- Шапка с пользователем Telegram -->
         <header class="header">
-            <h1>🎮 Моя коллекция игр</h1>
-            <p class="subtitle">Коллекция физических изданий на дисках</p>
+            <div class="user-info">
+                <div class="avatar-placeholder" id="userAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <h1 id="userGreeting">🎮 Моя коллекция игр</h1>
+                    <p class="subtitle">Коллекция физических изданий на дисках</p>
+                </div>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
         </header>
 
-        <!-- Статистика коллекции -->
+        <!-- Статистика -->
         <div class="stats">
             <div class="stat-item">
+                <i class="fas fa-gamepad"></i>
                 <span class="stat-number" id="totalGames">0</span>
                 <span class="stat-label">всего игр</span>
             </div>
             <div class="stat-item">
+                <i class="fas fa-tv"></i>
                 <span class="stat-number" id="uniquePlatforms">0</span>
                 <span class="stat-label">платформ</span>
             </div>
+            <div class="stat-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="stat-number" id="collectionYears">0</span>
+                <span class="stat-label">лет коллекции</span>
+            </div>
         </div>
 
-        <!-- Фильтры -->
+        <!-- Фильтры и поиск -->
         <div class="filters">
-            <select id="platformFilter" class="filter-select">
-                <option value="all">Все платформы</option>
-                <option value="ps4">PlayStation 4</option>
-                <option value="ps5">PlayStation 5</option>
-                <option value="xbox">Xbox</option>
-                <option value="switch">Nintendo Switch</option>
-            </select>
+            <div class="filter-group">
+                <label for="platformFilter"><i class="fas fa-filter"></i> Платформа:</label>
+                <select id="platformFilter" class="filter-select">
+                    <option value="all">Все платформы</option>
+                    <option value="ps4">PlayStation 4</option>
+                    <option value="ps5">PlayStation 5</option>
+                    <option value="xbox">Xbox</option>
+                    <option value="switch">Nintendo Switch</option>
+                    <option value="pc">PC</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="sortSelect"><i class="fas fa-sort"></i> Сортировка:</label>
+                <select id="sortSelect" class="filter-select">
+                    <option value="newest">Сначала новые</option>
+                    <option value="oldest">Сначала старые</option>
+                    <option value="title">По названию (А-Я)</option>
+                    <option value="titleDesc">По названию (Я-А)</option>
+                </select>
+            </div>
             
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Поиск игры..." class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Поиск по названию, жанру..." class="search-input">
+                <button class="clear-search" onclick="clearSearch()" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+        </div>
+
+        <!-- Теги для быстрого фильтра -->
+        <div class="quick-filters" id="quickFilters">
+            <button class="tag active" data-platform="all">Все</button>
+            <button class="tag" data-platform="ps4">PS4</button>
+            <button class="tag" data-platform="ps5">PS5</button>
         </div>
 
         <!-- Контейнер для игр -->
         <div id="gameGrid" class="game-grid">
-            <!-- Игры будут загружаться через JavaScript -->
-            <div class="loading">Загрузка коллекции...</div>
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Загрузка коллекции...</p>
+            </div>
+        </div>
+
+        <!-- Модальное окно для деталей игры -->
+        <div id="gameModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle"></h2>
+                    <button class="close-modal" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Контент будет загружен через JS -->
+                </div>
+            </div>
         </div>
 
         <!-- Подвал -->
         <footer class="footer">
-            <p>Обновлено: <span id="updateDate">Сегодня</span></p>
-            <p class="footer-note">Приложение создано для хранения коллекции игр на дисках</p>
+            <div class="footer-content">
+                <p>Обновлено: <span id="updateDate">Сегодня</span></p>
+                <p class="footer-note">
+                    <i class="fas fa-heart"></i> Приложение создано для хранения коллекции игр на дисках
+                </p>
+                <button class="add-game-btn" onclick="showAddGameForm()">
+                    <i class="fas fa-plus"></i> Добавить свою игру
+                </button>
+            </div>
         </footer>
     </div>
 
-    <!-- Подключаем наш JavaScript -->
+    <!-- Наш JavaScript -->
     <script src="script.js"></script>
 </body>
-</html>
+</html></html>
