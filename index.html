@@ -164,18 +164,7 @@
                         <input type="text" id="gamePublisher" class="form-input" placeholder="Например: Sony Interactive Entertainment">
                     </div>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gameCondition"><i class="fas fa-box"></i> Состояние коробки</label>
-                        <select id="gameCondition" class="form-input">
-                            <option value="Новая, в запайке">Новая, в запайке</option>
-                            <option value="Новая">Новая</option>
-                            <option value="Б/у, отличное состояние">Б/у, отличное состояние</option>
-                            <option value="Б/у, хорошее состояние">Б/у, хорошее состояние</option>
-                            <option value="Б/у, удовлетворительное">Б/у, удовлетворительное</option>
-                        </select>
-                    </div>
+
                     
                     <div class="form-group">
                         <label for="gamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
@@ -202,40 +191,36 @@
                             <option value="Complete Edition">Complete Edition</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="gameRegion"><i class="fas fa-globe"></i> Регион</label>
-                        <select id="gameRegion" class="form-input">
-                            <option value="PAL">PAL (Европа)</option>
-                            <option value="NTSC-U">NTSC-U (США)</option>
-                            <option value="NTSC-J">NTSC-J (Япония)</option>
-                            <option value="Region Free">Region Free</option>
-                        </select>
-                    </div>
-                </div>
+
                 
                 <div class="form-group">
                     <label for="gameLanguage"><i class="fas fa-language"></i> Язык (через запятую)</label>
                     <input type="text" id="gameLanguage" class="form-input" placeholder="Например: Русский, Английский">
                     <small class="form-hint">Основные языки интерфейса и озвучки</small>
                 </div>
-                
-                <div class="form-group">
-                    <label for="gameDiscCondition"><i class="fas fa-compact-disc"></i> Состояние диска</label>
-                    <select id="gameDiscCondition" class="form-input">
-                        <option value="Идеальное">Идеальное</option>
-                        <option value="Хорошее">Хорошее</option>
-                        <option value="Небольшие царапины">Небольшие царапины</option>
-                        <option value="Сильные царапины">Сильные царапины</option>
-                        <option value="Не читается">Не читается</option>
-                    </select>
-                </div>
+
                 
                 <div class="form-group">
                     <label for="gameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
                     <input type="url" id="gameCover" class="form-input" placeholder="https://example.com/cover.jpg">
                     <small class="form-hint">Можно загрузить фото в <a href="https://imgur.com" target="_blank">Imgur</a> и вставить ссылку</small>
                 </div>
+
+                 <div class="form-group">
+    <label for="gamePhotos"><i class="fas fa-images"></i> Дополнительные фотографии</label>
+    <div id="photosContainer">
+        <div class="photo-input-group">
+            <input type="url" class="form-input photo-url" placeholder="Ссылка на фото">
+            <button type="button" class="btn-small remove-photo-btn" onclick="removePhotoInput(this)" style="background: #ff4757; margin-left: 5px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <button type="button" class="btn-small" onclick="addPhotoInput()" style="margin-top: 5px;">
+        <i class="fas fa-plus"></i> Добавить еще фото
+    </button>
+    <small class="form-hint">Можно добавить несколько фото. Главная обложка будет первой</small>
+</div>   
 
                 <div class="form-group">
                     <label for="gameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
@@ -371,18 +356,7 @@
                         <input type="text" id="editGamePublisher" class="form-input">
                     </div>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editGameCondition"><i class="fas fa-box"></i> Состояние коробки</label>
-                        <select id="editGameCondition" class="form-input">
-                            <option value="Новая, в запайке">Новая, в запайке</option>
-                            <option value="Новая">Новая</option>
-                            <option value="Б/у, отличное состояние">Б/у, отличное состояние</option>
-                            <option value="Б/у, хорошее состояние">Б/у, хорошее состояние</option>
-                            <option value="Б/у, удовлетворительное">Б/у, удовлетворительное</option>
-                        </select>
-                    </div>
+
                     
                     <div class="form-group">
                         <label for="editGamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
@@ -408,38 +382,29 @@
                             <option value="Complete Edition">Complete Edition</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="editGameRegion"><i class="fas fa-globe"></i> Регион</label>
-                        <select id="editGameRegion" class="form-input">
-                            <option value="PAL">PAL (Европа)</option>
-                            <option value="NTSC-U">NTSC-U (США)</option>
-                            <option value="NTSC-J">NTSC-J (Япония)</option>
-                            <option value="Region Free">Region Free</option>
-                        </select>
-                    </div>
-                </div>
+
                 
                 <div class="form-group">
                     <label for="editGameLanguage"><i class="fas fa-language"></i> Язык (через запятую)</label>
                     <input type="text" id="editGameLanguage" class="form-input" placeholder="Например: Русский, Английский">
                 </div>
-                
-                <div class="form-group">
-                    <label for="editGameDiscCondition"><i class="fas fa-compact-disc"></i> Состояние диска</label>
-                    <select id="editGameDiscCondition" class="form-input">
-                        <option value="Идеальное">Идеальное</option>
-                        <option value="Хорошее">Хорошее</option>
-                        <option value="Небольшие царапины">Небольшие царапины</option>
-                        <option value="Сильные царапины">Сильные царапины</option>
-                        <option value="Не читается">Не читается</option>
-                    </select>
-                </div>
+
                 
                 <div class="form-group">
                     <label for="editGameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
                     <input type="url" id="editGameCover" class="form-input">
                 </div>
+
+                    <div class="form-group">
+    <label for="editGamePhotos"><i class="fas fa-images"></i> Дополнительные фотографии</label>
+    <div id="editPhotosContainer">
+        <!-- Фото будут добавляться динамически -->
+    </div>
+    <button type="button" class="btn-small" onclick="addEditPhotoInput()" style="margin-top: 5px;">
+        <i class="fas fa-plus"></i> Добавить еще фото
+    </button>
+    <small class="form-hint">Можно добавить несколько фото. Главная обложка будет первой</small>
+</div>
 
                 <div class="form-group">
                     <label for="editGameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
@@ -727,9 +692,28 @@
             </div>
         </footer>
     </div>
-
+<!-- Лайтбокс для просмотра фотографий -->
+<div id="lightbox" class="lightbox" style="display: none;">
+    <div class="lightbox-content">
+        <button class="lightbox-close" onclick="closeLightbox()">
+            <i class="fas fa-times"></i>
+        </button>
+        <button class="lightbox-nav prev" onclick="prevPhoto()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="lightbox-nav next" onclick="nextPhoto()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <img id="lightbox-img" src="" alt="">
+        <div class="lightbox-caption">
+            <span id="lightbox-counter"></span>
+            <span id="lightbox-title"></span>
+        </div>
+    </div>
+</div>
     <!-- Наш JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
+
 
