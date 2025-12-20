@@ -24,12 +24,19 @@ let games = [];
 let filteredGames = [];
 let currentTheme = 'light';
 
+// ===== УПРАВЛЕНИЕ КОЛЛЕКЦИЕЙ =====
+let collection = {
+    games: [],
+    lastUpdated: new Date().toISOString(),
+    version: '1.0'
+};
+
 // ===== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ =====
 function initApp() {
     console.log('Инициализация приложения...');
     
     // Настройка Telegram WebApp
-    tg.expand(); // Раскрываем на весь экран
+    tg.expand();
     tg.setHeaderColor('#6c5ce7');
     tg.setBackgroundColor('#6c5ce7');
     
@@ -39,8 +46,8 @@ function initApp() {
         updateUserInfo(user);
     }
     
-    // Загружаем игры
-    loadGames();
+    // Загружаем коллекцию
+    loadCollection();
     
     // Настраиваем фильтры
     setupFilters();
@@ -62,36 +69,46 @@ function initApp() {
 
 // ===== ОБНОВЛЕНИЕ ИНФОРМАЦИИ ПОЛЬЗОВАТЕЛЯ =====
 function updateUserInfo(user) {
-    // Приветствие
     const firstName = user.first_name || 'Коллекционер';
     elements.userGreeting.textContent = `🎮 Коллекция игр ${firstName}`;
     
-    // Аватар
     if (user.photo_url) {
         elements.userAvatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар" style="width:100%;height:100%;border-radius:50%;">`;
     }
 }
 
-// ===== ЗАГРУЗКА ИГР =====
-async function loadGames() {
+// ===== ЗАГРУЗКА КОЛЛЕКЦИИ =====
+async function loadCollection() {
     try {
-        console.log('Загрузка игр...');
+        console.log('Загрузка коллекции...');
         showLoading(true);
         
-        // Загружаем данные из games.json
-        const response = await fetch('games.json');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        // Пробуем загрузить из localStorage
+        const loadedFromStorage = loadCollectionFromStorage();
         
-        const data = await response.json();
-        games = data.games;
-        
-        console.log(`Загружено ${games.length} игр`);
+        if (loadedFromStorage && collection.games.length > 0) {
+            // Используем данные из localStorage
+            games = collection.games;
+            console.log(`Загружено ${games.length} игр из localStorage`);
+        } else {
+            // Загружаем из games.json
+            const response = await fetch('games.json');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const data = await response.json();
+            games = data.games;
+            collection.games = games;
+            collection.lastUpdated = new Date().toISOString();
+            saveCollectionToStorage();
+            console.log(`Загружено ${games.length} игр из games.json`);
+        }
         
         // Инициализируем фильтрованные игры
         filteredGames = [...games];
         
         // Обновляем статистику
         updateStats();
+        updateCollectionStats();
         
         // Отрисовываем игры
         renderGames();
@@ -99,8 +116,36 @@ async function loadGames() {
         showLoading(false);
         
     } catch (error) {
-        console.error('Ошибка загрузки игр:', error);
+        console.error('Ошибка загрузки коллекции:', error);
         showError('Не удалось загрузить коллекцию. Проверьте файл games.json');
+    }
+}
+
+// ===== СОХРАНЕНИЕ И ЗАГРУЗКА ДАННЫХ =====
+function loadCollectionFromStorage() {
+    try {
+        const saved = localStorage.getItem('gameCollection');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            collection.games = parsed.games || [];
+            collection.lastUpdated = parsed.lastUpdated || new Date().toISOString();
+            return true;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки из localStorage:', error);
+    }
+    return false;
+}
+
+function saveCollectionToStorage() {
+    try {
+        collection.lastUpdated = new Date().toISOString();
+        localStorage.setItem('gameCollection', JSON.stringify(collection));
+        return true;
+    } catch (error) {
+        console.error('Ошибка сохранения в localStorage:', error);
+        showNotification('Ошибка сохранения коллекции', 'error');
+        return false;
     }
 }
 
@@ -108,14 +153,11 @@ async function loadGames() {
 function updateStats() {
     if (!games.length) return;
     
-    // Общее количество игр
     elements.totalGamesEl.textContent = games.length;
     
-    // Уникальные платформы
     const platforms = [...new Set(games.map(game => game.platform))];
     elements.uniquePlatformsEl.textContent = platforms.length;
     
-    // Годы коллекции (разница между самой старой и новой игрой)
     const years = games.map(game => game.releaseYear).filter(year => year);
     if (years.length >= 2) {
         const minYear = Math.min(...years);
@@ -125,6 +167,23 @@ function updateStats() {
     } else {
         elements.collectionYearsEl.textContent = '1';
     }
+}
+
+function updateCollectionStats() {
+    document.getElementById('collectionCount').textContent = collection.games.length;
+    
+    const lastUpdate = new Date(collection.lastUpdated);
+    document.getElementById('lastUpdateTime').textContent = 
+        lastUpdate.toLocaleString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            day: '2-digit',
+            month: 'short'
+        });
+    
+    const dataSize = JSON.stringify(collection).length;
+    document.getElementById('collectionSize').textContent = 
+        dataSize < 1024 ? `${dataSize} B` : `${(dataSize / 1024).toFixed(1)} KB`;
 }
 
 // ===== ОТРИСОВКА ИГР =====
@@ -174,38 +233,24 @@ function getPlatformIcon(platform) {
 
 // ===== НАСТРОЙКА ФИЛЬТРОВ =====
 function setupFilters() {
-    // Фильтр по платформе
     elements.platformFilter.addEventListener('change', filterGames);
-    
-    // Сортировка
     elements.sortSelect.addEventListener('change', filterGames);
-    
-    // Поиск
     elements.searchInput.addEventListener('input', function(e) {
         filterGames();
-        // Показываем/скрываем кнопку очистки
         const clearBtn = this.nextElementSibling;
         clearBtn.style.display = this.value ? 'block' : 'none';
     });
 }
 
-// ===== БЫСТРЫЕ ФИЛЬТРЫ =====
 function setupQuickFilters() {
     elements.quickFilters.addEventListener('click', function(e) {
         if (e.target.classList.contains('tag')) {
-            // Убираем активный класс у всех тегов
             document.querySelectorAll('.tag').forEach(tag => {
                 tag.classList.remove('active');
             });
-            
-            // Добавляем активный класс выбранному тегу
             e.target.classList.add('active');
-            
-            // Устанавливаем значение в селект
             const platform = e.target.dataset.platform;
             elements.platformFilter.value = platform;
-            
-            // Применяем фильтрацию
             filterGames();
         }
     });
@@ -217,23 +262,17 @@ function filterGames() {
     const sortBy = elements.sortSelect.value;
     const searchQuery = elements.searchInput.value.toLowerCase();
     
-    // Фильтрация
-    filteredGames = games.filter(game => {
-        // Фильтр по платформе
+    filteredGames = collection.games.filter(game => {
         const platformMatch = platform === 'all' || game.platform === platform;
-        
-        // Поиск
         const searchMatch = !searchQuery || 
             game.title.toLowerCase().includes(searchQuery) ||
             (game.description && game.description.toLowerCase().includes(searchQuery)) ||
             (game.details?.genre && game.details.genre.some(genre => 
                 genre.toLowerCase().includes(searchQuery)
             ));
-        
         return platformMatch && searchMatch;
     });
     
-    // Сортировка
     filteredGames.sort((a, b) => {
         switch (sortBy) {
             case 'newest':
@@ -249,27 +288,23 @@ function filterGames() {
         }
     });
     
-    // Отрисовываем отфильтрованные игры
     renderGames();
 }
 
 // ===== ОТКРЫТИЕ ДЕТАЛЕЙ ИГРЫ =====
 function openGameDetails(gameId) {
-    const game = games.find(g => g.id === gameId);
-    if (!game) return;
+    const game = collection.games.find(g => g.id === gameId);
+    if (!game) {
+        showNotification('Игра не найдена в коллекции', 'error');
+        return;
+    }
     
-    // Заполняем заголовок
     elements.modalTitle.textContent = game.title;
-    
-    // Заполняем тело модального окна
     elements.modalBody.innerHTML = createGameDetailsHTML(game);
-    
-    // Показываем модальное окно
     elements.gameModal.style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-// ===== СОЗДАНИЕ HTML ДЛЯ ДЕТАЛЕЙ ИГРЫ =====
 function createGameDetailsHTML(game) {
     return `
         <div class="game-details">
@@ -376,7 +411,201 @@ function closeModal() {
     document.body.style.overflow = 'auto';
 }
 
-// ===== ОТКРЫТИЕ ИЗОБРАЖЕНИЯ =====
+// ===== ДОБАВЛЕНИЕ НОВОЙ ИГРЫ =====
+function openAddGameModal() {
+    document.getElementById('addGameModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('gamePurchaseDate').value = today;
+    document.getElementById('addGameForm').reset();
+}
+
+function closeAddGameModal() {
+    document.getElementById('addGameModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function addNewGame(event) {
+    event.preventDefault();
+    
+    const newGame = {
+        id: Date.now(),
+        title: document.getElementById('gameTitle').value.trim(),
+        platform: document.getElementById('gamePlatform').value,
+        platformName: document.getElementById('gamePlatform').selectedOptions[0].text,
+        releaseYear: parseInt(document.getElementById('gameYear').value) || new Date().getFullYear(),
+        condition: document.getElementById('gameCondition').value,
+        purchaseDate: document.getElementById('gamePurchaseDate').value || new Date().toISOString().split('T')[0],
+        coverImage: document.getElementById('gameCover').value.trim() || 
+                   'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png',
+        description: document.getElementById('gameDescription').value.trim() || 'Описание пока не добавлено.',
+        details: {
+            genre: [],
+            region: 'PAL',
+            edition: 'Standard Edition',
+            language: ['Русский'],
+            discCondition: document.getElementById('gameCondition').value
+        },
+        media: {
+            photos: [],
+            videos: []
+        },
+        personalNotes: document.getElementById('gameNotes').value.trim()
+    };
+    
+    if (newGame.coverImage && newGame.coverImage !== 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png') {
+        newGame.media.photos.push(newGame.coverImage);
+    }
+    
+    collection.games.unshift(newGame);
+    
+    if (saveCollectionToStorage()) {
+        games = collection.games;
+        filteredGames = [...games];
+        updateStats();
+        renderGames();
+        updateCollectionStats();
+        
+        showNotification(`Игра "${newGame.title}" добавлена в коллекцию!`, 'success');
+        closeAddGameModal();
+    }
+}
+
+// ===== УПРАВЛЕНИЕ КОЛЛЕКЦИЕЙ =====
+function openManageModal() {
+    updateCollectionStats();
+    document.getElementById('manageModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeManageModal() {
+    document.getElementById('manageModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function exportCollection() {
+    try {
+        const dataStr = JSON.stringify(collection, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const exportFileDefaultName = `game-collection-${new Date().toISOString().split('T')[0]}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        
+        showNotification('Коллекция экспортирована!', 'success');
+    } catch (error) {
+        console.error('Ошибка экспорта:', error);
+        showNotification('Ошибка экспорта коллекции', 'error');
+    }
+}
+
+function importCollection() {
+    document.getElementById('importFileInput').click();
+}
+
+// Обработчик импорта файлов
+document.getElementById('importFileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            
+            if (!importedData.games || !Array.isArray(importedData.games)) {
+                throw new Error('Неверный формат файла');
+            }
+            
+            tg.showPopup({
+                title: 'Импорт коллекции',
+                message: `Найдено ${importedData.games.length} игр. Заменить текущую коллекцию?`,
+                buttons: [
+                    {id: 'replace', type: 'destructive', text: 'Заменить'},
+                    {id: 'merge', type: 'default', text: 'Объединить'},
+                    {id: 'cancel', type: 'cancel'}
+                ]
+            }, function(buttonId) {
+                if (buttonId === 'replace') {
+                    collection.games = importedData.games;
+                    collection.lastUpdated = new Date().toISOString();
+                } else if (buttonId === 'merge') {
+                    const existingIds = collection.games.map(g => g.id);
+                    const newGames = importedData.games.filter(g => !existingIds.includes(g.id));
+                    collection.games = [...collection.games, ...newGames];
+                    collection.lastUpdated = new Date().toISOString();
+                }
+                
+                if (buttonId === 'replace' || buttonId === 'merge') {
+                    saveCollectionToStorage();
+                    games = collection.games;
+                    filteredGames = [...games];
+                    updateStats();
+                    renderGames();
+                    updateCollectionStats();
+                    
+                    showNotification(`Импортировано ${importedData.games.length} игр`, 'success');
+                }
+            });
+            
+        } catch (error) {
+            console.error('Ошибка импорта:', error);
+            showNotification('Ошибка импорта: неверный формат файла', 'error');
+        }
+        event.target.value = '';
+    };
+    reader.readAsText(file);
+});
+
+function scanBarcode() {
+    tg.showPopup({
+        title: 'Сканирование штрих-кода',
+        message: 'Эта функция требует доступа к камере. В будущей версии будет реализована!',
+        buttons: [{id: 'ok', type: 'default'}]
+    });
+}
+
+function clearCollection() {
+    tg.showPopup({
+        title: 'Очистка коллекции',
+        message: 'Вы уверены, что хотите удалить все игры? Это действие нельзя отменить.',
+        buttons: [
+            {id: 'clear', type: 'destructive', text: 'Удалить всё'},
+            {id: 'cancel', type: 'cancel'}
+        ]
+    }, function(buttonId) {
+        if (buttonId === 'clear') {
+            collection.games = [];
+            collection.lastUpdated = new Date().toISOString();
+            
+            saveCollectionToStorage();
+            games = [];
+            filteredGames = [];
+            updateStats();
+            renderGames();
+            updateCollectionStats();
+            
+            showNotification('Коллекция очищена', 'success');
+            closeManageModal();
+        }
+    });
+}
+
+// ===== УВЕДОМЛЕНИЯ =====
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification ${type} show`;
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// ===== УТИЛИТЫ =====
 function openImage(url) {
     tg.showPopup({
         title: 'Фото',
@@ -399,14 +628,12 @@ function openImage(url) {
     });
 }
 
-// ===== ОЧИСТКА ПОИСКА =====
 function clearSearch() {
     elements.searchInput.value = '';
     elements.searchInput.nextElementSibling.style.display = 'none';
     filterGames();
 }
 
-// ===== ОБНОВЛЕНИЕ ДАТЫ =====
 function updateDate() {
     const now = new Date();
     const options = { 
@@ -418,7 +645,6 @@ function updateDate() {
     elements.updateDateEl.textContent = now.toLocaleDateString('ru-RU', options);
 }
 
-// ===== УПРАВЛЕНИЕ ТЕМОЙ =====
 function toggleTheme() {
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
@@ -428,18 +654,10 @@ function setTheme(theme) {
     currentTheme = theme;
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-    
-    // Обновляем иконку
     const icon = document.querySelector('.theme-toggle i');
     icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
 }
 
-// ===== ПОКАЗАТЬ ФОРМУ ДОБАВЛЕНИЯ ИГРЫ =====
-function showAddGameForm() {
-    tg.showAlert('Функция добавления игры скоро появится! Вы можете добавить игру вручную в файл games.json');
-}
-
-// ===== УТИЛИТЫ =====
 function showLoading(show) {
     if (show) {
         elements.gameGrid.innerHTML = `
@@ -457,7 +675,7 @@ function showError(message) {
             <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff4757; margin-bottom: 20px;"></i>
             <h3>Ошибка</h3>
             <p>${message}</p>
-            <button onclick="loadGames()" style="margin-top: 20px; padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 10px; cursor: pointer;">
+            <button onclick="loadCollection()" style="margin-top: 20px; padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 10px; cursor: pointer;">
                 <i class="fas fa-redo"></i> Попробовать снова
             </button>
         </div>
@@ -468,6 +686,12 @@ function showError(message) {
 window.onclick = function(event) {
     if (event.target === elements.gameModal) {
         closeModal();
+    }
+    if (event.target === document.getElementById('addGameModal')) {
+        closeAddGameModal();
+    }
+    if (event.target === document.getElementById('manageModal')) {
+        closeManageModal();
     }
 }
 
