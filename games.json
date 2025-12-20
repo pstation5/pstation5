@@ -1,6 +1,6 @@
 {
   "lastUpdated": "2024-03-15",
-  "totalGames": 4,
+  "totalGames": 8,
   "games": [
     {
       "id": 1,
@@ -118,6 +118,113 @@
         ]
       },
       "personalNotes": "Купил после выхода PC-версии, чтобы сравнить. Графика на PS4 все еще впечатляет."
+    },
+    {
+      "id": 5,
+      "title": "Cyberpunk 2077",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2mxf.jpg",
+      "releaseYear": 2020,
+      "developer": "CD Projekt Red",
+      "publisher": "CD Projekt",
+      "condition": "Новая",
+      "purchaseDate": "2023-09-15",
+      "description": "Ролевая игра в открытом мире, действие которой происходит в антиутопическом Найт-Сити.",
+      "details": {
+        "genre": ["RPG", "Экшен"],
+        "region": "PAL",
+        "edition": "Phantom Liberty Edition",
+        "language": ["Русский", "Английский"],
+        "discCondition": "Идеальное"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2mxf.jpg"
+        ]
+      },
+      "personalNotes": "Купил после всех обновлений. Игра стала намного лучше, чем при релизе."
+    },
+    {
+      "id": 6,
+      "title": "Halo Infinite",
+      "platform": "xbox",
+      "platformName": "Xbox Series X",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0g.jpg",
+      "releaseYear": 2021,
+      "developer": "343 Industries",
+      "publisher": "Xbox Game Studios",
+      "condition": "Новая",
+      "purchaseDate": "2023-11-10",
+      "description": "Шутер от первого лица, продолжение культовой серии Halo.",
+      "details": {
+        "genre": ["Шутер", "Экшен"],
+        "region": "NTSC",
+        "edition": "Campaign Edition",
+        "language": ["Английский"],
+        "discCondition": "Идеальное"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0g.jpg"
+        ]
+      },
+      "personalNotes": "Хорошее возвращение к корням серии. Кампания отличная."
+    },
+    {
+      "id": 7,
+      "title": "Super Mario Odyssey",
+      "platform": "switch",
+      "platformName": "Nintendo Switch",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwy.jpg",
+      "releaseYear": 2017,
+      "developer": "Nintendo EPD",
+      "publisher": "Nintendo",
+      "condition": "Б/у, хорошее состояние",
+      "purchaseDate": "2022-08-05",
+      "description": "Платформер про Марио, который путешествует по разным королевствам на своей шляпе-корабле.",
+      "details": {
+        "genre": ["Платформер", "Приключения"],
+        "region": "EUR",
+        "edition": "Standard Edition",
+        "language": ["Русский"],
+        "discCondition": "Небольшие царапины"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwy.jpg"
+        ]
+      },
+      "personalNotes": "Купил с рук за полцены. Одна из лучших игр на Switch."
+    },
+    {
+      "id": 8,
+      "title": "The Last of Us Part II",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
+      "releaseYear": 2020,
+      "developer": "Naughty Dog",
+      "publisher": "Sony Interactive Entertainment",
+      "condition": "Новая, в запайке",
+      "purchaseDate": "2024-02-20",
+      "description": "Приключенческий экшен с элементами хоррора. Продолжение истории Элли и Джоэла.",
+      "details": {
+        "genre": ["Экшен", "Приключения", "Хоррор"],
+        "region": "PAL",
+        "edition": "Remastered Edition",
+        "language": ["Русский", "Английский"],
+        "discCondition": "Идеальное"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg"
+        ],
+        "videos": [
+          "https://www.youtube.com/embed/qPNiIeKMHyg"
+        ]
+      },
+      "personalNotes": "Только что купил, еще не играл. Слышал много противоречивых отзывов."
     }
   ]
 }
