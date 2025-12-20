@@ -235,16 +235,71 @@ const renderUpcoming = () => {
     const dev = g.developer || "Разработчик неизвестен";
     meta.innerHTML = `<span class="slider-card-date">${date}</span> • ${dev}`;
 
+    // Блок действий
+    const actions = document.createElement("div");
+    actions.className = "game-modal-actions"; // уже стилизован
+
+    const openBtn = document.createElement("button");
+    openBtn.className = "btn btn-ghost";
+    openBtn.textContent = "Подробнее";
+    openBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openUpcomingAsGameModal(g.id);
+    });
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "btn btn-ghost";
+    editBtn.textContent = "Редактировать";
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openEditUpcomingModal(g);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn btn-ghost";
+    deleteBtn.textContent = "Удалить";
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (confirm("Удалить ожидаемую игру из списка?")) {
+        upcomingGames = upcomingGames.filter((item) => item.id !== g.id); // удаляем из массива [web:29][web:43]
+        saveToLocalStorage();
+        renderUpcoming();
+      }
+    });
+
+    const shareBtn = document.createElement("button");
+    shareBtn.className = "btn btn-ghost";
+    shareBtn.textContent = "Поделиться";
+    shareBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const text = `Скоро выходит: ${g.title} (${(g.platforms || []).join(", ").toUpperCase()})`;
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({ title: g.title, text, url }).catch(() => {});
+      } else {
+        prompt("Скопируй ссылку:", url);
+      }
+    });
+
+    actions.appendChild(openBtn);
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+    actions.appendChild(shareBtn);
+
     body.appendChild(title);
     body.appendChild(meta);
+    body.appendChild(actions);
 
     card.appendChild(cover);
     card.appendChild(body);
 
+    // Клик по карточке по умолчанию — тоже "Подробнее"
     card.addEventListener("click", () => openUpcomingAsGameModal(g.id));
+
     upcomingSlider.appendChild(card);
   });
 };
+
 
 // Открытие модалки с игрой
 const openGameModal = (id) => {
@@ -753,3 +808,4 @@ const loadData = async () => {
 };
 
 document.addEventListener("DOMContentLoaded", loadData);
+
