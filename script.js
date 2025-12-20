@@ -48,6 +48,29 @@ function initApp() {
     const user = tg.initDataUnsafe?.user;
     if (user) {
         updateUserInfo(user);
+            updateGreeting(); // Обновляем приветствие с названием коллекции
+    // ===== КОНЕЦ ДОБАВЛЕНИЯ =====
+    
+    // Загружаем коллекцию
+    loadCollection();
+    
+    // Настраиваем фильтры
+    setupFilters();
+    
+    // Настраиваем быстрые фильтры
+    setupQuickFilters();
+    
+    // Обновляем дату
+    updateDate();
+    
+    // Восстанавливаем тему
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        setTheme(savedTheme);
+    }
+    
+    console.log('Приложение инициализировано');
+
     }
     
     // Загружаем коллекцию
@@ -1626,6 +1649,7 @@ function updateGreeting() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
