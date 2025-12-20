@@ -922,17 +922,20 @@ function renderUpcomingGames() {
             <div class="no-upcoming">
                 <i class="fas fa-calendar-alt"></i>
                 <p>Нет ожидаемых игр</p>
+                <button class="btn-small" onclick="openAddUpcomingModal()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Добавить первую игру
+                </button>
             </div>
         `;
         return;
     }
     
     elements.upcomingSlider.innerHTML = upcomingGames.map(game => `
-        <div class="upcoming-card" onclick="openUpcomingDetails(${game.id})">
+        <div class="upcoming-card">
             <div class="upcoming-actions">
                 <button class="upcoming-action-btn delete-btn" 
                         onclick="deleteUpcomingConfirm(${game.id}, event)"
-                        title="Удалить из ожидаемых">
+                        title="Удалить">
                     <i class="fas fa-trash"></i>
                 </button>
                 <button class="upcoming-action-btn edit-btn" 
@@ -943,9 +946,10 @@ function renderUpcomingGames() {
             </div>
             <img src="${game.cover || 'https://via.placeholder.com/300x400/222/666?text=Coming+Soon'}" 
                  alt="${game.title}" 
-                 class="upcoming-cover">
+                 class="upcoming-cover"
+                 onclick="openUpcomingDetails(${game.id})">
             <div class="upcoming-info">
-                <h3>${game.title}</h3>
+                <h3 onclick="openUpcomingDetails(${game.id})" style="cursor: pointer;">${game.title}</h3>
                 <div class="upcoming-details">
                     <span class="upcoming-date">
                         <i class="fas fa-calendar-day"></i> ${formatDate(game.releaseDate)}
@@ -956,7 +960,7 @@ function renderUpcomingGames() {
                 </div>
                 <p class="upcoming-developer">${game.developer || 'Не указан'}</p>
                 <div class="upcoming-buttons">
-                    <button class="btn-small" onclick="addUpcomingToCollection(${game.id})">
+                    <button class="btn-small" onclick="event.stopPropagation(); addUpcomingToCollection(${game.id})">
                         <i class="fas fa-plus"></i> В коллекцию
                     </button>
                 </div>
@@ -1206,6 +1210,7 @@ function clearUpcomingGames() {
 }
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
