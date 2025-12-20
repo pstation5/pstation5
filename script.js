@@ -1208,8 +1208,187 @@ function clearUpcomingGames() {
         }
     }
 }
+
+// Открытие модального окна статистики
+function openStatsModal() {
+    updateAdvancedStats();
+    renderCharts();
+    document.getElementById('statsModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Закрытие модального окна статистики
+function closeStatsModal() {
+    document.getElementById('statsModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Обновление расширенной статистики
+function updateAdvancedStats() {
+    if (!collection.games.length) return;
+    
+    // Средний год выпуска
+    const years = collection.games.map(g => g.releaseYear).filter(y => y);
+    if (years.length > 0) {
+        const avgYear = Math.round(years.reduce((a, b) => a + b, 0) / years.length);
+        document.getElementById('avgYear').textContent = avgYear;
+        
+        const oldest = Math.min(...years);
+        const newest = Math.max(...years);
+        document.getElementById('oldestGame').textContent = oldest;
+        document.getElementById('newestGame').textContent = newest;
+    }
+    
+    // Самый частый разработчик
+    const developers = {};
+    collection.games.forEach(game => {
+        if (game.developer) {
+            developers[game.developer] = (developers[game.developer] || 0) + 1;
+        }
+    });
+    
+    if (Object.keys(developers).length > 0) {
+        const topDeveloper = Object.keys(developers).reduce((a, b) => 
+            developers[a] > developers[b] ? a : b
+        );
+        document.getElementById('topPublisher').textContent = topDeveloper;
+    }
+    
+    // Статистика по платформам
+    const platforms = {};
+    collection.games.forEach(game => {
+        const platform = game.platformName || game.platform;
+        platforms[platform] = (platforms[platform] || 0) + 1;
+    });
+    
+    // Статистика по жанрам
+    const genres = {};
+    collection.games.forEach(game => {
+        const genre = game.genre || 'Не указан';
+        genres[genre] = (genres[genre] || 0) + 1;
+    });
+    
+    // Статистика по статусам
+    const statuses = {};
+    collection.games.forEach(game => {
+        const status = game.status || 'planned';
+        statuses[status] = (statuses[status] || 0) + 1;
+    });
+    
+    // Рендерим простые текстовые диаграммы
+    renderPlatformChart(platforms);
+    renderStatusChart(statuses);
+    renderGenreChart(genres);
+    
+    document.getElementById('totalSpent').textContent = 'Рассчитывается...';
+    document.getElementById('avgPrice').textContent = 'N/A';
+}
+
+// Рендерим графики
+function renderCharts() {
+    // Простые текстовые диаграммы
+    renderSimpleCharts();
+}
+
+// Создаем простые текстовые диаграммы
+function renderSimpleCharts() {
+    // График по платформам
+    const platforms = {};
+    collection.games.forEach(game => {
+        const platform = game.platformName || game.platform;
+        platforms[platform] = (platforms[platform] || 0) + 1;
+    });
+    
+    if (Object.keys(platforms).length > 0) {
+        const platformChart = document.getElementById('platformChart');
+        platformChart.innerHTML = createBarChart(platforms);
+    }
+    
+    // График по статусам
+    const statuses = {};
+    collection.games.forEach(game => {
+        const status = getStatusText(game.status || 'planned');
+        statuses[status] = (statuses[status] || 0) + 1;
+    });
+    
+    if (Object.keys(statuses).length > 0) {
+        const conditionChart = document.getElementById('conditionChart');
+        conditionChart.innerHTML = createBarChart(statuses);
+    }
+    
+    // График по годам
+    const years = {};
+    collection.games.forEach(game => {
+        const year = game.releaseYear || 'Не указан';
+        years[year] = (years[year] || 0) + 1;
+    });
+    
+    if (Object.keys(years).length > 0) {
+        const yearChart = document.getElementById('yearChart');
+        yearChart.innerHTML = createBarChart(years);
+    }
+    
+    // Круговая диаграмма по платформам
+    if (Object.keys(platforms).length > 0) {
+        const pieChart = document.getElementById('pieChart');
+        pieChart.innerHTML = createPieChart(platforms);
+    }
+}
+
+// Создаем текстовую столбчатую диаграмму
+function createBarChart(data) {
+    const maxValue = Math.max(...Object.values(data));
+    const total = Object.values(data).reduce((a, b) => a + b, 0);
+    
+    let html = '<div class="text-chart">';
+    
+    Object.entries(data).forEach(([label, value]) => {
+        const percentage = ((value / total) * 100).toFixed(1);
+        const barWidth = (value / maxValue) * 100;
+        
+        html += `
+            <div class="chart-item">
+                <div class="chart-label">${label}</div>
+                <div class="chart-bar-container">
+                    <div class="chart-bar" style="width: ${barWidth}%; background: var(--accent-color);"></div>
+                    <span class="chart-value">${value} (${percentage}%)</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+// Создаем текстовую круговую диаграмму
+function createPieChart(data) {
+    const total = Object.values(data).reduce((a, b) => a + b, 0);
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7b76d'];
+    
+    let html = '<div class="pie-chart-text">';
+    let colorIndex = 0;
+    
+    Object.entries(data).forEach(([label, value]) => {
+        const percentage = ((value / total) * 100).toFixed(1);
+        const color = colors[colorIndex % colors.length];
+        colorIndex++;
+        
+        html += `
+            <div class="pie-item">
+                <span class="pie-color" style="background: ${color};"></span>
+                <span class="pie-label">${label}:</span>
+                <span class="pie-value">${value} (${percentage}%)</span>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
