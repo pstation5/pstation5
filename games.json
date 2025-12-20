@@ -1,227 +1,35 @@
-{
-  "lastUpdated": "2024-03-15",
-  "totalGames": 8,
-  "games": [
-    {
-      "id": 1,
-      "title": "The Witcher 3: Wild Hunt",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg",
-      "releaseYear": 2015,
-      "developer": "CD Projekt Red",
-      "publisher": "CD Projekt",
-      "condition": "Новая, в запайке",
-      "purchaseDate": "2023-05-10",
-      "description": "Ролевая игра в открытом мире, действие которой происходит в фэнтезийной вселенной по мотивам произведений Анджея Сапковского. Геральт из Ривии ищет свою пропавшую воспитанницу.",
-      "details": {
-        "genre": ["RPG", "Приключения"],
-        "region": "PAL",
-        "edition": "Complete Edition",
-        "language": ["Русский", "Английский"],
-        "discCondition": "Идеальное"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg",
-          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6n3z.jpg"
-        ],
-        "videos": [
-          "https://www.youtube.com/embed/c0i88t0Kacs"
-        ]
-      },
-      "personalNotes": "Купил на распродаже, ждал долгое время. Коллекционное издание с артбуком и фигуркой."
-    },
-    {
-      "id": 2,
-      "title": "Red Dead Redemption 2",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
-      "releaseYear": 2018,
-      "developer": "Rockstar Studios",
-      "publisher": "Rockstar Games",
-      "condition": "Б/у, отличное состояние",
-      "purchaseDate": "2022-11-20",
-      "description": "Приключенческий боевик от создателей GTA V. История банды Ван дер Линде на Диком Западе в эпоху её заката.",
-      "details": {
-        "genre": ["Приключения", "Шутер"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "language": ["Английский"],
-        "discCondition": "Небольшие царапины"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg"
-        ],
-        "videos": [
-          "https://www.youtube.com/embed/gmA6MrX81z4"
-        ]
-      },
-      "personalNotes": "Нашел в комиссионном магазине за полцены. Диск в хорошем состоянии, все работает."
-    },
-    {
-      "id": 3,
-      "title": "The Last of Us Part II",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
-      "releaseYear": 2020,
-      "developer": "Naughty Dog",
-      "publisher": "Sony Interactive Entertainment",
-      "condition": "Новая, в запайке",
-      "purchaseDate": "2024-02-20",
-      "description": "Приключенческий экшен с элементами хоррора. Продолжение истории Элли и Джоэла.",
-      "details": {
-        "genre": ["Экшен", "Приключения", "Хоррор"],
-        "region": "PAL",
-        "edition": "Remastered Edition",
-        "language": ["Русский", "Английский"],
-        "discCondition": "Идеальное"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg"
-        ],
-        "videos": [
-          "https://www.youtube.com/embed/qPNiIeKMHyg"
-        ]
-      },
-      "personalNotes": "Только что купил, еще не играл. Слышал много противоречивых отзывов."
-    },
-    {
-      "id": 4,
-      "title": "God of War (2018)",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7h.jpg",
-      "releaseYear": 2018,
-      "developer": "Santa Monica Studio",
-      "publisher": "Sony Interactive Entertainment",
-      "condition": "Новая",
-      "purchaseDate": "2024-01-15",
-      "description": "Кратос, бывший бог войны, приспосабливается к жизни в царстве скандинавских богов и монстров.",
-      "details": {
-        "genre": ["Экшен", "Приключения"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "language": ["Русский"],
-        "discCondition": "Идеальное"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7h.jpg"
-        ],
-        "videos": [
-          "https://www.youtube.com/embed/K0u_kAWLJOA"
-        ]
-      },
-      "personalNotes": "Купил после выхода PC-версии, чтобы сравнить. Графика на PS4 все еще впечатляет."
-    },
-    {
-      "id": 5,
-      "title": "Cyberpunk 2077",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2mxf.jpg",
-      "releaseYear": 2020,
-      "developer": "CD Projekt Red",
-      "publisher": "CD Projekt",
-      "condition": "Новая",
-      "purchaseDate": "2023-09-15",
-      "description": "Ролевая игра в открытом мире, действие которой происходит в антиутопическом Найт-Сити.",
-      "details": {
-        "genre": ["RPG", "Экшен"],
-        "region": "PAL",
-        "edition": "Phantom Liberty Edition",
-        "language": ["Русский", "Английский"],
-        "discCondition": "Идеальное"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2mxf.jpg"
-        ]
-      },
-      "personalNotes": "Купил после всех обновлений. Игра стала намного лучше, чем при релизе."
-    },
-    {
-      "id": 6,
-      "title": "Spider-Man: Miles Morales",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r1c.jpg",
-      "releaseYear": 2020,
-      "developer": "Insomniac Games",
-      "publisher": "Sony Interactive Entertainment",
-      "condition": "Новая",
-      "purchaseDate": "2023-12-10",
-      "description": "Приключенческий экшен про Майлза Моралеса, который учится быть новым Человеком-пауком.",
-      "details": {
-        "genre": ["Экшен", "Приключения"],
-        "region": "PAL",
-        "edition": "Ultimate Edition",
-        "language": ["Русский"],
-        "discCondition": "Идеальное"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r1c.jpg"
-        ]
-      },
-      "personalNotes": "Подарок на день рождения. Графика на PS5 просто невероятная!"
-    },
-    {
-      "id": 7,
-      "title": "Horizon Forbidden West",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0f.jpg",
-      "releaseYear": 2022,
-      "developer": "Guerrilla Games",
-      "publisher": "Sony Interactive Entertainment",
-      "condition": "Новая",
-      "purchaseDate": "2024-03-01",
-      "description": "Продолжение истории Элой в постапокалиптическом мире, населенном механическими существами.",
-      "details": {
-        "genre": ["RPG", "Экшен"],
-        "region": "PAL",
-        "edition": "Special Edition",
-        "language": ["Русский"],
-        "discCondition": "Идеальное"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0f.jpg"
-        ]
-      },
-      "personalNotes": "Самая красивая игра в моей коллекции. Игровой процесс тоже на высоте."
-    },
-    {
-      "id": 8,
-      "title": "Demon's Souls",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0h.jpg",
-      "releaseYear": 2020,
-      "developer": "Bluepoint Games",
-      "publisher": "Sony Interactive Entertainment",
-      "condition": "Б/у, отличное состояние",
-      "purchaseDate": "2023-10-05",
-      "description": "Ремейк культовой ролевой игры с невероятной графикой для PS5.",
-      "details": {
-        "genre": ["RPG", "Экшен"],
-        "region": "PAL",
-        "edition": "Standard Edition",
-        "language": ["Английский"],
-        "discCondition": "Хорошее"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0h.jpg"
-        ]
-      },
-      "personalNotes": "Купил с рук. Сложная, но очень атмосферная игра. Графика — произведение искусства."
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "title": "Resident Evil Village",
+    "platform": ["PS5", "PS4"],
+    "genre": ["Survival Horror", "Action"],
+    "year": 2021,
+    "developer": "Capcom",
+    "cover": "https://example.com/re8.jpg",
+    "screenshots": [
+      "https://example.com/re8_1.jpg",
+      "https://example.com/re8_2.jpg"
+    ],
+    "description": "Жители деревни, похоже, поклоняются существу по имени Мать Миранда...",
+    "rating": 4.8,
+    "status": "completed",
+    "upcoming": false,
+    "releaseDate": "2021-05-07"
+  },
+  {
+    "id": 2,
+    "title": "Silent Hill 2 Remake",
+    "platform": ["PS5"],
+    "genre": ["Psychological Horror"],
+    "year": 2024,
+    "developer": "Bloober Team",
+    "cover": "https://example.com/sh2.jpg",
+    "screenshots": [],
+    "description": "Ремейк культовой игры про Джеймса Сандерленда...",
+    "rating": 0,
+    "status": "upcoming",
+    "upcoming": true,
+    "releaseDate": "2024-10-XX"
+  }
+]
