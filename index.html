@@ -339,6 +339,61 @@
                             <span>Обновлено:</span>
                             <strong id="lastUpdateTime">Сегодня</strong>
                         </div>
+                        <!-- Внутри manageModal, после других опций -->
+<div id="manageModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-cog"></i> Управление коллекцией</h2>
+            <button class="close-modal" onclick="closeManageModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="manage-options">
+                <button class="manage-option" onclick="exportCollection()">
+                    <i class="fas fa-file-export"></i>
+                    <span>Экспорт коллекции</span>
+                    <small>Скачать JSON файл</small>
+                </button>
+                
+                <button class="manage-option" onclick="importCollection()">
+                    <i class="fas fa-file-import"></i>
+                    <span>Импорт коллекции</span>
+                    <small>Загрузить из JSON</small>
+                </button>
+                
+                <!-- НОВАЯ КНОПКА: Удалить все ожидаемые игры -->
+                <button class="manage-option" onclick="clearUpcomingGames()" style="color: #ff6b6b;">
+                    <i class="fas fa-calendar-times"></i>
+                    <span>Очистить ожидаемые игры</span>
+                    <small>Удалить все ожидаемые игры</small>
+                </button>
+                
+                <button class="manage-option" onclick="clearCollection()" style="color: #e74c3c;">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Очистить коллекцию</span>
+                    <small>Удалить все игры</small>
+                </button>
+            </div>
+            
+            <div class="collection-info">
+                <h3><i class="fas fa-info-circle"></i> Информация</h3>
+                <div class="info-item">
+                    <span>Всего игр:</span>
+                    <strong id="collectionCount">0</strong>
+                </div>
+                <div class="info-item">
+                    <span>Ожидаемых:</span>
+                    <strong id="upcomingCount">0</strong>
+                </div>
+                <div class="info-item">
+                    <span>Обновлено:</span>
+                    <strong id="lastUpdateTime">Сегодня</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
             </div>
@@ -367,3 +422,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
