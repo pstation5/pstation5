@@ -35,6 +35,10 @@ let collection = {
     }
 };
 
+// ===== ЛАЙТБОКС ПЕРЕМЕННЫЕ =====
+let currentPhotos = [];
+let currentPhotoIndex = 0;
+
 // ===== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ =====
 function initApp() {
     console.log('Инициализация приложения...');
@@ -67,6 +71,31 @@ function initApp() {
     if (savedTheme) {
         setTheme(savedTheme);
     }
+    
+    // Добавляем обработчик клавиш для лайтбокса
+    document.addEventListener('keydown', function(e) {
+        const lightbox = document.getElementById('lightbox');
+        if (lightbox.style.display === 'flex') {
+            switch(e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    prevPhoto();
+                    break;
+                case 'ArrowRight':
+                    nextPhoto();
+                    break;
+            }
+        }
+    });
+    
+    // Клик вне изображения закрывает лайтбокс
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeLightbox();
+        }
+    });
     
     console.log('Приложение инициализировано');
 }
@@ -354,6 +383,7 @@ function openGameDetails(gameId) {
 function createGameDetailsHTML(game) {
     const genre = game.details?.genre;
     const language = game.details?.language;
+    const photos = game.media?.photos || [];
     
     return `
         <div class="game-details">
@@ -415,18 +445,20 @@ function createGameDetailsHTML(game) {
             <p style="line-height: 1.6;">${game.description || 'Описание пока не добавлено.'}</p>
         </div>
         
-        ${game.media?.photos?.length ? `
+        ${photos.length > 0 ? `
         <div class="detail-section">
-            <h3><i class="fas fa-images"></i> Фотографии</h3>
+            <h3><i class="fas fa-images"></i> Фотографии (${photos.length})</h3>
             <div class="media-gallery">
-                ${game.media.photos.map(photo => `
-                    <div class="media-item">
-                        <img src="${photo}" alt="Фото игры" 
-                             onclick="openImage('${photo}')"
-                             style="cursor: pointer;">
+                ${photos.map((photo, index) => `
+                    <div class="media-item" onclick="openLightbox(${JSON.stringify(photos)}, ${index}, '${game.title.replace(/'/g, "\\'")}')">
+                        <img src="${photo}" alt="Фото ${index + 1}" style="cursor: pointer;">
+                        ${index === 0 ? '<div class="photo-badge">Обложка</div>' : ''}
                     </div>
                 `).join('')}
             </div>
+            <small style="display: block; margin-top: 10px; color: var(--text-secondary);">
+                <i class="fas fa-info-circle"></i> Нажмите на фото для увеличения. Используйте стрелки для навигации.
+            </small>
         </div>
         ` : ''}
         
@@ -480,6 +512,17 @@ function openAddGameModal() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('gamePurchaseDate').value = today;
     document.getElementById('addGameForm').reset();
+    
+    // Очищаем контейнер с фото и добавляем одно поле
+    const photosContainer = document.getElementById('photosContainer');
+    photosContainer.innerHTML = `
+        <div class="photo-input-group">
+            <input type="url" class="form-input photo-url" placeholder="Ссылка на фото">
+            <button type="button" class="btn-small remove-photo-btn" onclick="removePhotoInput(this)" style="background: #ff4757; margin-left: 5px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
 }
 
 function closeAddGameModal() {
@@ -489,6 +532,10 @@ function closeAddGameModal() {
 
 function addNewGame(event) {
     event.preventDefault();
+    
+    // Собираем все фото
+    const photoUrls = collectPhotos('add');
+    const coverImage = document.getElementById('gameCover').value.trim();
     
     const newGame = {
         id: Date.now(),
@@ -500,8 +547,7 @@ function addNewGame(event) {
         publisher: document.getElementById('gamePublisher').value.trim() || '',
         condition: document.getElementById('gameCondition').value,
         purchaseDate: document.getElementById('gamePurchaseDate').value || new Date().toISOString().split('T')[0],
-        coverImage: document.getElementById('gameCover').value.trim() || 
-                   'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png',
+        coverImage: coverImage || 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png',
         description: document.getElementById('gameDescription').value.trim() || 'Описание пока не добавлено.',
         details: {
             genre: document.getElementById('gameGenre').value.trim().split(',').map(g => g.trim()).filter(g => g) || [],
@@ -523,10 +569,16 @@ function addNewGame(event) {
         newGame.media.videos.push(videoUrl);
     }
     
-    // Добавляем обложку в фотографии
-    if (newGame.coverImage && newGame.coverImage !== 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png') {
-        newGame.media.photos.push(newGame.coverImage);
+    // Добавляем все фото
+    if (coverImage && coverImage !== 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png') {
+        newGame.media.photos.push(coverImage);
     }
+    
+    photoUrls.forEach(photoUrl => {
+        if (photoUrl && !newGame.media.photos.includes(photoUrl)) {
+            newGame.media.photos.push(photoUrl);
+        }
+    });
     
     collection.games.unshift(newGame);
     
@@ -541,6 +593,7 @@ function addNewGame(event) {
         closeAddGameModal();
     }
 }
+
 // ===== УПРАВЛЕНИЕ КОЛЛЕКЦИЕЙ =====
 function openManageModal() {
     updateCollectionStats();
@@ -821,6 +874,9 @@ function editGame(gameId) {
     document.getElementById('editGameLanguage').value = game.details?.language?.join(', ') || '';
     document.getElementById('editGameDiscCondition').value = game.details?.discCondition || 'Идеальное';
     
+    // Загружаем фото
+    loadPhotosIntoEditForm(game.media?.photos || []);
+    
     // Заполняем видео если есть
     const videoInput = document.getElementById('editGameVideo');
     if (game.media?.videos?.length > 0) {
@@ -836,6 +892,10 @@ function editGame(gameId) {
 function closeEditGameModal() {
     document.getElementById('editGameModal').style.display = 'none';
     document.body.style.overflow = 'auto';
+    
+    // Очищаем контейнер с фото
+    const editPhotosContainer = document.getElementById('editPhotosContainer');
+    editPhotosContainer.innerHTML = '';
 }
 
 function updateGame(event) {
@@ -853,6 +913,8 @@ function updateGame(event) {
     const videoUrl = document.getElementById('editGameVideo').value.trim();
     const genreStr = document.getElementById('editGameGenre').value.trim();
     const languageStr = document.getElementById('editGameLanguage').value.trim();
+    const coverImage = document.getElementById('editGameCover').value.trim();
+    const photoUrls = collectPhotos('edit');
     
     // Обновляем данные игры
     collection.games[gameIndex] = {
@@ -865,7 +927,7 @@ function updateGame(event) {
         publisher: document.getElementById('editGamePublisher').value.trim() || collection.games[gameIndex].publisher,
         condition: document.getElementById('editGameCondition').value,
         purchaseDate: document.getElementById('editGamePurchaseDate').value || collection.games[gameIndex].purchaseDate,
-        coverImage: document.getElementById('editGameCover').value.trim() || collection.games[gameIndex].coverImage,
+        coverImage: coverImage || collection.games[gameIndex].coverImage,
         description: document.getElementById('editGameDescription').value.trim() || collection.games[gameIndex].description,
         personalNotes: document.getElementById('editGameNotes').value.trim() || collection.games[gameIndex].personalNotes,
         details: {
@@ -877,10 +939,21 @@ function updateGame(event) {
             discCondition: document.getElementById('editGameDiscCondition').value
         },
         media: {
-            ...collection.games[gameIndex].media,
+            photos: [],
             videos: videoUrl ? [videoUrl] : []
         }
     };
+    
+    // Добавляем все фото
+    if (coverImage && coverImage !== 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png') {
+        collection.games[gameIndex].media.photos.push(coverImage);
+    }
+    
+    photoUrls.forEach(photoUrl => {
+        if (photoUrl && !collection.games[gameIndex].media.photos.includes(photoUrl)) {
+            collection.games[gameIndex].media.photos.push(photoUrl);
+        }
+    });
     
     if (saveCollectionToStorage()) {
         games = collection.games;
@@ -1401,7 +1474,144 @@ function testVideo(isEdit = false) {
     showNotification('Видео обработано!', 'success');
 }
 
+// ===== РАБОТА С ФОТОГРАФИЯМИ =====
+
+// Добавление поля для фото в форме добавления
+function addPhotoInput() {
+    const container = document.getElementById('photosContainer');
+    const div = document.createElement('div');
+    div.className = 'photo-input-group';
+    div.innerHTML = `
+        <input type="url" class="form-input photo-url" placeholder="Ссылка на фото">
+        <button type="button" class="btn-small remove-photo-btn" onclick="removePhotoInput(this)" style="background: #ff4757; margin-left: 5px;">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+// Удаление поля для фото
+function removePhotoInput(button) {
+    button.parentElement.remove();
+}
+
+// Добавление поля для фото в форме редактирования
+function addEditPhotoInput(url = '') {
+    const container = document.getElementById('editPhotosContainer');
+    const div = document.createElement('div');
+    div.className = 'photo-input-group';
+    div.innerHTML = `
+        <input type="url" class="form-input photo-url" placeholder="Ссылка на фото" value="${url}">
+        <button type="button" class="btn-small remove-photo-btn" onclick="removePhotoInput(this)" style="background: #ff4757; margin-left: 5px;">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+// Загрузка фото в форму редактирования
+function loadPhotosIntoEditForm(photos) {
+    const container = document.getElementById('editPhotosContainer');
+    container.innerHTML = '';
+    
+    if (photos && photos.length > 0) {
+        photos.forEach(photo => {
+            if (photo) {
+                addEditPhotoInput(photo);
+            }
+        });
+    } else {
+        addEditPhotoInput();
+    }
+}
+
+// Сбор всех фото из формы
+function collectPhotos(formType = 'add') {
+    const containerId = formType === 'add' ? 'photosContainer' : 'editPhotosContainer';
+    const inputs = document.querySelectorAll(`#${containerId} .photo-url`);
+    const photos = [];
+    
+    inputs.forEach(input => {
+        const url = input.value.trim();
+        if (url) {
+            photos.push(url);
+        }
+    });
+    
+    return photos;
+}
+
+// ===== ЛАЙТБОКС ФУНКЦИИ =====
+
+// Открытие лайтбокса
+function openLightbox(photos, index = 0, gameTitle = '') {
+    if (!photos || photos.length === 0) return;
+    
+    currentPhotos = photos;
+    currentPhotoIndex = index;
+    
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+    const lightboxTitle = document.getElementById('lightbox-title');
+    
+    lightboxImg.src = currentPhotos[currentPhotoIndex];
+    lightboxCounter.textContent = `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
+    lightboxTitle.textContent = gameTitle;
+    
+    lightbox.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Показываем/скрываем кнопки навигации
+    const prevBtn = document.querySelector('.lightbox-nav.prev');
+    const nextBtn = document.querySelector('.lightbox-nav.next');
+    if (prevBtn && nextBtn) {
+        prevBtn.style.display = currentPhotos.length > 1 ? 'flex' : 'none';
+        nextBtn.style.display = currentPhotos.length > 1 ? 'flex' : 'none';
+    }
+}
+
+// Закрытие лайтбокса
+function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+        lightbox.style.display = 'none';
+    }
+    document.body.style.overflow = 'auto';
+    currentPhotos = [];
+    currentPhotoIndex = 0;
+}
+
+// Следующее фото
+function nextPhoto() {
+    if (currentPhotos.length === 0) return;
+    currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length;
+    updateLightbox();
+}
+
+// Предыдущее фото
+function prevPhoto() {
+    if (currentPhotos.length === 0) return;
+    currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length;
+    updateLightbox();
+}
+
+// Обновление лайтбокса
+function updateLightbox() {
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+    
+    if (lightboxImg && lightboxCounter && currentPhotos[currentPhotoIndex]) {
+        lightboxImg.src = currentPhotos[currentPhotoIndex];
+        lightboxCounter.textContent = `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
+        
+        // Анимация смены фото
+        lightboxImg.style.opacity = '0';
+        setTimeout(() => {
+            lightboxImg.style.opacity = '1';
+        }, 50);
+    }
+}
+
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
-
-
