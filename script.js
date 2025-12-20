@@ -496,25 +496,25 @@ function addNewGame(event) {
         platform: document.getElementById('gamePlatform').value,
         platformName: document.getElementById('gamePlatform').selectedOptions[0].text,
         releaseYear: parseInt(document.getElementById('gameYear').value) || new Date().getFullYear(),
+        developer: document.getElementById('gameDeveloper').value.trim() || '',
+        publisher: document.getElementById('gamePublisher').value.trim() || '',
+        condition: document.getElementById('gameCondition').value,
         purchaseDate: document.getElementById('gamePurchaseDate').value || new Date().toISOString().split('T')[0],
         coverImage: document.getElementById('gameCover').value.trim() || 
                    'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png',
         description: document.getElementById('gameDescription').value.trim() || 'Описание пока не добавлено.',
         details: {
-            genre: [],
-            region: 'PAL',
-            edition: 'Standard Edition',
-            language: ['Русский'],
-            discCondition: 'Новая'
+            genre: document.getElementById('gameGenre').value.trim().split(',').map(g => g.trim()).filter(g => g) || [],
+            region: document.getElementById('gameRegion').value,
+            edition: document.getElementById('gameEdition').value,
+            language: document.getElementById('gameLanguage').value.trim().split(',').map(l => l.trim()).filter(l => l) || [],
+            discCondition: document.getElementById('gameDiscCondition').value
         },
         media: {
             photos: [],
             videos: []
         },
-        personalNotes: document.getElementById('gameNotes').value.trim(),
-        condition: 'Новая',
-        developer: '',
-        publisher: ''
+        personalNotes: document.getElementById('gameNotes').value.trim()
     };
     
     // Добавляем видео если есть
@@ -541,7 +541,6 @@ function addNewGame(event) {
         closeAddGameModal();
     }
 }
-
 // ===== УПРАВЛЕНИЕ КОЛЛЕКЦИЕЙ =====
 function openManageModal() {
     updateCollectionStats();
@@ -1381,3 +1380,4 @@ function testVideo(isEdit = false) {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
