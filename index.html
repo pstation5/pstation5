@@ -121,8 +121,144 @@
         </footer>
     </div>
 
+<!-- Модальное окно для добавления игры -->
+<div id="addGameModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Добавить игру в коллекцию</h2>
+            <button class="close-modal" onclick="closeAddGameModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="addGameForm" onsubmit="addNewGame(event)">
+                <div class="form-group">
+                    <label for="gameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
+                    <input type="text" id="gameTitle" required class="form-input" placeholder="Например: The Last of Us Part II">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
+                        <select id="gamePlatform" required class="form-input">
+                            <option value="ps4">PlayStation 4</option>
+                            <option value="ps5">PlayStation 5</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gameYear"><i class="fas fa-calendar-alt"></i> Год выпуска</label>
+                        <input type="number" id="gameYear" class="form-input" placeholder="2020" min="1990" max="2025">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameCondition"><i class="fas fa-box"></i> Состояние</label>
+                    <select id="gameCondition" class="form-input">
+                        <option value="Новая, в запайке">Новая, в запайке</option>
+                        <option value="Новая">Новая</option>
+                        <option value="Б/у, отличное">Б/у, отличное</option>
+                        <option value="Б/у, хорошее">Б/у, хорошее</option>
+                        <option value="Б/у, удовлетворительное">Б/у, удовлетворительное</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
+                    <input type="date" id="gamePurchaseDate" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
+                    <input type="url" id="gameCover" class="form-input" placeholder="https://example.com/cover.jpg">
+                    <small class="form-hint">Можно загрузить фото в <a href="https://imgur.com" target="_blank">Imgur</a> и вставить ссылку</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameDescription"><i class="fas fa-align-left"></i> Описание</label>
+                    <textarea id="gameDescription" class="form-input" rows="3" placeholder="Краткое описание игры..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameNotes"><i class="fas fa-sticky-note"></i> Личные заметки</label>
+                    <textarea id="gameNotes" class="form-input" rows="2" placeholder="Где купили, за сколько, впечатления..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddGameModal()">Отмена</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Сохранить игру
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно управления коллекцией -->
+<div id="manageModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-cog"></i> Управление коллекцией</h2>
+            <button class="close-modal" onclick="closeManageModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="manage-options">
+                <button class="manage-option" onclick="exportCollection()">
+                    <i class="fas fa-file-export"></i>
+                    <span>Экспорт коллекции</span>
+                    <small>Скачать JSON файл со всеми играми</small>
+                </button>
+                
+                <button class="manage-option" onclick="importCollection()">
+                    <i class="fas fa-file-import"></i>
+                    <span>Импорт коллекции</span>
+                    <small>Загрузить из JSON файла</small>
+                </button>
+                
+                <button class="manage-option" onclick="scanBarcode()">
+                    <i class="fas fa-barcode"></i>
+                    <span>Сканировать штрих-код</span>
+                    <small>Добавить игру по штрих-коду</small>
+                </button>
+                
+                <button class="manage-option" onclick="clearCollection()" style="color: #ff4757;">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Очистить коллекцию</span>
+                    <small>Удалить все игры (осторожно!)</small>
+                </button>
+            </div>
+            
+            <div class="collection-info">
+                <h3><i class="fas fa-info-circle"></i> Информация</h3>
+                <div class="info-item">
+                    <span>Игр в коллекции:</span>
+                    <strong id="collectionCount">0</strong>
+                </div>
+                <div class="info-item">
+                    <span>Последнее обновление:</span>
+                    <strong id="lastUpdateTime">Недавно</strong>
+                </div>
+                <div class="info-item">
+                    <span>Размер данных:</span>
+                    <strong id="collectionSize">0 KB</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытый input для импорта файлов -->
+<input type="file" id="importFileInput" accept=".json" style="display: none;">
+
+<!-- Уведомления -->
+<div id="notification" class="notification"></div>
+    
     <!-- Наш JavaScript -->
     <script src="script.js"></script>
 </body>
 </html></html>
+
 
