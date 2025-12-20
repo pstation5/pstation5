@@ -13,23 +13,36 @@
 <body>
     <div class="container">
         <!-- Шапка с пользователем Telegram -->
-        <header class="header">
-            <div class="user-info">
-                <div class="avatar-placeholder" id="userAvatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div>
-                    <h1 id="userGreeting">🎮 Моя коллекция игр</h1>
-                    <p class="subtitle">Коллекция физических изданий на дисках</p>
-                </div>
-            </div>
-            <button class="manage-btn" onclick="openManageModal()" title="Управление коллекцией">
-                <i class="fas fa-cog"></i>
-            </button>
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <i class="fas fa-moon"></i>
-            </button>
-        </header>
+ <!-- Шапка с пользователем Telegram -->
+<header class="header">
+    <div class="user-info">
+        <div class="avatar-placeholder" id="userAvatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div>
+            <h1 id="userGreeting">🎮 Моя коллекция игр</h1>
+            <p class="subtitle">Коллекция физических изданий на дисках</p>
+        </div>
+    </div>
+    
+    <div class="header-buttons">
+        <button class="manage-btn" onclick="openBarcodeScanner()" title="Сканировать штрих-код">
+            <i class="fas fa-barcode"></i>
+        </button>
+        <button class="manage-btn" onclick="openShareModal()" title="Поделиться коллекцией">
+            <i class="fas fa-share-alt"></i>
+        </button>
+        <button class="manage-btn" onclick="openStatsModal()" title="Статистика коллекции">
+            <i class="fas fa-chart-bar"></i>
+        </button>
+        <button class="manage-btn" onclick="openManageModal()" title="Управление коллекцией">
+            <i class="fas fa-cog"></i>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+</header>
 
         <!-- Статистика -->
         <div class="stats">
@@ -520,4 +533,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
