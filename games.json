@@ -1,0 +1,123 @@
+{
+  "lastUpdated": "2024-03-15",
+  "totalGames": 4,
+  "games": [
+    {
+      "id": 1,
+      "title": "The Witcher 3: Wild Hunt",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg",
+      "releaseYear": 2015,
+      "developer": "CD Projekt Red",
+      "publisher": "CD Projekt",
+      "condition": "Новая, в запайке",
+      "purchaseDate": "2023-05-10",
+      "description": "Ролевая игра в открытом мире, действие которой происходит в фэнтезийной вселенной по мотивам произведений Анджея Сапковского. Геральт из Ривии ищет свою пропавшую воспитанницу.",
+      "details": {
+        "genre": ["RPG", "Приключения"],
+        "region": "PAL",
+        "edition": "Complete Edition",
+        "language": ["Русский", "Английский"],
+        "discCondition": "Идеальное"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg",
+          "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc6n3z.jpg"
+        ],
+        "videos": [
+          "https://www.youtube.com/embed/c0i88t0Kacs"
+        ]
+      },
+      "personalNotes": "Купил на распродаже, ждал долгое время. Коллекционное издание с артбуком и фигуркой."
+    },
+    {
+      "id": 2,
+      "title": "Red Dead Redemption 2",
+      "platform": "xbox",
+      "platformName": "Xbox One",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
+      "releaseYear": 2018,
+      "developer": "Rockstar Studios",
+      "publisher": "Rockstar Games",
+      "condition": "Б/у, отличное состояние",
+      "purchaseDate": "2022-11-20",
+      "description": "Приключенческий боевик от создателей GTA V. История банды Ван дер Линде на Диком Западе в эпоху её заката.",
+      "details": {
+        "genre": ["Приключения", "Шутер"],
+        "region": "NTSC",
+        "edition": "Standard Edition",
+        "language": ["Английский"],
+        "discCondition": "Небольшие царапины"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg"
+        ],
+        "videos": [
+          "https://www.youtube.com/embed/gmA6MrX81z4"
+        ]
+      },
+      "personalNotes": "Нашел в комиссионном магазине за полцены. Диск в хорошем состоянии, все работает."
+    },
+    {
+      "id": 3,
+      "title": "The Legend of Zelda: Breath of the Wild",
+      "platform": "switch",
+      "platformName": "Nintendo Switch",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwx.jpg",
+      "releaseYear": 2017,
+      "developer": "Nintendo EPD",
+      "publisher": "Nintendo",
+      "condition": "Новая",
+      "purchaseDate": "2023-12-25",
+      "description": "Приключенческая игра, в которой Линк исследует разрушенное королевство Хайрул после 100-летнего сна.",
+      "details": {
+        "genre": ["Приключения", "Экшен"],
+        "region": "EUR",
+        "edition": "Standard Edition",
+        "language": ["Русский", "Английский"],
+        "discCondition": "Идеальное"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwx.jpg"
+        ],
+        "videos": [
+          "https://www.youtube.com/embed/1rPxiXXxftE"
+        ]
+      },
+      "personalNotes": "Подарок на Рождество. Первая Zelda в моей коллекции."
+    },
+    {
+      "id": 4,
+      "title": "God of War (2018)",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7h.jpg",
+      "releaseYear": 2018,
+      "developer": "Santa Monica Studio",
+      "publisher": "Sony Interactive Entertainment",
+      "condition": "Новая",
+      "purchaseDate": "2024-01-15",
+      "description": "Кратос, бывший бог войны, приспосабливается к жизни в царстве скандинавских богов и монстров.",
+      "details": {
+        "genre": ["Экшен", "Приключения"],
+        "region": "PAL",
+        "edition": "Standard Edition",
+        "language": ["Русский"],
+        "discCondition": "Идеальное"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7h.jpg"
+        ],
+        "videos": [
+          "https://www.youtube.com/embed/K0u_kAWLJOA"
+        ]
+      },
+      "personalNotes": "Купил после выхода PC-версии, чтобы сравнить. Графика на PS4 все еще впечатляет."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Моя коллекция игр</title>
+    <!-- Подключаем Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Наши стили -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Иконка для вкладки -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка приложения -->
+        <header class="header">
+            <h1>🎮 Моя коллекция игр</h1>
+            <p class="subtitle">Коллекция физических изданий на дисках</p>
+        </header>
+
+        <!-- Статистика коллекции -->
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="totalGames">0</span>
+                <span class="stat-label">всего игр</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="uniquePlatforms">0</span>
+                <span class="stat-label">платформ</span>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filters">
+            <select id="platformFilter" class="filter-select">
+                <option value="all">Все платформы</option>
+                <option value="ps4">PlayStation 4</option>
+                <option value="ps5">PlayStation 5</option>
+                <option value="xbox">Xbox</option>
+                <option value="switch">Nintendo Switch</option>
+            </select>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Поиск игры..." class="search-input">
+            </div>
+        </div>
+
+        <!-- Контейнер для игр -->
+        <div id="gameGrid" class="game-grid">
+            <!-- Игры будут загружаться через JavaScript -->
+            <div class="loading">Загрузка коллекции...</div>
+        </div>
+
+        <!-- Подвал -->
+        <footer class="footer">
+            <p>Обновлено: <span id="updateDate">Сегодня</span></p>
+            <p class="footer-note">Приложение создано для хранения коллекции игр на дисках</p>
+        </footer>
+    </div>
+
+    <!-- Подключаем наш JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
