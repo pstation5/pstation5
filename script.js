@@ -28,7 +28,11 @@ let currentTheme = 'light';
 let collection = {
     games: [],
     lastUpdated: new Date().toISOString(),
-    version: '1.0'
+    version: '1.0',
+    settings: {
+        collectionStartDate: '2025-02-14', // Ваша дата по умолчанию
+        collectionName: 'Моя коллекция PlayStation'
+    }
 };
 
 // ===== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ =====
@@ -149,6 +153,57 @@ function saveCollectionToStorage() {
     }
 }
 
+// Сохранение данных в localStorage
+function saveCollectionToStorage() {
+    // ... существующий код ...
+}
+
+// ===== РАСЧЁТ ЛЕТ КОЛЛЕКЦИИ =====
+
+// Расчёт лет коллекции от даты начала
+function calculateCollectionYears() {
+    if (!collection.settings?.collectionStartDate) {
+        return '1'; // По умолчанию
+    }
+    
+    const startDate = new Date(collection.settings.collectionStartDate);
+    const currentDate = new Date();
+    
+    // Вычисляем полные годы
+    let years = currentDate.getFullYear() - startDate.getFullYear();
+    
+    // Корректируем если текущий месяц/день меньше стартового
+    if (currentDate.getMonth() < startDate.getMonth() || 
+        (currentDate.getMonth() === startDate.getMonth() && 
+         currentDate.getDate() < startDate.getDate())) {
+        years--;
+    }
+    
+    // Минимум 1 год
+    return Math.max(1, years);
+}
+
+// Форматирование даты для отображения
+function formatCollectionDate() {
+    if (!collection.settings?.collectionStartDate) {
+        return '14 февраля 2025';
+    }
+    
+    const date = new Date(collection.settings.collectionStartDate);
+    return date.toLocaleDateString('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+// ===== НАСТРОЙКИ КОЛЛЕКЦИИ =====
+
+// Открытие модального окна настроек
+function openSettingsModal() {
+    // ... следующий код ...
+}
+
 // ===== ОБНОВЛЕНИЕ СТАТИСТИКИ =====
 function updateStats() {
     if (!games.length) return;
@@ -158,15 +213,13 @@ function updateStats() {
     const platforms = [...new Set(games.map(game => game.platform))];
     elements.uniquePlatformsEl.textContent = platforms.length;
     
-    const years = games.map(game => game.releaseYear).filter(year => year);
-    if (years.length >= 2) {
-        const minYear = Math.min(...years);
-        const maxYear = Math.max(...years);
-        const yearSpan = maxYear - minYear + 1;
-        elements.collectionYearsEl.textContent = yearSpan;
-    } else {
-        elements.collectionYearsEl.textContent = '1';
-    }
+    // ===== ИЗМЕНЯЕМ РАСЧЁТ ЛЕТ =====
+    // Вместо расчёта по годам выпуска игр
+    // Используем дату начала коллекции
+    const collectionYears = calculateCollectionYears();
+    elements.collectionYearsEl.textContent = collectionYears;
+    // ===== КОНЕЦ ИЗМЕНЕНИЙ =====
+}
 }
 
 function updateCollectionStats() {
@@ -1472,6 +1525,7 @@ function closeShareModal() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
