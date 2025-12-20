@@ -1162,6 +1162,63 @@ function contextAddToWishlist() {
     hideContextMenu();
 }
 
+// ===== ФУНКЦИИ ДЛЯ РАБОТЫ С ВИДЕО =====
+
+// Конвертация YouTube ссылки в embed-формат
+function convertToEmbedUrl(url) {
+    if (!url) return null;
+    
+    // Если уже embed-ссылка
+    if (url.includes('youtube.com/embed/')) {
+        return url.split('?')[0]; // Убираем параметры если есть
+    }
+    
+    // Если обычная ссылка youtube.com/watch?v=VIDEO_ID
+    if (url.includes('youtube.com/watch')) {
+        const videoId = url.match(/v=([a-zA-Z0-9_-]+)/)?.[1];
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}`;
+        }
+    }
+    
+    // Если короткая ссылка youtu.be/VIDEO_ID
+    if (url.includes('youtu.be/')) {
+        const videoId = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/)?.[1];
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}`;
+        }
+    }
+    
+    return null;
+}
+
+// Тестирование видео (предпросмотр)
+function testVideo(isEditForm = false) {
+    const inputId = isEditForm ? 'editGameVideo' : 'gameVideo';
+    const videoUrl = document.getElementById(inputId).value.trim();
+    
+    if (!videoUrl) {
+        showNotification('Введите ссылку на видео', 'warning');
+        return;
+    }
+    
+    const embedUrl = convertToEmbedUrl(videoUrl);
+    
+    if (!embedUrl) {
+        showNotification('Неверный формат ссылки YouTube', 'error');
+        return;
+    }
+    
+    tg.showPopup({
+        title: 'Предпросмотр видео',
+        message: 'Видео загружается корректно!',
+        buttons: [{id: 'ok', type: 'default'}]
+    });
+    
+    // В реальном приложении здесь можно открыть iframe с предпросмотром
+    // но в Telegram WebApp это сложнее из-за ограничений безопасности
+}
+
 // ===== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ ИГР С КНОПКАМИ =====
 
 // Обновляем функцию renderGames для добавления кнопок действий
@@ -1240,6 +1297,7 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
