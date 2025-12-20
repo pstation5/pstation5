@@ -1523,8 +1523,110 @@ function closeShareModal() {
     document.body.style.overflow = 'auto';
 }
 
+// ===== НАСТРОЙКИ КОЛЛЕКЦИИ =====
+
+// Открытие модального окна настроек
+function openSettingsModal() {
+    // Заполняем форму текущими значениями
+    document.getElementById('collectionName').value = 
+        collection.settings?.collectionName || 'Моя коллекция PlayStation';
+    
+    document.getElementById('collectionStartDate').value = 
+        collection.settings?.collectionStartDate || '2025-02-14';
+    
+    // Обновляем предпросмотр
+    updateSettingsPreview();
+    
+    // Показываем модалку
+    document.getElementById('settingsModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Закрытие модального окна
+function closeSettingsModal() {
+    document.getElementById('settingsModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Обновление предпросмотра
+function updateSettingsPreview() {
+    const name = document.getElementById('collectionName').value || 'Моя коллекция PlayStation';
+    const dateValue = document.getElementById('collectionStartDate').value || '2025-02-14';
+    
+    // Форматируем дату
+    const date = new Date(dateValue);
+    const formattedDate = date.toLocaleDateString('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    // Рассчитываем годы
+    const currentDate = new Date();
+    let years = currentDate.getFullYear() - date.getFullYear();
+    if (currentDate.getMonth() < date.getMonth() || 
+        (currentDate.getMonth() === date.getMonth() && 
+         currentDate.getDate() < date.getDate())) {
+        years--;
+    }
+    years = Math.max(1, years);
+    
+    // Обновляем предпросмотр
+    document.getElementById('previewName').textContent = name;
+    document.getElementById('previewDate').textContent = formattedDate;
+    document.getElementById('previewYear').textContent = 
+        `${years} ${getYearsWord(years)}`;
+}
+
+// Склонение слова "год"
+function getYearsWord(years) {
+    if (years % 10 === 1 && years % 100 !== 11) return 'год';
+    if (years % 10 >= 2 && years % 10 <= 4 && 
+        (years % 100 < 10 || years % 100 >= 20)) return 'года';
+    return 'лет';
+}
+
+// Сохранение настроек
+function saveSettings(event) {
+    event.preventDefault();
+    
+    // Сохраняем настройки
+    collection.settings = {
+        collectionName: document.getElementById('collectionName').value || 'Моя коллекция PlayStation',
+        collectionStartDate: document.getElementById('collectionStartDate').value || '2025-02-14'
+    };
+    
+    // Сохраняем в localStorage
+    saveCollectionToStorage();
+    
+    // Обновляем статистику
+    updateStats();
+    
+    // Обновляем приветствие если поменялось название
+    const user = tg.initDataUnsafe?.user;
+    if (user && collection.settings.collectionName) {
+        const firstName = user.first_name || 'Коллекционер';
+        elements.userGreeting.textContent = `🎮 ${collection.settings.collectionName} ${firstName}`;
+    }
+    
+    showNotification('Настройки сохранены!', 'success');
+    closeSettingsModal();
+}
+
+// Обновляем приветствие при загрузке
+function updateGreeting() {
+    const user = tg.initDataUnsafe?.user;
+    const firstName = user?.first_name || 'Коллекционер';
+    const collectionName = collection.settings?.collectionName || 'Моя коллекция игр';
+    
+    elements.userGreeting.textContent = `🎮 ${collectionName}`;
+    document.querySelector('.subtitle').textContent = 
+        `Коллекция с ${formatCollectionDate()}`;
+}
+
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
