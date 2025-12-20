@@ -806,10 +806,20 @@ function editGame(gameId) {
     document.getElementById('editGameTitle').value = game.title;
     document.getElementById('editGamePlatform').value = game.platform;
     document.getElementById('editGameYear').value = game.releaseYear || '';
+    document.getElementById('editGameDeveloper').value = game.developer || '';
+    document.getElementById('editGamePublisher').value = game.publisher || '';
+    document.getElementById('editGameCondition').value = game.condition || 'Новая';
     document.getElementById('editGamePurchaseDate').value = game.purchaseDate || '';
     document.getElementById('editGameCover').value = game.coverImage || '';
     document.getElementById('editGameDescription').value = game.description || '';
     document.getElementById('editGameNotes').value = game.personalNotes || '';
+    
+    // Заполняем детали
+    document.getElementById('editGameGenre').value = game.details?.genre?.join(', ') || '';
+    document.getElementById('editGameEdition').value = game.details?.edition || 'Standard Edition';
+    document.getElementById('editGameRegion').value = game.details?.region || 'PAL';
+    document.getElementById('editGameLanguage').value = game.details?.language?.join(', ') || '';
+    document.getElementById('editGameDiscCondition').value = game.details?.discCondition || 'Идеальное';
     
     // Заполняем видео если есть
     const videoInput = document.getElementById('editGameVideo');
@@ -839,8 +849,10 @@ function updateGame(event) {
         return;
     }
     
-    // Получаем видео URL
+    // Получаем значения полей
     const videoUrl = document.getElementById('editGameVideo').value.trim();
+    const genreStr = document.getElementById('editGameGenre').value.trim();
+    const languageStr = document.getElementById('editGameLanguage').value.trim();
     
     // Обновляем данные игры
     collection.games[gameIndex] = {
@@ -849,10 +861,21 @@ function updateGame(event) {
         platform: document.getElementById('editGamePlatform').value,
         platformName: document.getElementById('editGamePlatform').selectedOptions[0].text,
         releaseYear: parseInt(document.getElementById('editGameYear').value) || collection.games[gameIndex].releaseYear,
+        developer: document.getElementById('editGameDeveloper').value.trim() || collection.games[gameIndex].developer,
+        publisher: document.getElementById('editGamePublisher').value.trim() || collection.games[gameIndex].publisher,
+        condition: document.getElementById('editGameCondition').value,
         purchaseDate: document.getElementById('editGamePurchaseDate').value || collection.games[gameIndex].purchaseDate,
         coverImage: document.getElementById('editGameCover').value.trim() || collection.games[gameIndex].coverImage,
         description: document.getElementById('editGameDescription').value.trim() || collection.games[gameIndex].description,
         personalNotes: document.getElementById('editGameNotes').value.trim() || collection.games[gameIndex].personalNotes,
+        details: {
+            ...collection.games[gameIndex].details,
+            genre: genreStr ? genreStr.split(',').map(g => g.trim()).filter(g => g) : [],
+            edition: document.getElementById('editGameEdition').value,
+            region: document.getElementById('editGameRegion').value,
+            language: languageStr ? languageStr.split(',').map(l => l.trim()).filter(l => l) : [],
+            discCondition: document.getElementById('editGameDiscCondition').value
+        },
         media: {
             ...collection.games[gameIndex].media,
             videos: videoUrl ? [videoUrl] : []
@@ -1380,4 +1403,5 @@ function testVideo(isEdit = false) {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
