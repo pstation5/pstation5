@@ -814,7 +814,7 @@ function deleteGame(gameId = null) {
         
         showNotification(`Игра "${gameTitle}" удалена из коллекции`, 'success');
         
-        // Закрываем модальное окно, если оно открыто
+        // Закрываем модальные окна, если они открыты
         if (document.getElementById('editGameModal').style.display === 'block') {
             closeEditGameModal();
         }
@@ -1248,5 +1248,6 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
