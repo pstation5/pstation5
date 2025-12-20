@@ -1129,6 +1129,62 @@ function contextAddToWishlist() {
     hideContextMenu();
 }
 
+// ===== КОПИРОВАНИЕ В БУФЕР ОБМЕНА =====
+function copyToClipboard(text) {
+    // Пытаемся использовать современный Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text)
+            .then(() => {
+                showNotification('Скопировано в буфер обмена!', 'success');
+                return true;
+            })
+            .catch(err => {
+                console.error('Clipboard API не сработал:', err);
+                return fallbackCopyText(text);
+            });
+    } else {
+        // Используем старый метод
+        return fallbackCopyText(text);
+    }
+}
+
+// Старый метод копирования (fallback)
+function fallbackCopyText(text) {
+    try {
+        // Создаём временный textarea
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        
+        // Делаем невидимым
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        
+        // Выделяем текст
+        textArea.select();
+        textArea.setSelectionRange(0, 99999); // Для мобильных
+        
+        // Копируем
+        const successful = document.execCommand('copy');
+        
+        // Удаляем элемент
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            showNotification('Скопировано в буфер обмена!', 'success');
+            return true;
+        } else {
+            showNotification('Не удалось скопировать автоматически', 'error');
+            return false;
+        }
+    } catch (err) {
+        console.error('Ошибка при копировании:', err);
+        showNotification('Ошибка при копировании', 'error');
+        return false;
+    }
+}
+
 // ===== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ ИГР С КНОПКАМИ =====
 
 // Обновляем функцию renderGames для добавления кнопок действий
@@ -1206,6 +1262,7 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
