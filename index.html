@@ -1,107 +1,221 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horror Collection | PS4/PS5</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8" />
+  <title>Horror | PS4 | PS5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="dark-theme">
-    <div class="container">
-        <!-- Заголовок с тематическим оформлением -->
-        <header class="main-header">
-            <div class="blood-splatter"></div>
-            <h1 class="title"><i class="fas fa-ghost"></i> Horror | PS4 | PS5</h1>
-            <div class="spider-web"></div>
-        </header>
+<body>
+  <div class="page-overlay"></div>
 
-        <!-- Поиск -->
-        <div class="search-container">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Найти игру по названию...">
-                <button class="search-btn"><i class="fas fa-skull-crossbones"></i></button>
-            </div>
-        </div>
+  <header class="main-header">
+    <div class="header-top">
+      <h1 class="app-title">Horror | PS4 | PS5</h1>
+      <button id="telegram-login-btn" class="btn btn-telegram">
+        Войти через Telegram
+      </button>
+    </div>
+    <p class="subtitle">
+      Коллекция дисковых horror‑игр для PS4 и PS5.
+    </p>
 
-        <!-- Слайдер ожидаемых игр -->
-        <section class="upcoming-section">
-            <div class="section-header">
-                <h2><i class="fas fa-calendar-alt"></i> Ожидаемые игры</h2>
-                <button class="add-btn" id="addUpcomingBtn"><i class="fas fa-plus"></i> Добавить</button>
-            </div>
-            <div class="slider" id="upcomingSlider"></div>
-        </section>
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Поиск по играм..."
+      />
+      <button id="clearSearchBtn" class="btn btn-ghost">✕</button>
+    </div>
+  </header>
 
-        <!-- Фильтры и сортировка -->
-        <section class="filters-section">
-            <div class="filters">
-                <button class="filter-btn active" data-filter="all">Все</button>
-                <button class="filter-btn" data-filter="ps4">PS4</button>
-                <button class="filter-btn" data-filter="ps5">PS5</button>
-                <button class="filter-btn" data-filter="completed">Пройдено</button>
-                <button class="filter-btn" data-filter="upcoming">Ожидаемые</button>
-            </div>
-            <div class="sort">
-                <select id="sortSelect" class="sort-select">
-                    <option value="newest">Сначала новые</option>
-                    <option value="oldest">Сначала старые</option>
-                    <option value="az">А-Я</option>
-                    <option value="za">Я-А</option>
-                    <option value="rating">По рейтингу</option>
-                </select>
-            </div>
-        </section>
-
-        <!-- Основная коллекция игр -->
-        <section class="games-section">
-            <div class="section-header">
-                <h2><i class="fas fa-gamepad"></i> Коллекция игр</h2>
-                <button class="add-btn" id="addGameBtn"><i class="fas fa-plus"></i> Добавить игру</button>
-            </div>
-            <div class="games-grid" id="gamesGrid"></div>
-            <div class="pagination" id="pagination"></div>
-        </section>
-
-        <!-- Кнопка добавления (для админа) -->
-        <button class="floating-btn" id="adminBtn">
-            <i class="fas fa-crown"></i>
+  <main class="container">
+    <!-- Слайдер ожидаемых игр -->
+    <section class="section-block">
+      <div class="section-header">
+        <h2>Ожидаемые игры</h2>
+        <button id="addUpcomingBtn" class="btn btn-blood">
+          + Добавить ожидаемую
         </button>
-    </div>
+      </div>
 
-    <!-- Модальные окна -->
-    <div class="modal" id="gameModal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modalContent"></div>
+      <div class="slider-wrapper">
+        <button class="slider-arrow left" id="upcomingPrev">&lt;</button>
+        <div class="slider" id="upcomingSlider">
+          <!-- Карточки ожидаемых игр динамически -->
         </div>
-    </div>
+        <button class="slider-arrow right" id="upcomingNext">&gt;</button>
+      </div>
+    </section>
 
-    <div class="modal" id="addModal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2><i class="fas fa-plus-circle"></i> Добавить игру</h2>
-            <form id="gameForm">
-                <input type="text" placeholder="Название игры" required>
-                <select multiple>
-                    <option value="ps4">PS4</option>
-                    <option value="ps5">PS5</option>
-                </select>
-                <input type="text" placeholder="Жанры (через запятую)">
-                <input type="number" placeholder="Год выпуска">
-                <input type="text" placeholder="Разработчик">
-                <input type="url" placeholder="URL обложки">
-                <textarea placeholder="Описание"></textarea>
-                <input type="date" placeholder="Дата выхода">
-                <div class="form-actions">
-                    <button type="submit">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Фильтры и сортировка -->
+    <section class="section-block filters-block">
+      <div class="filters">
+        <span class="filters-label">Фильтр по платформе:</span>
+        <button class="filter-btn active" data-platform="all">Все</button>
+        <button class="filter-btn" data-platform="ps4">PS4</button>
+        <button class="filter-btn" data-platform="ps5">PS5</button>
+      </div>
 
-    <script src="script.js"></script>
+      <div class="sort">
+        <span class="filters-label">Сортировка:</span>
+        <select id="sortSelect">
+          <option value="title-asc">По алфавиту (A–Z)</option>
+          <option value="title-desc">По алфавиту (Z–A)</option>
+          <option value="year-desc">По году (новые)</option>
+          <option value="year-asc">По году (старые)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Список игр -->
+    <section class="section-block">
+      <div class="section-header">
+        <h2>Коллекция игр</h2>
+        <button id="addGameBtn" class="btn btn-blood">
+          + Добавить игру
+        </button>
+      </div>
+
+      <div id="gamesGrid" class="games-grid">
+        <!-- Карточки игр динамически -->
+      </div>
+
+      <div class="pagination">
+        <button id="prevPageBtn" class="btn btn-ghost">⟵ Предыдущая</button>
+        <span id="pageInfo" class="page-info">Страница 1 / 1</span>
+        <button id="nextPageBtn" class="btn btn-ghost">Следующая ⟶</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Модалка инфо об игре -->
+  <div id="gameModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" data-close="gameModal">✕</button>
+      <div id="gameModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Модалка добавления/редактирования игры -->
+  <div id="editGameModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" data-close="editGameModal">✕</button>
+      <h3 id="editGameTitle">Добавить игру</h3>
+      <form id="editGameForm" class="form-grid">
+        <input type="hidden" id="gameId" />
+
+        <label>
+          Название
+          <input type="text" id="gameTitleInput" required />
+        </label>
+
+        <label>
+          Платформа
+          <select id="gamePlatformInput" required>
+            <option value="ps4">PS4</option>
+            <option value="ps5">PS5</option>
+          </select>
+        </label>
+
+        <label>
+          Дата выхода (YYYY-MM-DD)
+          <input type="date" id="gameReleaseInput" />
+        </label>
+
+        <label>
+          Разработчик
+          <input type="text" id="gameDevInput" />
+        </label>
+
+        <label>
+          Жанр
+          <input type="text" id="gameGenreInput" />
+        </label>
+
+        <label>
+          URL обложки
+          <input type="text" id="gameCoverInput" />
+        </label>
+
+        <label>
+          Скриншоты (через запятую)
+          <input type="text" id="gameScreensInput" />
+        </label>
+
+        <label>
+          Описание
+          <textarea id="gameDescInput" rows="3"></textarea>
+        </label>
+
+        <label>
+          Рейтинг (0–10)
+          <input type="number" id="gameRatingInput" min="0" max="10" step="1" />
+        </label>
+
+        <label>
+          Статус
+          <select id="gameStatusInput">
+            <option value="planned">Не играл</option>
+            <option value="in-progress">В процессе</option>
+            <option value="completed">Пройдена</option>
+          </select>
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="gameInCollectionInput" />
+          В моей коллекции
+        </label>
+
+        <button type="submit" class="btn btn-blood">Сохранить</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Модалка добавления ожидаемой игры -->
+  <div id="editUpcomingModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" data-close="editUpcomingModal">✕</button>
+      <h3 id="editUpcomingTitle">Добавить ожидаемую игру</h3>
+      <form id="editUpcomingForm" class="form-grid">
+        <input type="hidden" id="upcomingId" />
+
+        <label>
+          Название
+          <input type="text" id="upcomingTitleInput" required />
+        </label>
+
+        <label>
+          Дата выхода (YYYY-MM-DD)
+          <input type="date" id="upcomingReleaseInput" required />
+        </label>
+
+        <label>
+          Разработчик
+          <input type="text" id="upcomingDevInput" />
+        </label>
+
+        <label>
+          Жанр
+          <input type="text" id="upcomingGenreInput" />
+        </label>
+
+        <label>
+          Платформы (ps4,ps5)
+          <input type="text" id="upcomingPlatformsInput" placeholder="ps4,ps5" />
+        </label>
+
+        <label>
+          URL обложки
+          <input type="text" id="upcomingCoverInput" />
+        </label>
+
+        <button type="submit" class="btn btn-blood">Сохранить</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
