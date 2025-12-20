@@ -35,8 +35,8 @@
     {
       "id": 2,
       "title": "Red Dead Redemption 2",
-      "platform": "xbox",
-      "platformName": "Xbox One",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
       "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
       "releaseYear": 2018,
       "developer": "Rockstar Studios",
@@ -46,7 +46,7 @@
       "description": "Приключенческий боевик от создателей GTA V. История банды Ван дер Линде на Диком Западе в эпоху её заката.",
       "details": {
         "genre": ["Приключения", "Шутер"],
-        "region": "NTSC",
+        "region": "PAL",
         "edition": "Standard Edition",
         "language": ["Английский"],
         "discCondition": "Небольшие царапины"
@@ -63,32 +63,32 @@
     },
     {
       "id": 3,
-      "title": "The Legend of Zelda: Breath of the Wild",
-      "platform": "switch",
-      "platformName": "Nintendo Switch",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwx.jpg",
-      "releaseYear": 2017,
-      "developer": "Nintendo EPD",
-      "publisher": "Nintendo",
-      "condition": "Новая",
-      "purchaseDate": "2023-12-25",
-      "description": "Приключенческая игра, в которой Линк исследует разрушенное королевство Хайрул после 100-летнего сна.",
+      "title": "The Last of Us Part II",
+      "platform": "ps4",
+      "platformName": "PlayStation 4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
+      "releaseYear": 2020,
+      "developer": "Naughty Dog",
+      "publisher": "Sony Interactive Entertainment",
+      "condition": "Новая, в запайке",
+      "purchaseDate": "2024-02-20",
+      "description": "Приключенческий экшен с элементами хоррора. Продолжение истории Элли и Джоэла.",
       "details": {
-        "genre": ["Приключения", "Экшен"],
-        "region": "EUR",
-        "edition": "Standard Edition",
+        "genre": ["Экшен", "Приключения", "Хоррор"],
+        "region": "PAL",
+        "edition": "Remastered Edition",
         "language": ["Русский", "Английский"],
         "discCondition": "Идеальное"
       },
       "media": {
         "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwx.jpg"
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg"
         ],
         "videos": [
-          "https://www.youtube.com/embed/1rPxiXXxftE"
+          "https://www.youtube.com/embed/qPNiIeKMHyg"
         ]
       },
-      "personalNotes": "Подарок на Рождество. Первая Zelda в моей коллекции."
+      "personalNotes": "Только что купил, еще не играл. Слышал много противоречивых отзывов."
     },
     {
       "id": 4,
@@ -147,84 +147,81 @@
     },
     {
       "id": 6,
-      "title": "Halo Infinite",
-      "platform": "xbox",
-      "platformName": "Xbox Series X",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0g.jpg",
-      "releaseYear": 2021,
-      "developer": "343 Industries",
-      "publisher": "Xbox Game Studios",
+      "title": "Spider-Man: Miles Morales",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r1c.jpg",
+      "releaseYear": 2020,
+      "developer": "Insomniac Games",
+      "publisher": "Sony Interactive Entertainment",
       "condition": "Новая",
-      "purchaseDate": "2023-11-10",
-      "description": "Шутер от первого лица, продолжение культовой серии Halo.",
+      "purchaseDate": "2023-12-10",
+      "description": "Приключенческий экшен про Майлза Моралеса, который учится быть новым Человеком-пауком.",
       "details": {
-        "genre": ["Шутер", "Экшен"],
-        "region": "NTSC",
-        "edition": "Campaign Edition",
-        "language": ["Английский"],
+        "genre": ["Экшен", "Приключения"],
+        "region": "PAL",
+        "edition": "Ultimate Edition",
+        "language": ["Русский"],
         "discCondition": "Идеальное"
       },
       "media": {
         "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0g.jpg"
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r1c.jpg"
         ]
       },
-      "personalNotes": "Хорошее возвращение к корням серии. Кампания отличная."
+      "personalNotes": "Подарок на день рождения. Графика на PS5 просто невероятная!"
     },
     {
       "id": 7,
-      "title": "Super Mario Odyssey",
-      "platform": "switch",
-      "platformName": "Nintendo Switch",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwy.jpg",
-      "releaseYear": 2017,
-      "developer": "Nintendo EPD",
-      "publisher": "Nintendo",
-      "condition": "Б/у, хорошее состояние",
-      "purchaseDate": "2022-08-05",
-      "description": "Платформер про Марио, который путешествует по разным королевствам на своей шляпе-корабле.",
-      "details": {
-        "genre": ["Платформер", "Приключения"],
-        "region": "EUR",
-        "edition": "Standard Edition",
-        "language": ["Русский"],
-        "discCondition": "Небольшие царапины"
-      },
-      "media": {
-        "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1pwy.jpg"
-        ]
-      },
-      "personalNotes": "Купил с рук за полцены. Одна из лучших игр на Switch."
-    },
-    {
-      "id": 8,
-      "title": "The Last of Us Part II",
-      "platform": "ps4",
-      "platformName": "PlayStation 4",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
-      "releaseYear": 2020,
-      "developer": "Naughty Dog",
+      "title": "Horizon Forbidden West",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0f.jpg",
+      "releaseYear": 2022,
+      "developer": "Guerrilla Games",
       "publisher": "Sony Interactive Entertainment",
-      "condition": "Новая, в запайке",
-      "purchaseDate": "2024-02-20",
-      "description": "Приключенческий экшен с элементами хоррора. Продолжение истории Элли и Джоэла.",
+      "condition": "Новая",
+      "purchaseDate": "2024-03-01",
+      "description": "Продолжение истории Элой в постапокалиптическом мире, населенном механическими существами.",
       "details": {
-        "genre": ["Экшен", "Приключения", "Хоррор"],
+        "genre": ["RPG", "Экшен"],
         "region": "PAL",
-        "edition": "Remastered Edition",
-        "language": ["Русский", "Английский"],
+        "edition": "Special Edition",
+        "language": ["Русский"],
         "discCondition": "Идеальное"
       },
       "media": {
         "photos": [
-          "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg"
-        ],
-        "videos": [
-          "https://www.youtube.com/embed/qPNiIeKMHyg"
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0f.jpg"
         ]
       },
-      "personalNotes": "Только что купил, еще не играл. Слышал много противоречивых отзывов."
+      "personalNotes": "Самая красивая игра в моей коллекции. Игровой процесс тоже на высоте."
+    },
+    {
+      "id": 8,
+      "title": "Demon's Souls",
+      "platform": "ps5",
+      "platformName": "PlayStation 5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0h.jpg",
+      "releaseYear": 2020,
+      "developer": "Bluepoint Games",
+      "publisher": "Sony Interactive Entertainment",
+      "condition": "Б/у, отличное состояние",
+      "purchaseDate": "2023-10-05",
+      "description": "Ремейк культовой ролевой игры с невероятной графикой для PS5.",
+      "details": {
+        "genre": ["RPG", "Экшен"],
+        "region": "PAL",
+        "edition": "Standard Edition",
+        "language": ["Английский"],
+        "discCondition": "Хорошее"
+      },
+      "media": {
+        "photos": [
+          "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r0h.jpg"
+        ]
+      },
+      "personalNotes": "Купил с рук. Сложная, но очень атмосферная игра. Графика — произведение искусства."
     }
   ]
 }
