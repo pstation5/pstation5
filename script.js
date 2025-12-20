@@ -1090,7 +1090,27 @@ function createUpcomingDetailsHTML(upcoming) {
         </div>
     `;
 }
-
+// Очистка всех ожидаемых игр
+function clearUpcomingGames() {
+    if (!collection.upcoming.length) {
+        showNotification('Нет ожидаемых игр для удаления', 'info');
+        return;
+    }
+    
+    if (confirm(`Удалить все ${collection.upcoming.length} ожидаемых игр? Это действие нельзя отменить!`)) {
+        collection.upcoming = [];
+        
+        if (saveCollection()) {
+            upcomingGames = [];
+            renderUpcomingGames();
+            updateCollectionInfo();
+            
+            showNotification('Все ожидаемые игры удалены!', 'success');
+            closeManageModal();
+        }
+    }
+}
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
+
 
