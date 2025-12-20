@@ -435,7 +435,7 @@ function addNewGame(event) {
         platform: document.getElementById('gamePlatform').value,
         platformName: document.getElementById('gamePlatform').selectedOptions[0].text,
         releaseYear: parseInt(document.getElementById('gameYear').value) || new Date().getFullYear(),
-        condition: document.getElementById('gameCondition').value,
+
         purchaseDate: document.getElementById('gamePurchaseDate').value || new Date().toISOString().split('T')[0],
         coverImage: document.getElementById('gameCover').value.trim() || 
                    'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png',
@@ -1206,6 +1206,7 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
