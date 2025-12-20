@@ -750,6 +750,12 @@ function editGame(gameId) {
     document.getElementById('editGameDescription').value = game.description || '';
     document.getElementById('editGameNotes').value = game.personalNotes || '';
     
+    // ===== ЗАПОЛНЯЕМ ПОЛЕ ВИДЕО (НОВЫЙ КОД) =====
+    // Берем первое видео если есть
+    const videoUrl = game.media?.videos?.[0] || '';
+    document.getElementById('editGameVideo').value = videoUrl;
+    // ===== КОНЕЦ НОВОГО КОДА =====
+    
     // Показываем модальное окно
     document.getElementById('editGameModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -1297,6 +1303,7 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
