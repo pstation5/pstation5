@@ -123,78 +123,151 @@
         </div>
 
         <!-- Модальное окно для добавления игры -->
-        <div id="addGameModal" class="modal">
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h2><i class="fas fa-plus-circle"></i> Добавить игру в коллекцию</h2>
-                    <button class="close-modal" onclick="closeAddGameModal()">
-                        <i class="fas fa-times"></i>
+<div id="addGameModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Добавить игру в коллекцию</h2>
+            <button class="close-modal" onclick="closeAddGameModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="addGameForm" onsubmit="addNewGame(event)">
+                <div class="form-group">
+                    <label for="gameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
+                    <input type="text" id="gameTitle" required class="form-input" placeholder="Например: The Last of Us Part II">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
+                        <select id="gamePlatform" required class="form-input">
+                            <option value="ps4">PlayStation 4</option>
+                            <option value="ps5">PlayStation 5</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gameYear"><i class="fas fa-calendar-alt"></i> Год выпуска *</label>
+                        <input type="number" id="gameYear" required class="form-input" placeholder="2020" min="1990" max="2025">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gameDeveloper"><i class="fas fa-code"></i> Разработчик</label>
+                        <input type="text" id="gameDeveloper" class="form-input" placeholder="Например: Naughty Dog">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gamePublisher"><i class="fas fa-building"></i> Издатель</label>
+                        <input type="text" id="gamePublisher" class="form-input" placeholder="Например: Sony Interactive Entertainment">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gameCondition"><i class="fas fa-box"></i> Состояние коробки</label>
+                        <select id="gameCondition" class="form-input">
+                            <option value="Новая, в запайке">Новая, в запайке</option>
+                            <option value="Новая">Новая</option>
+                            <option value="Б/у, отличное состояние">Б/у, отличное состояние</option>
+                            <option value="Б/у, хорошее состояние">Б/у, хорошее состояние</option>
+                            <option value="Б/у, удовлетворительное">Б/у, удовлетворительное</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
+                        <input type="date" id="gamePurchaseDate" class="form-input">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameGenre"><i class="fas fa-theater-masks"></i> Жанр (через запятую)</label>
+                    <input type="text" id="gameGenre" class="form-input" placeholder="Например: RPG, Приключения, Экшен">
+                    <small class="form-hint">Укажите основные жанры игры</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gameEdition"><i class="fas fa-award"></i> Издание</label>
+                        <select id="gameEdition" class="form-input">
+                            <option value="Standard Edition">Standard Edition</option>
+                            <option value="Collector's Edition">Collector's Edition</option>
+                            <option value="Deluxe Edition">Deluxe Edition</option>
+                            <option value="Ultimate Edition">Ultimate Edition</option>
+                            <option value="Special Edition">Special Edition</option>
+                            <option value="Game of the Year Edition">Game of the Year Edition</option>
+                            <option value="Complete Edition">Complete Edition</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gameRegion"><i class="fas fa-globe"></i> Регион</label>
+                        <select id="gameRegion" class="form-input">
+                            <option value="PAL">PAL (Европа)</option>
+                            <option value="NTSC-U">NTSC-U (США)</option>
+                            <option value="NTSC-J">NTSC-J (Япония)</option>
+                            <option value="Region Free">Region Free</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameLanguage"><i class="fas fa-language"></i> Язык (через запятую)</label>
+                    <input type="text" id="gameLanguage" class="form-input" placeholder="Например: Русский, Английский">
+                    <small class="form-hint">Основные языки интерфейса и озвучки</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameDiscCondition"><i class="fas fa-compact-disc"></i> Состояние диска</label>
+                    <select id="gameDiscCondition" class="form-input">
+                        <option value="Идеальное">Идеальное</option>
+                        <option value="Хорошее">Хорошее</option>
+                        <option value="Небольшие царапины">Небольшие царапины</option>
+                        <option value="Сильные царапины">Сильные царапины</option>
+                        <option value="Не читается">Не читается</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
+                    <input type="url" id="gameCover" class="form-input" placeholder="https://example.com/cover.jpg">
+                    <small class="form-hint">Можно загрузить фото в <a href="https://imgur.com" target="_blank">Imgur</a> и вставить ссылку</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
+                    <input type="url" id="gameVideo" class="form-input" placeholder="https://youtube.com/embed/VIDEO_ID или https://youtube.com/watch?v=VIDEO_ID">
+                    <small class="form-hint">
+                        Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
+                    </small>
+                    <button type="button" class="btn-small" onclick="testVideo()" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
+                        <i class="fas fa-play"></i> Проверить видео
                     </button>
                 </div>
-                <div class="modal-body">
-                    <form id="addGameForm" onsubmit="addNewGame(event)">
-                        <div class="form-group">
-                            <label for="gameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
-                            <input type="text" id="gameTitle" required class="form-input" placeholder="Например: The Last of Us Part II">
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="gamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
-                                <select id="gamePlatform" required class="form-input">
-                                    <option value="ps4">PlayStation 4</option>
-                                    <option value="ps5">PlayStation 5</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="gameYear"><i class="fas fa-calendar-alt"></i> Год выпуска</label>
-                                <input type="number" id="gameYear" class="form-input" placeholder="2020" min="1990" max="2025">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
-                            <input type="date" id="gamePurchaseDate" class="form-input">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
-                            <input type="url" id="gameCover" class="form-input" placeholder="https://example.com/cover.jpg">
-                            <small class="form-hint">Можно загрузить фото в <a href="https://imgur.com" target="_blank">Imgur</a> и вставить ссылку</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="gameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
-                            <input type="url" id="gameVideo" class="form-input" placeholder="https://youtube.com/embed/VIDEO_ID или https://youtube.com/watch?v=VIDEO_ID">
-                            <small class="form-hint">
-                                Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
-                            </small>
-                            <button type="button" class="btn-small" onclick="testVideo()" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
-                                <i class="fas fa-play"></i> Проверить видео
-                            </button>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gameDescription"><i class="fas fa-align-left"></i> Описание</label>
-                            <textarea id="gameDescription" class="form-input" rows="3" placeholder="Краткое описание игры..."></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gameNotes"><i class="fas fa-sticky-note"></i> Личные заметки</label>
-                            <textarea id="gameNotes" class="form-input" rows="2" placeholder="Где купили, за сколько, впечатления..."></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn-secondary" onclick="closeAddGameModal()">Отмена</button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save"></i> Сохранить игру
-                            </button>
-                        </div>
-                    </form>
+                
+                <div class="form-group">
+                    <label for="gameDescription"><i class="fas fa-align-left"></i> Описание</label>
+                    <textarea id="gameDescription" class="form-input" rows="3" placeholder="Краткое описание игры..."></textarea>
                 </div>
-            </div>
+                
+                <div class="form-group">
+                    <label for="gameNotes"><i class="fas fa-sticky-note"></i> Личные заметки</label>
+                    <textarea id="gameNotes" class="form-input" rows="2" placeholder="Где купили, за сколько, впечатления..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddGameModal()">Отмена</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Сохранить игру
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
+</div>
 
         <!-- Модальное окно управления коллекцией -->
         <div id="manageModal" class="modal">
@@ -254,83 +327,154 @@
         <!-- Скрытый input для импорта файлов -->
         <input type="file" id="importFileInput" accept=".json" style="display: none;">
 
-        <!-- Модальное окно редактирования игры -->
-        <div id="editGameModal" class="modal">
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h2><i class="fas fa-edit"></i> Редактировать игру</h2>
-                    <button class="close-modal" onclick="closeEditGameModal()">
-                        <i class="fas fa-times"></i>
+       <!-- Модальное окно редактирования игры -->
+<div id="editGameModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-edit"></i> Редактировать игру</h2>
+            <button class="close-modal" onclick="closeEditGameModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="editGameForm" onsubmit="updateGame(event)">
+                <input type="hidden" id="editGameId">
+                
+                <div class="form-group">
+                    <label for="editGameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
+                    <input type="text" id="editGameTitle" required class="form-input">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
+                        <select id="editGamePlatform" required class="form-input">
+                            <option value="ps4">PlayStation 4</option>
+                            <option value="ps5">PlayStation 5</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editGameYear"><i class="fas fa-calendar-alt"></i> Год выпуска *</label>
+                        <input type="number" id="editGameYear" required class="form-input" min="1990" max="2025">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGameDeveloper"><i class="fas fa-code"></i> Разработчик</label>
+                        <input type="text" id="editGameDeveloper" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editGamePublisher"><i class="fas fa-building"></i> Издатель</label>
+                        <input type="text" id="editGamePublisher" class="form-input">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGameCondition"><i class="fas fa-box"></i> Состояние коробки</label>
+                        <select id="editGameCondition" class="form-input">
+                            <option value="Новая, в запайке">Новая, в запайке</option>
+                            <option value="Новая">Новая</option>
+                            <option value="Б/у, отличное состояние">Б/у, отличное состояние</option>
+                            <option value="Б/у, хорошее состояние">Б/у, хорошее состояние</option>
+                            <option value="Б/у, удовлетворительное">Б/у, удовлетворительное</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editGamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
+                        <input type="date" id="editGamePurchaseDate" class="form-input">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editGameGenre"><i class="fas fa-theater-masks"></i> Жанр (через запятую)</label>
+                    <input type="text" id="editGameGenre" class="form-input" placeholder="Например: RPG, Приключения, Экшен">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGameEdition"><i class="fas fa-award"></i> Издание</label>
+                        <select id="editGameEdition" class="form-input">
+                            <option value="Standard Edition">Standard Edition</option>
+                            <option value="Collector's Edition">Collector's Edition</option>
+                            <option value="Deluxe Edition">Deluxe Edition</option>
+                            <option value="Ultimate Edition">Ultimate Edition</option>
+                            <option value="Special Edition">Special Edition</option>
+                            <option value="Game of the Year Edition">Game of the Year Edition</option>
+                            <option value="Complete Edition">Complete Edition</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editGameRegion"><i class="fas fa-globe"></i> Регион</label>
+                        <select id="editGameRegion" class="form-input">
+                            <option value="PAL">PAL (Европа)</option>
+                            <option value="NTSC-U">NTSC-U (США)</option>
+                            <option value="NTSC-J">NTSC-J (Япония)</option>
+                            <option value="Region Free">Region Free</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editGameLanguage"><i class="fas fa-language"></i> Язык (через запятую)</label>
+                    <input type="text" id="editGameLanguage" class="form-input" placeholder="Например: Русский, Английский">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editGameDiscCondition"><i class="fas fa-compact-disc"></i> Состояние диска</label>
+                    <select id="editGameDiscCondition" class="form-input">
+                        <option value="Идеальное">Идеальное</option>
+                        <option value="Хорошее">Хорошее</option>
+                        <option value="Небольшие царапины">Небольшие царапины</option>
+                        <option value="Сильные царапины">Сильные царапины</option>
+                        <option value="Не читается">Не читается</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editGameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
+                    <input type="url" id="editGameCover" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="editGameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
+                    <input type="url" id="editGameVideo" class="form-input">
+                    <small class="form-hint">
+                        Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
+                    </small>
+                    <button type="button" class="btn-small" onclick="testVideo(true)" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
+                        <i class="fas fa-play"></i> Проверить видео
                     </button>
                 </div>
-                <div class="modal-body">
-                    <form id="editGameForm" onsubmit="updateGame(event)">
-                        <input type="hidden" id="editGameId">
-                        
-                        <div class="form-group">
-                            <label for="editGameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
-                            <input type="text" id="editGameTitle" required class="form-input">
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="editGamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
-                                <select id="editGamePlatform" required class="form-input">
-                                    <option value="ps4">PlayStation 4</option>
-                                    <option value="ps5">PlayStation 5</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="editGameYear"><i class="fas fa-calendar-alt"></i> Год выпуска</label>
-                                <input type="number" id="editGameYear" class="form-input" min="1990" max="2025">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="editGamePurchaseDate"><i class="fas fa-shopping-cart"></i> Дата покупки</label>
-                            <input type="date" id="editGamePurchaseDate" class="form-input">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="editGameCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
-                            <input type="url" id="editGameCover" class="form-input">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="editGameVideo"><i class="fas fa-video"></i> Ссылка на видео YouTube</label>
-                            <input type="url" id="editGameVideo" class="form-input">
-                            <small class="form-hint">
-                                Можно вставить либо embed-ссылку (из кнопки "Встроить"), либо обычную ссылку на YouTube
-                            </small>
-                            <button type="button" class="btn-small" onclick="testVideo(true)" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8rem;">
-                                <i class="fas fa-play"></i> Проверить видео
-                            </button>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="editGameDescription"><i class="fas fa-align-left"></i> Описание</label>
-                            <textarea id="editGameDescription" class="form-input" rows="3"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="editGameNotes"><i class="fas fa-sticky-note"></i> Личные заметки</label>
-                            <textarea id="editGameNotes" class="form-input" rows="2"></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn-danger" onclick="deleteGame()" style="background: #ff4757;">
-                                <i class="fas fa-trash"></i> Удалить игру
-                            </button>
-                            <button type="button" class="btn-secondary" onclick="closeEditGameModal()">Отмена</button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save"></i> Сохранить изменения
-                            </button>
-                        </div>
-                    </form>
+                
+                <div class="form-group">
+                    <label for="editGameDescription"><i class="fas fa-align-left"></i> Описание</label>
+                    <textarea id="editGameDescription" class="form-input" rows="3"></textarea>
                 </div>
-            </div>
+                
+                <div class="form-group">
+                    <label for="editGameNotes"><i class="fas fa-sticky-note"></i> Личные заметки</label>
+                    <textarea id="editGameNotes" class="form-input" rows="2"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-danger" onclick="deleteGame()" style="background: #ff4757;">
+                        <i class="fas fa-trash"></i> Удалить игру
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeEditGameModal()">Отмена</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Сохранить изменения
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
+</div>
 
         <!-- Модальное окно статистики -->
         <div id="statsModal" class="modal">
@@ -588,3 +732,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
