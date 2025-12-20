@@ -1196,49 +1196,7 @@ window.createGameDetailsHTML = function(game) {
     `;
 }
 
-// ===== ДОБАВЛЯЕМ НОВЫЕ КНОПКИ В ШАПКУ =====
 
-// Обновляем initApp для добавления новых кнопок
-const originalInitApp = initApp;
-window.initApp = function() {
-    originalInitApp();
-    
-    // Добавляем новые кнопки в шапку
-    addHeaderButtons();
-};
-
-function addHeaderButtons() {
-    const header = document.querySelector('.header');
-    
-    // Кнопка статистики
-    const statsBtn = document.createElement('button');
-    statsBtn.className = 'manage-btn';
-    statsBtn.title = 'Статистика коллекции';
-    statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-    statsBtn.onclick = openStatsModal;
-    statsBtn.style.right = '130px';
-    
-    // Кнопка шаринга
-    const shareBtn = document.createElement('button');
-    shareBtn.className = 'manage-btn';
-    shareBtn.title = 'Поделиться коллекцией';
-    shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
-    shareBtn.onclick = openShareModal;
-    shareBtn.style.right = '180px';
-    
-    // Кнопка сканера
-    const scannerBtn = document.createElement('button');
-    scannerBtn.className = 'manage-btn';
-    scannerBtn.title = 'Сканировать штрих-код';
-    scannerBtn.innerHTML = '<i class="fas fa-barcode"></i>';
-    scannerBtn.onclick = openBarcodeScanner;
-    scannerBtn.style.right = '230px';
-    
-    // Добавляем кнопки в шапку
-    header.appendChild(statsBtn);
-    header.appendChild(shareBtn);
-    header.appendChild(scannerBtn);
-}
 
 // ===== ОБНОВЛЯЕМ ФУНКЦИЮ scanBarcode =====
 
@@ -1248,6 +1206,7 @@ window.scanBarcode = function() {
 
 // ===== ЗАПУСК ПРИЛОЖЕНИЯ =====
 document.addEventListener('DOMContentLoaded', initApp);
+
 
 
 
