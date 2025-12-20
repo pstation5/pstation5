@@ -1085,3 +1085,182 @@ body {
         flex-direction: column;
     }
 }
+
+/* Кнопки действий для ожидаемых игр */
+.upcoming-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.upcoming-card:hover .upcoming-actions {
+    opacity: 1;
+}
+
+.upcoming-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.upcoming-action-btn:hover {
+    transform: scale(1.1);
+}
+
+.upcoming-action-btn.delete-btn:hover {
+    background: #e74c3c;
+}
+
+.upcoming-action-btn.edit-btn:hover {
+    background: #3498db;
+}
+
+.upcoming-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Детальный просмотр ожидаемых игр */
+.upcoming-detail-view .detail-header {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.upcoming-detail-view .detail-cover {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+.upcoming-detail-view .detail-meta h3 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+}
+
+.upcoming-detail-view .detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.upcoming-detail-view .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.upcoming-detail-view .info-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.upcoming-detail-view .info-value {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.upcoming-detail-view .detail-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Опасная зона */
+.danger-section {
+    background: rgba(231, 76, 60, 0.1);
+    border: 2px solid #e74c3c;
+    border-radius: 15px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.danger-section h4 {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.danger-section .btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.danger-section .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+}
+
+.danger-note {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Кнопка удаления в основном стиле */
+.btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+}
+
+/* Адаптивность для ожидаемых игр */
+@media (max-width: 768px) {
+    .upcoming-detail-view .detail-header {
+        grid-template-columns: 1fr;
+    }
+    
+    .upcoming-detail-view .detail-cover {
+        max-height: 400px;
+        object-fit: cover;
+    }
+    
+    .upcoming-actions {
+        opacity: 1; /* Всегда показываем кнопки на мобильных */
+    }
+}
