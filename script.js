@@ -1,174 +1,289 @@
-// ===== ТЕЛЕГРАМ ИНИЦИАЛИЗАЦИЯ =====
+// Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 
-// ===== КОНСТАНТЫ И ПЕРЕМЕННЫЕ =====
-const ITEMS_PER_PAGE = 10;
-let currentPage = 1;
+// DOM элементы
+const elements = {
+    gameGrid: document.getElementById('gameGrid'),
+    upcomingSlider: document.getElementById('upcomingSlider'),
+    searchInput: document.getElementById('searchInput'),
+    platformFilter: document.getElementById('platformFilter'),
+    statusFilter: document.getElementById('statusFilter'),
+    sortSelect: document.getElementById('sortSelect'),
+    totalGamesEl: document.getElementById('totalGames'),
+    horrorGamesEl: document.getElementById('horrorGames'),
+    uniquePlatformsEl: document.getElementById('uniquePlatforms'),
+    avgRatingEl: document.getElementById('avgRating'),
+    currentPageEl: document.getElementById('currentPage'),
+    totalPagesEl: document.getElementById('totalPages'),
+    userGreeting: document.getElementById('userGreeting'),
+    userAvatar: document.getElementById('userAvatar'),
+    collectionCount: document.getElementById('collectionCount'),
+    upcomingCount: document.getElementById('upcomingCount'),
+    lastUpdateTime: document.getElementById('lastUpdateTime')
+};
+
+// Переменные приложения
 let games = [];
 let upcomingGames = [];
 let filteredGames = [];
-let userCollection = [];
-let isAdmin = false;
+let currentPage = 1;
+const gamesPerPage = 10;
+let currentTheme = 'dark';
 
-// ===== СТРУКТУРА ДАННЫХ =====
-let appData = {
+// Коллекция данных
+let collection = {
     games: [],
     upcoming: [],
-    users: {},
     settings: {
-        theme: 'dark',
-        adminId: null // Здесь будет ID администратора Telegram
+        collectionName: 'Horror | PS4 | PS5',
+        adminMode: false
     },
+    version: '1.0',
     lastUpdated: new Date().toISOString()
 };
 
-// ===== ЭЛЕМЕНТЫ DOM =====
-const elements = {
-    gamesGrid: document.getElementById('gamesGrid'),
-    gamesCount: document.getElementById('gamesCount'),
-    searchInput: document.getElementById('globalSearch'),
-    upcomingSwiper: document.getElementById('upcomingSwiper'),
-    pagination: document.getElementById('pagination'),
-    adminControls: document.getElementById('adminControls')
-};
-
-// ===== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ =====
-async function initApp() {
-    console.log('Инициализация Horror Collection...');
+// Инициализация приложения
+function initApp() {
+    console.log('🚀 Инициализация Horror коллекции...');
     
-    // Настройка Telegram WebApp
-    tg.expand();
-    tg.setHeaderColor('#8b0000');
-    tg.setBackgroundColor('#0a0a0a');
-    
-    // Проверка администратора
-    const user = tg.initDataUnsafe?.user;
-    checkAdminStatus(user);
+    // Настройка Telegram
+    if (tg.initDataUnsafe) {
+        tg.expand();
+        tg.setHeaderColor('#8b0000');
+        tg.setBackgroundColor('#121212');
+        setupTelegramUser();
+    }
     
     // Загрузка данных
-    await loadData();
+    loadCollection();
     
-    // Настройка интерфейса
+    // Настройка фильтров и поиска
     setupEventListeners();
-    updateUserProfile(user);
-    renderUpcomingGames();
-    filterGames();
     
-    console.log('Horror Collection инициализирован');
+    // Настройка темы
+    const savedTheme = localStorage.getItem('horrorTheme');
+    if (savedTheme) setTheme(savedTheme);
+    
+    // Обновление даты
+    updateDate();
+    
+    console.log('✅ Приложение готово!');
 }
 
-// ===== ПРОВЕРКА АДМИНА =====
-function checkAdminStatus(user) {
+// Настройка пользователя Telegram
+function setupTelegramUser() {
+    const user = tg.initDataUnsafe?.user;
     if (!user) return;
     
-    // Здесь можно проверить ID пользователя
-    // Например: if (user.id === 123456789) isAdmin = true;
-    isAdmin = true; // Временно всегда true для тестирования
+    const firstName = user.first_name || 'Коллекционер';
+    elements.userGreeting.textContent = `👻 ${collection.settings.collectionName}`;
     
-    if (isAdmin) {
-        elements.adminControls.style.display = 'block';
+    if (user.photo_url) {
+        elements.userAvatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
     }
 }
 
-// ===== ЗАГРУЗКА ДАННЫХ =====
-async function loadData() {
+// Загрузка коллекции
+async function loadCollection() {
     try {
-        // Загружаем игры
-        const gamesResponse = await fetch('games.json');
-        if (!gamesResponse.ok) throw new Error('Ошибка загрузки игр');
-        const gamesData = await gamesResponse.json();
-        appData.games = gamesData.games || [];
+        // Пробуем загрузить из localStorage
+        const saved = localStorage.getItem('horrorCollection');
+        if (saved) {
+            const data = JSON.parse(saved);
+            collection.games = data.games || [];
+            collection.upcoming = data.upcoming || [];
+            collection.settings = data.settings || collection.settings;
+            console.log(`📂 Загружено ${collection.games.length} игр из localStorage`);
+        } else {
+            // Загружаем из games.json
+            const response = await fetch('games.json');
+            if (!response.ok) throw new Error('Файл games.json не найден');
+            
+            const data = await response.json();
+            collection.games = data.games || [];
+            collection.upcoming = data.upcoming || [];
+            saveCollection();
+            console.log(`📂 Загружено ${collection.games.length} игр из games.json`);
+        }
         
-        // Загружаем пользовательские данные
-        loadUserData();
-        
-        games = appData.games;
+        games = collection.games;
+        upcomingGames = collection.upcoming;
         filteredGames = [...games];
         
-        // Обновляем счетчик
-        updateGamesCount();
+        updateStats();
+        renderUpcomingGames();
+        renderGames();
+        updateCollectionInfo();
         
     } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        showNotification('Не удалось загрузить коллекцию', 'error');
+        console.error('❌ Ошибка загрузки:', error);
+        showError('Не удалось загрузить коллекцию');
     }
 }
 
-// ===== ЗАГРУЗКА ПОЛЬЗОВАТЕЛЬСКИХ ДАННЫХ =====
-function loadUserData() {
-    const savedData = localStorage.getItem('horrorCollectionData');
-    if (savedData) {
-        try {
-            const parsed = JSON.parse(savedData);
-            appData.upcoming = parsed.upcoming || [];
-            appData.users = parsed.users || {};
-        } catch (e) {
-            console.error('Ошибка загрузки пользовательских данных:', e);
-        }
-    }
-    
-    upcomingGames = appData.upcoming;
-}
-
-// ===== СОХРАНЕНИЕ ДАННЫХ =====
-function saveData() {
-    appData.lastUpdated = new Date().toISOString();
+// Сохранение коллекции
+function saveCollection() {
     try {
-        localStorage.setItem('horrorCollectionData', JSON.stringify({
-            upcoming: appData.upcoming,
-            users: appData.users
-        }));
+        collection.lastUpdated = new Date().toISOString();
+        localStorage.setItem('horrorCollection', JSON.stringify(collection));
         return true;
     } catch (error) {
-        console.error('Ошибка сохранения данных:', error);
+        console.error('Ошибка сохранения:', error);
+        showNotification('Ошибка сохранения', 'error');
         return false;
     }
 }
 
-// ===== НАСТРОЙКА СОБЫТИЙ =====
+// Настройка обработчиков событий
 function setupEventListeners() {
-    // Фильтры по платформе
-    document.querySelectorAll('.platform-filter').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.platform-filter').forEach(b => 
-                b.classList.remove('active'));
-            this.classList.add('active');
-            filterGames();
-        });
+    // Поиск
+    elements.searchInput.addEventListener('input', function() {
+        filterGames();
+        const clearBtn = document.querySelector('.clear-search');
+        if (clearBtn) clearBtn.style.display = this.value ? 'block' : 'none';
     });
     
-    // Закрытие модальных окон по клику вне
-    window.addEventListener('click', function(event) {
-        const modals = ['gameModal', 'addGameModal', 'addUpcomingModal', 'userModal'];
-        modals.forEach(id => {
-            const modal = document.getElementById(id);
-            if (event.target === modal) {
-                closeModal(id);
+    // Фильтры
+    elements.platformFilter.addEventListener('change', filterGames);
+    elements.statusFilter.addEventListener('change', filterGames);
+    elements.sortSelect.addEventListener('change', filterGames);
+    
+    // Быстрые фильтры
+    document.getElementById('quickFilters').addEventListener('click', function(e) {
+        if (e.target.classList.contains('tag')) {
+            document.querySelectorAll('.tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            e.target.classList.add('active');
+            
+            const filter = e.target.dataset.platform;
+            if (filter === 'survival') {
+                elements.searchInput.value = 'survival horror';
+            } else if (filter === 'psychological') {
+                elements.searchInput.value = 'психологический';
+            } else if (filter !== 'all') {
+                elements.platformFilter.value = filter;
+            } else {
+                elements.platformFilter.value = 'all';
+                elements.searchInput.value = '';
             }
-        });
+            filterGames();
+        }
     });
 }
 
-// ===== ФИЛЬТРАЦИЯ И СОРТИРОВКА =====
+// Рендер ожидаемых игр
+function renderUpcomingGames() {
+    if (!upcomingGames.length) {
+        elements.upcomingSlider.innerHTML = `
+            <div class="no-upcoming">
+                <i class="fas fa-calendar-alt"></i>
+                <p>Нет ожидаемых игр</p>
+            </div>
+        `;
+        return;
+    }
+    
+    elements.upcomingSlider.innerHTML = upcomingGames.map(game => `
+        <div class="upcoming-card" onclick="openUpcomingDetails(${game.id})">
+            <img src="${game.cover || 'https://via.placeholder.com/300x400/222/666?text=No+Cover'}" 
+                 alt="${game.title}" 
+                 class="upcoming-cover">
+            <div class="upcoming-info">
+                <h3>${game.title}</h3>
+                <div class="upcoming-details">
+                    <span class="upcoming-date">
+                        <i class="fas fa-calendar-day"></i> ${formatDate(game.releaseDate)}
+                    </span>
+                    <span class="upcoming-platform">
+                        <i class="fas fa-tv"></i> ${getPlatformName(game.platform)}
+                    </span>
+                </div>
+                <p class="upcoming-developer">${game.developer || 'Не указан'}</p>
+                <button class="btn-small" onclick="event.stopPropagation(); addUpcomingToCollection(${game.id})">
+                    <i class="fas fa-plus"></i> В коллекцию
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Рендер игр
+function renderGames() {
+    const startIndex = (currentPage - 1) * gamesPerPage;
+    const endIndex = startIndex + gamesPerPage;
+    const pageGames = filteredGames.slice(startIndex, endIndex);
+    
+    if (!pageGames.length) {
+        elements.gameGrid.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-ghost"></i>
+                <h3>Игры не найдены</h3>
+                <p>Попробуйте изменить фильтры</p>
+            </div>
+        `;
+        updatePagination();
+        return;
+    }
+    
+    elements.gameGrid.innerHTML = pageGames.map(game => `
+        <div class="game-card" onclick="openGameDetails(${game.id})">
+            <div class="game-badge ${game.status}">
+                ${getStatusIcon(game.status)}
+            </div>
+            <div class="game-actions">
+                <button class="action-btn edit-btn" onclick="event.stopPropagation(); editGame(${game.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteGameConfirm(${game.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <img src="${game.coverImage}" 
+                 alt="${game.title}" 
+                 class="game-cover"
+                 onerror="this.src='https://via.placeholder.com/300x400/222/666?text=Horror+Game'">
+            <div class="game-info">
+                <h3 class="game-title">${game.title}</h3>
+                <div class="game-meta">
+                    <span class="game-platform ${game.platform}">
+                        ${getPlatformIcon(game.platform)} ${game.platformName}
+                    </span>
+                    <span class="game-rating">
+                        ${renderStars(game.rating || 0)}
+                    </span>
+                </div>
+                <div class="game-details">
+                    <span class="game-year">${game.releaseYear || 'N/A'}</span>
+                    <span class="game-genre">${game.genre || 'Horror'}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    updatePagination();
+}
+
+// Фильтрация и сортировка
 function filterGames() {
-    const platform = document.querySelector('.platform-filter.active')?.dataset.platform || 'all';
-    const sortBy = document.getElementById('sortFilter').value;
-    const statusFilter = document.getElementById('statusFilter').value;
+    const platform = elements.platformFilter.value;
+    const status = elements.statusFilter.value;
+    const sortBy = elements.sortSelect.value;
     const searchQuery = elements.searchInput.value.toLowerCase();
     
-    filteredGames = games.filter(game => {
-        const platformMatch = platform === 'all' || game.platform === platform;
+    filteredGames = collection.games.filter(game => {
+        const platformMatch = platform === 'all' || 
+            game.platform === platform || 
+            (platform === 'ps4-ps5' && game.platform.includes('ps'));
+        
+        const statusMatch = status === 'all' || game.status === status;
         const searchMatch = !searchQuery || 
             game.title.toLowerCase().includes(searchQuery) ||
+            (game.description && game.description.toLowerCase().includes(searchQuery)) ||
             (game.developer && game.developer.toLowerCase().includes(searchQuery)) ||
-            (game.description && game.description.toLowerCase().includes(searchQuery));
+            (game.genre && game.genre.toLowerCase().includes(searchQuery));
         
-        // Проверка статуса из пользовательской коллекции
-        const userGame = userCollection.find(ug => ug.gameId === game.id);
-        const statusMatch = statusFilter === 'all' || 
-                          (userGame && userGame.status === statusFilter);
-        
-        return platformMatch && searchMatch && statusMatch;
+        return platformMatch && statusMatch && searchMatch;
     });
     
     // Сортировка
@@ -187,491 +302,156 @@ function filterGames() {
         }
     });
     
-    updateGamesCount();
+    currentPage = 1;
     renderGames();
-    renderPagination();
+    updateStats();
 }
 
-// ===== ОБНОВЛЕНИЕ СЧЕТЧИКА =====
-function updateGamesCount() {
-    elements.gamesCount.textContent = filteredGames.length;
+// Обновление статистики
+function updateStats() {
+    elements.totalGamesEl.textContent = collection.games.length;
+    elements.horrorGamesEl.textContent = collection.games.filter(g => g.genre?.includes('horror')).length;
+    
+    const platforms = [...new Set(collection.games.map(g => g.platform))];
+    elements.uniquePlatformsEl.textContent = platforms.length;
+    
+    const ratings = collection.games.map(g => g.rating).filter(r => r);
+    const avgRating = ratings.length ? 
+        (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : 0;
+    elements.avgRatingEl.textContent = avgRating;
 }
 
-// ===== ОТРИСОВКА ИГР =====
-function renderGames() {
-    if (!filteredGames.length) {
-        elements.gamesGrid.innerHTML = `
-            <div class="no-results">
-                <i class="fas fa-ghost" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
-                <h3>Ужасы не найдены</h3>
-                <p>Попробуйте изменить фильтры или поисковый запрос</p>
-            </div>
-        `;
-        return;
-    }
-    
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const gamesToShow = filteredGames.slice(startIndex, endIndex);
-    
-    elements.gamesGrid.innerHTML = gamesToShow.map(game => {
-        const userGame = userCollection.find(ug => ug.gameId === game.id);
-        const status = userGame?.status || 'planned';
-        const rating = userGame?.rating || game.rating || 0;
-        
-        return `
-            <div class="game-card" onclick="openGameDetails(${game.id})">
-                <img src="${game.coverImage}" 
-                     alt="${game.title}" 
-                     class="game-cover"
-                     onerror="this.onerror=null; this.src='https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png'">
-                <div class="game-info">
-                    <h3 class="game-title">${game.title}</h3>
-                    <div class="game-meta">
-                        <span class="game-platform">
-                            <i class="fab fa-playstation"></i> ${game.platformName || game.platform}
-                        </span>
-                        <span class="game-year">${game.releaseYear}</span>
-                    </div>
-                    <div class="game-status status-${status}">
-                        ${getStatusText(status)}
-                    </div>
-                    ${rating ? `
-                    <div class="game-rating">
-                        ${getRatingStars(rating)}
-                    </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
+// Обновление информации о коллекции
+function updateCollectionInfo() {
+    elements.collectionCount.textContent = collection.games.length;
+    elements.upcomingCount.textContent = collection.upcoming.length;
+    elements.lastUpdateTime.textContent = formatDate(collection.lastUpdated);
 }
 
-// ===== ОТРИСОВКА ОЖИДАЕМЫХ ИГР =====
-function renderUpcomingGames() {
-    if (!upcomingGames.length) {
-        elements.upcomingSwiper.innerHTML = `
-            <div class="swiper-slide">
-                <div class="upcoming-card" style="height: 100%; display: flex; align-items: center; justify-content: center;">
-                    <p style="color: var(--text-secondary); text-align: center;">
-                        <i class="fas fa-calendar-plus"></i><br>
-                        Добавьте ожидаемые игры
-                    </p>
-                </div>
-            </div>
-        `;
-        return;
-    }
+// Пагинация
+function updatePagination() {
+    const totalPages = Math.ceil(filteredGames.length / gamesPerPage);
+    elements.currentPageEl.textContent = currentPage;
+    elements.totalPagesEl.textContent = totalPages;
     
-    elements.upcomingSwiper.innerHTML = upcomingGames.map(game => `
-        <div class="swiper-slide">
-            <div class="upcoming-card" onclick="openUpcomingDetails(${game.id})">
-                <img src="${game.coverImage}" 
-                     alt="${game.title}" 
-                     class="upcoming-cover"
-                     onerror="this.onerror=null; this.src='https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png'">
-                <div class="upcoming-info">
-                    <h3 class="upcoming-title">${game.title}</h3>
-                    <div class="upcoming-date">
-                        <i class="fas fa-calendar"></i> ${formatDate(game.releaseDate)}
-                    </div>
-                    <div class="upcoming-platform">
-                        ${game.platformName || game.platform}
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    document.querySelectorAll('.page-btn').forEach(btn => {
+        btn.style.display = 'inline-flex';
+    });
 }
 
-// ===== ПАГИНАЦИЯ =====
-function renderPagination() {
-    const totalPages = Math.ceil(filteredGames.length / ITEMS_PER_PAGE);
-    
-    if (totalPages <= 1) {
-        elements.pagination.innerHTML = '';
-        return;
-    }
-    
-    let paginationHTML = '';
-    
-    // Кнопка "Назад"
-    if (currentPage > 1) {
-        paginationHTML += `
-            <button class="page-btn" onclick="changePage(${currentPage - 1})">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-        `;
-    }
-    
-    // Номера страниц
-    const maxVisible = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-    
-    if (endPage - startPage + 1 < maxVisible) {
-        startPage = Math.max(1, endPage - maxVisible + 1);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-            <button class="page-btn ${i === currentPage ? 'active' : ''}" 
-                    onclick="changePage(${i})">
-                ${i}
-            </button>
-        `;
-    }
-    
-    // Кнопка "Вперед"
+function nextPage() {
+    const totalPages = Math.ceil(filteredGames.length / gamesPerPage);
     if (currentPage < totalPages) {
-        paginationHTML += `
-            <button class="page-btn" onclick="changePage(${currentPage + 1})">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        `;
+        currentPage++;
+        renderGames();
     }
-    
-    elements.pagination.innerHTML = paginationHTML;
 }
 
-function changePage(page) {
-    currentPage = page;
-    renderGames();
-    renderPagination();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderGames();
+    }
 }
 
-// ===== ОТКРЫТИЕ ДЕТАЛЕЙ ИГРЫ =====
+// Открытие деталей игры
 function openGameDetails(gameId) {
-    const game = games.find(g => g.id === gameId);
+    const game = collection.games.find(g => g.id === gameId);
     if (!game) {
         showNotification('Игра не найдена', 'error');
         return;
     }
     
-    const userGame = userCollection.find(ug => ug.gameId === gameId);
-    
     document.getElementById('modalTitle').textContent = game.title;
-    document.getElementById('modalBody').innerHTML = createGameDetailsHTML(game, userGame);
+    document.getElementById('modalBody').innerHTML = createGameDetailsHTML(game);
     document.getElementById('gameModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-function createGameDetailsHTML(game, userGame) {
-    const status = userGame?.status || 'planned';
-    const rating = userGame?.rating || game.rating || 0;
-    const userNotes = userGame?.notes || '';
-    
+function createGameDetailsHTML(game) {
     return `
-        <div class="game-details">
-            <div class="detail-row">
-                <div class="detail-cover">
-                    <img src="${game.coverImage}" alt="${game.title}" 
-                         onerror="this.onerror=null; this.src='https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png'">
-                </div>
-                <div class="detail-info">
-                    <div class="detail-meta">
-                        <span class="detail-platform">
-                            <i class="fab fa-playstation"></i> ${game.platformName || game.platform}
-                        </span>
-                        <span class="detail-year">${game.releaseYear}</span>
+        <div class="game-detail-view">
+            <div class="detail-header">
+                <img src="${game.coverImage}" alt="${game.title}" class="detail-cover">
+                <div class="detail-meta">
+                    <div class="detail-rating">${renderStars(game.rating || 0)}</div>
+                    <div class="detail-status ${game.status}">
+                        ${getStatusIcon(game.status)} ${getStatusText(game.status)}
                     </div>
-                    
-                    <div class="user-controls">
-                        <div class="status-control">
-                            <label>Статус:</label>
-                            <select class="horror-select" id="detailStatus" onchange="updateGameStatus(${game.id}, this.value)">
-                                <option value="planned" ${status === 'planned' ? 'selected' : ''}>Запланировано</option>
-                                <option value="playing" ${status === 'playing' ? 'selected' : ''}>В процессе</option>
-                                <option value="completed" ${status === 'completed' ? 'selected' : ''}>Пройдено</option>
-                            </select>
-                        </div>
-                        
-                        <div class="rating-control">
-                            <label>Рейтинг:</label>
-                            <div class="star-rating" id="detailRating">
-                                ${[1,2,3,4,5].map(i => `
-                                    <i class="fas fa-star ${i <= rating ? 'active' : ''}" 
-                                       onclick="rateGame(${game.id}, ${i})"></i>
-                                `).join('')}
-                            </div>
-                        </div>
+                    <div class="detail-platform">
+                        ${getPlatformIcon(game.platform)} ${game.platformName}
                     </div>
-                </div>
-            </div>
-            
-            <div class="detail-section">
-                <h3><i class="fas fa-info-circle"></i> Информация</h3>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <span class="detail-label">Разработчик:</span>
-                        <span class="detail-value">${game.developer || 'Не указан'}</span>
+                    <div class="detail-year">
+                        <i class="fas fa-calendar-alt"></i> ${game.releaseYear || 'N/A'}
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Издатель:</span>
-                        <span class="detail-value">${game.publisher || 'Не указан'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Жанр:</span>
-                        <span class="detail-value">${Array.isArray(game.details?.genre) ? game.details.genre.join(', ') : 'Хоррор'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Время прохождения:</span>
-                        <span class="detail-value">${game.details?.playtime || 'Не указано'}</span>
+                    <div class="detail-developer">
+                        <i class="fas fa-code"></i> ${game.developer || 'Не указан'}
                     </div>
                 </div>
             </div>
             
             <div class="detail-section">
                 <h3><i class="fas fa-align-left"></i> Описание</h3>
-                <p class="detail-description">${game.description || 'Описание пока не добавлено.'}</p>
+                <p>${game.description || 'Описание отсутствует.'}</p>
             </div>
             
-            ${game.media?.photos?.length ? `
+            <div class="detail-section">
+                <h3><i class="fas fa-tags"></i> Информация</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Жанр:</span>
+                        <span class="info-value">${game.genre || 'Horror'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Издатель:</span>
+                        <span class="info-value">${game.publisher || 'Не указан'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Дата покупки:</span>
+                        <span class="info-value">${game.purchaseDate || 'Не указана'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Состояние диска:</span>
+                        <span class="info-value">${game.discCondition || 'Хорошее'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${game.screenshots?.length ? `
             <div class="detail-section">
                 <h3><i class="fas fa-images"></i> Скриншоты</h3>
                 <div class="screenshots-grid">
-                    ${game.media.photos.map(photo => `
-                        <div class="screenshot-item">
-                            <img src="${photo}" alt="Скриншот" 
-                                 onclick="openImage('${photo}')">
-                        </div>
+                    ${game.screenshots.map(url => `
+                        <img src="${url}" alt="Скриншот" class="screenshot" onclick="openImage('${url}')">
                     `).join('')}
                 </div>
             </div>
             ` : ''}
             
-            <div class="detail-section">
-                <h3><i class="fas fa-sticky-note"></i> Мои заметки</h3>
-                <textarea class="form-input" rows="3" 
-                          placeholder="Ваши заметки об игре..."
-                          id="detailNotes" 
-                          onchange="updateGameNotes(${game.id}, this.value)">${userNotes}</textarea>
-            </div>
-            
-            ${isAdmin ? `
-            <div class="detail-actions">
-                <button class="btn-secondary" onclick="editGame(${game.id})">
-                    <i class="fas fa-edit"></i> Редактировать
-                </button>
-                <button class="btn-danger" onclick="deleteGameConfirm(${game.id})">
-                    <i class="fas fa-trash"></i> Удалить
-                </button>
-                <button class="btn-primary" onclick="shareGame(${game.id})">
-                    <i class="fas fa-share"></i> Поделиться
-                </button>
+            ${game.notes ? `
+            <div class="detail-section notes-section">
+                <h3><i class="fas fa-sticky-note"></i> Заметки</h3>
+                <p>${game.notes}</p>
             </div>
             ` : ''}
+            
+            <div class="detail-actions">
+                <button class="btn-secondary" onclick="shareGame(${game.id})">
+                    <i class="fas fa-share"></i> Поделиться
+                </button>
+                <button class="btn-primary" onclick="editGame(${game.id})">
+                    <i class="fas fa-edit"></i> Редактировать
+                </button>
+            </div>
         </div>
     `;
 }
 
-// ===== УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЬСКОЙ КОЛЛЕКЦИЕЙ =====
-function updateGameStatus(gameId, status) {
-    const user = tg.initDataUnsafe?.user;
-    if (!user) return;
-    
-    const userId = user.id.toString();
-    if (!appData.users[userId]) {
-        appData.users[userId] = { collection: [] };
-    }
-    
-    const existingIndex = appData.users[userId].collection.findIndex(item => item.gameId === gameId);
-    
-    if (existingIndex >= 0) {
-        appData.users[userId].collection[existingIndex].status = status;
-    } else {
-        appData.users[userId].collection.push({
-            gameId,
-            status,
-            rating: 0,
-            notes: ''
-        });
-    }
-    
-    saveData();
-    loadUserData(); // Перезагружаем данные пользователя
-    filterGames(); // Обновляем фильтрацию
-    showNotification('Статус обновлен', 'success');
-}
-
-function rateGame(gameId, rating) {
-    const user = tg.initDataUnsafe?.user;
-    if (!user) return;
-    
-    const userId = user.id.toString();
-    if (!appData.users[userId]) {
-        appData.users[userId] = { collection: [] };
-    }
-    
-    const existingIndex = appData.users[userId].collection.findIndex(item => item.gameId === gameId);
-    
-    if (existingIndex >= 0) {
-        appData.users[userId].collection[existingIndex].rating = rating;
-    } else {
-        appData.users[userId].collection.push({
-            gameId,
-            status: 'planned',
-            rating,
-            notes: ''
-        });
-    }
-    
-    saveData();
-    
-    // Обновляем отображение звезд
-    document.querySelectorAll('#detailRating .fa-star').forEach((star, index) => {
-        star.classList.toggle('active', index < rating);
-    });
-    
-    showNotification(`Оценка ${rating}/5 сохранена`, 'success');
-}
-
-function updateGameNotes(gameId, notes) {
-    const user = tg.initDataUnsafe?.user;
-    if (!user) return;
-    
-    const userId = user.id.toString();
-    if (!appData.users[userId]) {
-        appData.users[userId] = { collection: [] };
-    }
-    
-    const existingIndex = appData.users[userId].collection.findIndex(item => item.gameId === gameId);
-    
-    if (existingIndex >= 0) {
-        appData.users[userId].collection[existingIndex].notes = notes;
-    } else {
-        appData.users[userId].collection.push({
-            gameId,
-            status: 'planned',
-            rating: 0,
-            notes
-        });
-    }
-    
-    saveData();
-    showNotification('Заметки сохранены', 'success');
-}
-
-// ===== ДОБАВЛЕНИЕ НОВОЙ ИГРЫ (АДМИН) =====
+// Добавление новой игры
 function openAddGameModal() {
-    if (!isAdmin) {
-        showNotification('Только администратор может добавлять игры', 'error');
-        return;
-    }
-    
-    const form = document.getElementById('addGameForm');
-    form.innerHTML = `
-        <div class="form-group">
-            <label for="newGameTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
-            <input type="text" id="newGameTitle" required class="form-input" 
-                   placeholder="Например: Resident Evil Village">
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="newGamePlatform"><i class="fab fa-playstation"></i> Платформа *</label>
-                <select id="newGamePlatform" required class="form-input">
-                    <option value="ps4">PlayStation 4</option>
-                    <option value="ps5">PlayStation 5</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="newGameYear"><i class="fas fa-calendar-alt"></i> Год выпуска</label>
-                <input type="number" id="newGameYear" class="form-input" 
-                       placeholder="2023" min="2013" max="2024">
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="newGameDeveloper"><i class="fas fa-code"></i> Разработчик</label>
-                <input type="text" id="newGameDeveloper" class="form-input" 
-                       placeholder="Capcom">
-            </div>
-            
-            <div class="form-group">
-                <label for="newGamePublisher"><i class="fas fa-building"></i> Издатель</label>
-                <input type="text" id="newGamePublisher" class="form-input" 
-                       placeholder="Capcom">
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label for="newGameCover"><i class="fas fa-image"></i> Ссылка на обложку *</label>
-            <input type="url" id="newGameCover" required class="form-input" 
-                   placeholder="https://example.com/cover.jpg">
-        </div>
-        
-        <div class="form-group">
-            <label for="newGameDescription"><i class="fas fa-align-left"></i> Описание</label>
-            <textarea id="newGameDescription" class="form-input" rows="4" 
-                      placeholder="Описание игры..."></textarea>
-        </div>
-        
-        <div class="form-group">
-            <label for="newGameScreenshots"><i class="fas fa-images"></i> Скриншоты (по одному в строке)</label>
-            <textarea id="newGameScreenshots" class="form-input" rows="3" 
-                      placeholder="https://example.com/screenshot1.jpg"></textarea>
-        </div>
-        
-        <div class="form-actions">
-            <button type="button" class="btn-secondary" onclick="closeAddGameModal()">
-                Отмена
-            </button>
-            <button type="submit" class="btn-primary">
-                <i class="fas fa-plus-circle"></i> Добавить игру
-            </button>
-        </div>
-    `;
-    
     document.getElementById('addGameModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
-}
-
-function addNewGame(event) {
-    event.preventDefault();
-    
-    if (!isAdmin) return;
-    
-    const screenshots = document.getElementById('newGameScreenshots').value
-        .split('\n')
-        .map(url => url.trim())
-        .filter(url => url);
-    
-    const newGame = {
-        id: Date.now(),
-        title: document.getElementById('newGameTitle').value.trim(),
-        platform: document.getElementById('newGamePlatform').value,
-        platformName: document.getElementById('newGamePlatform').selectedOptions[0].text,
-        releaseYear: parseInt(document.getElementById('newGameYear').value) || 2024,
-        developer: document.getElementById('newGameDeveloper').value.trim(),
-        publisher: document.getElementById('newGamePublisher').value.trim(),
-        coverImage: document.getElementById('newGameCover').value.trim(),
-        description: document.getElementById('newGameDescription').value.trim(),
-        details: {
-            genre: ['Хоррор'],
-            playtime: '8-12 часов'
-        },
-        media: {
-            photos: screenshots
-        },
-        rating: 0
-    };
-    
-    // Добавляем в локальный массив
-    games.push(newGame);
-    appData.games.push(newGame);
-    
-    // Обновляем отображение
-    filteredGames = [...games];
-    updateGamesCount();
-    renderGames();
-    renderPagination();
-    
-    showNotification(`Игра "${newGame.title}" добавлена!`, 'success');
-    closeAddGameModal();
+    document.getElementById('addGameForm').reset();
 }
 
 function closeAddGameModal() {
@@ -679,60 +459,55 @@ function closeAddGameModal() {
     document.body.style.overflow = 'auto';
 }
 
-// ===== ДОБАВЛЕНИЕ ОЖИДАЕМОЙ ИГРЫ =====
-function openAddUpcoming() {
-    const form = document.getElementById('addUpcomingForm');
-    form.innerHTML = `
-        <div class="form-group">
-            <label for="upcomingTitle"><i class="fas fa-gamepad"></i> Название игры *</label>
-            <input type="text" id="upcomingTitle" required class="form-input" 
-                   placeholder="Например: Silent Hill 2 Remake">
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="upcomingPlatform"><i class="fab fa-playstation"></i> Платформа</label>
-                <select id="upcomingPlatform" class="form-input">
-                    <option value="ps5">PlayStation 5</option>
-                    <option value="ps4">PlayStation 4</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="upcomingDate"><i class="fas fa-calendar-days"></i> Дата выхода *</label>
-                <input type="date" id="upcomingDate" required class="form-input">
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label for="upcomingCover"><i class="fas fa-image"></i> Ссылка на обложку</label>
-            <input type="url" id="upcomingCover" class="form-input" 
-                   placeholder="https://example.com/cover.jpg">
-        </div>
-        
-        <div class="form-group">
-            <label for="upcomingDeveloper"><i class="fas fa-code"></i> Разработчик</label>
-            <input type="text" id="upcomingDeveloper" class="form-input" 
-                   placeholder="Bloober Team">
-        </div>
-        
-        <div class="form-actions">
-            <button type="button" class="btn-secondary" onclick="closeAddUpcomingModal()">
-                Отмена
-            </button>
-            <button type="submit" class="btn-primary">
-                <i class="fas fa-calendar-plus"></i> Добавить в ожидаемые
-            </button>
-        </div>
-    `;
+function addNewGame(event) {
+    event.preventDefault();
     
-    // Устанавливаем ближайшую дату
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('upcomingDate').valueAsDate = tomorrow;
+    const newGame = {
+        id: Date.now(),
+        title: document.getElementById('gameTitle').value.trim(),
+        platform: document.getElementById('gamePlatform').value,
+        platformName: getPlatformName(document.getElementById('gamePlatform').value),
+        releaseYear: parseInt(document.getElementById('gameYear').value) || new Date().getFullYear(),
+        status: document.getElementById('gameStatus').value,
+        rating: parseInt(document.getElementById('gameRating').value) || null,
+        developer: document.getElementById('gameDeveloper').value.trim(),
+        genre: document.getElementById('gameGenre').value,
+        coverImage: document.getElementById('gameCover').value.trim() || 
+                   'https://via.placeholder.com/300x400/222/666?text=Horror+Game',
+        description: document.getElementById('gameDescription').value.trim(),
+        purchaseDate: new Date().toISOString().split('T')[0],
+        discCondition: 'Новая',
+        publisher: '',
+        screenshots: [],
+        notes: '',
+        createdAt: new Date().toISOString()
+    };
     
+    collection.games.unshift(newGame);
+    
+    if (saveCollection()) {
+        games = collection.games;
+        filteredGames = [...games];
+        updateStats();
+        renderGames();
+        updateCollectionInfo();
+        
+        showNotification(`"${newGame.title}" добавлена!`, 'success');
+        closeAddGameModal();
+    }
+}
+
+// Ожидаемые игры
+function openAddUpcomingModal() {
     document.getElementById('addUpcomingModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
+    document.getElementById('addUpcomingForm').reset();
+    document.getElementById('upcomingReleaseDate').value = new Date().toISOString().split('T')[0];
+}
+
+function closeAddUpcomingModal() {
+    document.getElementById('addUpcomingModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
 function addUpcomingGame(event) {
@@ -741,121 +516,376 @@ function addUpcomingGame(event) {
     const newUpcoming = {
         id: Date.now(),
         title: document.getElementById('upcomingTitle').value.trim(),
+        cover: document.getElementById('upcomingCover').value.trim() ||
+               'https://via.placeholder.com/300x400/222/666?text=Coming+Soon',
+        developer: document.getElementById('upcomingDeveloper').value.trim(),
+        releaseDate: document.getElementById('upcomingReleaseDate').value,
+        genre: document.getElementById('upcomingGenre').value.trim(),
         platform: document.getElementById('upcomingPlatform').value,
-        platformName: document.getElementById('upcomingPlatform').selectedOptions[0].text,
-        releaseDate: document.getElementById('upcomingDate').value,
-        coverImage: document.getElementById('upcomingCover').value.trim() || 
-                   'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png',
-        developer: document.getElementById('upcomingDeveloper').value.trim()
+        createdAt: new Date().toISOString()
     };
     
-    upcomingGames.push(newUpcoming);
-    appData.upcoming = upcomingGames;
-    saveData();
+    collection.upcoming.unshift(newUpcoming);
     
-    renderUpcomingGames();
-    showNotification(`"${newUpcoming.title}" добавлена в ожидаемые!`, 'success');
-    closeAddUpcomingModal();
+    if (saveCollection()) {
+        upcomingGames = collection.upcoming;
+        renderUpcomingGames();
+        updateCollectionInfo();
+        
+        showNotification(`"${newUpcoming.title}" добавлена в ожидаемые!`, 'success');
+        closeAddUpcomingModal();
+    }
 }
 
-function closeAddUpcomingModal() {
-    document.getElementById('addUpcomingModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+function addUpcomingToCollection(upcomingId) {
+    const upcoming = collection.upcoming.find(u => u.id === upcomingId);
+    if (!upcoming) return;
+    
+    const newGame = {
+        id: Date.now(),
+        title: upcoming.title,
+        platform: upcoming.platform,
+        platformName: getPlatformName(upcoming.platform),
+        releaseYear: new Date(upcoming.releaseDate).getFullYear(),
+        status: 'planned',
+        rating: null,
+        developer: upcoming.developer,
+        genre: upcoming.genre || 'Horror',
+        coverImage: upcoming.cover,
+        description: `Ожидаемая игра. Выход: ${formatDate(upcoming.releaseDate)}`,
+        purchaseDate: '',
+        discCondition: 'Не куплена',
+        publisher: '',
+        screenshots: [],
+        notes: 'Добавлено из ожидаемых игр',
+        createdAt: new Date().toISOString()
+    };
+    
+    collection.games.push(newGame);
+    
+    if (saveCollection()) {
+        games = collection.games;
+        filteredGames = [...games];
+        updateStats();
+        renderGames();
+        updateCollectionInfo();
+        
+        showNotification(`"${newGame.title}" перенесена в коллекцию!`, 'success');
+    }
 }
 
-// ===== УПРАВЛЕНИЕ ПРОФИЛЕМ =====
-function openUserMenu() {
-    const user = tg.initDataUnsafe?.user;
-    updateUserProfile(user);
-    document.getElementById('userModal').style.display = 'block';
+// Управление коллекцией
+function openManageModal() {
+    updateCollectionInfo();
+    document.getElementById('manageModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-function closeUserModal() {
-    document.getElementById('userModal').style.display = 'none';
+function closeManageModal() {
+    document.getElementById('manageModal').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-function updateUserProfile(user) {
-    if (!user) return;
-    
-    const userName = user.first_name || 'Охотник за ужасами';
-    document.getElementById('userName').textContent = userName;
-    
-    // Статистика пользователя
-    const userGames = userCollection.length;
-    const completed = userCollection.filter(g => g.status === 'completed').length;
-    const playing = userCollection.filter(g => g.status === 'playing').length;
-    
-    document.getElementById('userTotalGames').textContent = userGames;
-    document.getElementById('userCompleted').textContent = completed;
-    document.getElementById('userPlaying').textContent = playing;
-    
-    document.getElementById('userStats').textContent = 
-        `Собирает ужасы с ${new Date().getFullYear()}`;
+function exportCollection() {
+    try {
+        const dataStr = JSON.stringify(collection, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const fileName = `horror-collection-${new Date().toISOString().split('T')[0]}.json`;
+        
+        const link = document.createElement('a');
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', fileName);
+        link.click();
+        
+        showNotification('Коллекция экспортирована!', 'success');
+    } catch (error) {
+        console.error('Ошибка экспорта:', error);
+        showNotification('Ошибка экспорта', 'error');
+    }
 }
 
-// ===== УТИЛИТЫ =====
-function getStatusText(status) {
-    const statuses = {
-        'planned': 'Запланировано',
-        'playing': 'В процессе',
-        'completed': 'Пройдено'
+function importCollection() {
+    document.getElementById('importFileInput').click();
+}
+
+document.getElementById('importFileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            
+            if (!imported.games) {
+                throw new Error('Неверный формат файла');
+            }
+            
+            if (confirm(`Импортировать ${imported.games.length} игр?`)) {
+                collection = imported;
+                saveCollection();
+                loadCollection();
+                showNotification('Коллекция импортирована!', 'success');
+            }
+        } catch (error) {
+            console.error('Ошибка импорта:', error);
+            showNotification('Ошибка импорта файла', 'error');
+        }
+        e.target.value = '';
     };
-    return statuses[status] || status;
+    reader.readAsText(file);
+});
+
+function clearCollection() {
+    if (confirm('УДАЛИТЬ ВСЮ КОЛЛЕКЦИЮ? Это действие нельзя отменить!')) {
+        collection.games = [];
+        collection.upcoming = [];
+        saveCollection();
+        loadCollection();
+        showNotification('Коллекция очищена', 'success');
+    }
 }
 
-function getRatingStars(rating) {
-    return Array(5).fill().map((_, i) => 
-        `<i class="fas fa-star ${i < rating ? 'active' : ''}"></i>`
-    ).join('');
+// Редактирование игры
+function editGame(gameId) {
+    const game = collection.games.find(g => g.id === gameId);
+    if (!game) {
+        showNotification('Игра не найдена', 'error');
+        return;
+    }
+    
+    // Открыть модальное окно редактирования
+    // (здесь можно создать отдельную форму или использовать существующую)
+    openAddGameModal();
+    
+    // Заполнить форму данными игры
+    document.getElementById('gameTitle').value = game.title;
+    document.getElementById('gamePlatform').value = game.platform;
+    document.getElementById('gameYear').value = game.releaseYear || '';
+    document.getElementById('gameStatus').value = game.status || 'planned';
+    document.getElementById('gameRating').value = game.rating || '';
+    document.getElementById('gameDeveloper').value = game.developer || '';
+    document.getElementById('gameGenre').value = game.genre || 'survival-horror';
+    document.getElementById('gameCover').value = game.coverImage || '';
+    document.getElementById('gameDescription').value = game.description || '';
+    
+    // Изменить обработчик формы
+    const form = document.getElementById('addGameForm');
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        updateGame(gameId);
+    };
+    
+    showNotification('Режим редактирования', 'info');
+}
+
+function updateGame(gameId) {
+    const gameIndex = collection.games.findIndex(g => g.id === gameId);
+    if (gameIndex === -1) return;
+    
+    collection.games[gameIndex] = {
+        ...collection.games[gameIndex],
+        title: document.getElementById('gameTitle').value.trim(),
+        platform: document.getElementById('gamePlatform').value,
+        platformName: getPlatformName(document.getElementById('gamePlatform').value),
+        releaseYear: parseInt(document.getElementById('gameYear').value) || collection.games[gameIndex].releaseYear,
+        status: document.getElementById('gameStatus').value,
+        rating: parseInt(document.getElementById('gameRating').value) || null,
+        developer: document.getElementById('gameDeveloper').value.trim(),
+        genre: document.getElementById('gameGenre').value,
+        coverImage: document.getElementById('gameCover').value.trim() || collection.games[gameIndex].coverImage,
+        description: document.getElementById('gameDescription').value.trim(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    if (saveCollection()) {
+        games = collection.games;
+        filteredGames = [...games];
+        updateStats();
+        renderGames();
+        updateCollectionInfo();
+        
+        showNotification('Игра обновлена!', 'success');
+        closeAddGameModal();
+    }
+}
+
+function deleteGameConfirm(gameId) {
+    const game = collection.games.find(g => g.id === gameId);
+    if (!game) return;
+    
+    if (confirm(`Удалить "${game.title}" из коллекции?`)) {
+        deleteGame(gameId);
+    }
+}
+
+function deleteGame(gameId) {
+    const gameIndex = collection.games.findIndex(g => g.id === gameId);
+    if (gameIndex === -1) return;
+    
+    const gameTitle = collection.games[gameIndex].title;
+    collection.games.splice(gameIndex, 1);
+    
+    if (saveCollection()) {
+        games = collection.games;
+        filteredGames = [...games];
+        updateStats();
+        renderGames();
+        updateCollectionInfo();
+        
+        showNotification(`"${gameTitle}" удалена`, 'success');
+        closeModal();
+    }
+}
+
+// Поделиться игрой
+function shareGame(gameId) {
+    const game = collection.games.find(g => g.id === gameId);
+    if (!game) return;
+    
+    const shareText = `🎮 ${game.title} (${game.platformName})\n`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: game.title,
+            text: shareText,
+            url: window.location.href
+        });
+    } else {
+        navigator.clipboard.writeText(shareText);
+        showNotification('Скопировано в буфер!', 'success');
+    }
+}
+
+// Утилиты
+function getPlatformIcon(platform) {
+    const icons = {
+        'ps4': '<i class="fab fa-playstation"></i>',
+        'ps5': '<i class="fab fa-playstation"></i>',
+        'ps4-ps5': '<i class="fab fa-playstation"></i>'
+    };
+    return icons[platform] || '<i class="fas fa-gamepad"></i>';
+}
+
+function getPlatformName(platform) {
+    const names = {
+        'ps4': 'PlayStation 4',
+        'ps5': 'PlayStation 5',
+        'ps4-ps5': 'PS4 + PS5'
+    };
+    return names[platform] || platform;
+}
+
+function getStatusIcon(status) {
+    const icons = {
+        'completed': '<i class="fas fa-check-circle"></i>',
+        'playing': '<i class="fas fa-play-circle"></i>',
+        'planned': '<i class="fas fa-clock"></i>'
+    };
+    return icons[status] || '<i class="fas fa-question-circle"></i>';
+}
+
+function getStatusText(status) {
+    const texts = {
+        'completed': 'Пройдена',
+        'playing': 'В процессе',
+        'planned': 'В планах'
+    };
+    return texts[status] || 'Неизвестно';
+}
+
+function renderStars(rating) {
+    if (!rating) return 'Без рейтинга';
+    const fullStars = Math.floor(rating / 2);
+    const halfStar = rating % 2 >= 1;
+    let stars = '★'.repeat(fullStars);
+    if (halfStar) stars += '½';
+    stars += '☆'.repeat(5 - fullStars - (halfStar ? 1 : 0));
+    return stars;
 }
 
 function formatDate(dateString) {
+    if (!dateString) return 'Не указано';
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    return date.toLocaleDateString('ru-RU');
 }
 
 function clearSearch() {
     elements.searchInput.value = '';
+    document.querySelector('.clear-search').style.display = 'none';
     filterGames();
 }
 
-function openSearch() {
-    elements.searchInput.focus();
+function updateDate() {
+    const now = new Date();
+    const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    };
+    // Можно добавить элемент для отображения даты
+}
+
+function toggleTheme() {
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+}
+
+function setTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('horrorTheme', theme);
+    
+    const icon = document.querySelector('.theme-toggle i');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
 }
 
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
     notification.textContent = message;
-    notification.className = `notification horror-notification ${type} show`;
+    notification.className = `notification ${type} show`;
     
     setTimeout(() => {
         notification.classList.remove('show');
     }, 3000);
 }
 
-function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const newTheme = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    
-    const icon = document.querySelector('.theme-toggle i');
-    icon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-    
-    showNotification(`Тема изменена на ${newTheme === 'dark' ? 'темную' : 'светлую'}`, 'success');
+function showError(message) {
+    elements.gameGrid.innerHTML = `
+        <div class="no-results error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Ошибка</h3>
+            <p>${message}</p>
+            <button onclick="loadCollection()" class="btn-primary">
+                <i class="fas fa-redo"></i> Попробовать снова
+            </button>
+        </div>
+    `;
 }
 
-// Закрытие модальных окон
-function closeModal(modalId = 'gameModal') {
-    document.getElementById(modalId).style.display = 'none';
+function closeModal() {
+    document.getElementById('gameModal').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
+
+// Закрытие модалок по клику вне
+window.onclick = function(event) {
+    const modals = ['gameModal', 'addGameModal', 'addUpcomingModal', 'manageModal'];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (event.target === modal) {
+            switch(modalId) {
+                case 'gameModal': closeModal(); break;
+                case 'addGameModal': closeAddGameModal(); break;
+                case 'addUpcomingModal': closeAddUpcomingModal(); break;
+                case 'manageModal': closeManageModal(); break;
+            }
+        }
+    });
+};
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
