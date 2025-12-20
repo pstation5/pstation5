@@ -254,9 +254,11 @@ body {
 
 .slider-card-cover {
   aspect-ratio: 16 / 9;
-  background-size: cover;
+  background-size: contain;      /* ключевая строка */
   background-position: center;
+  background-repeat: no-repeat;  /* чтобы не повторялась */
   position: relative;
+  background-color: #000;        /* “рамка” вокруг */
 }
 
 .slider-card-cover::before {
@@ -384,8 +386,10 @@ body {
 .game-card-cover {
   position: relative;
   height: 260px;
-  background-size: cover;
+  background-size: contain;      /* ключевая строка */
   background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000;
 }
 
 .game-card-cover::before {
@@ -638,3 +642,4 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
