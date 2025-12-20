@@ -627,3 +627,286 @@ body {
     color: var(--primary-color);
     margin-bottom: 10px;
 }
+
+/* ===== ФОРМЫ ===== */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-group label i {
+    margin-right: 8px;
+    color: var(--primary-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1rem;
+    background: var(--card-color);
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.form-hint a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.form-hint a:hover {
+    text-decoration: underline;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-primary {
+    flex: 1;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+}
+
+.btn-secondary {
+    flex: 1;
+    padding: 15px;
+    background: var(--card-color);
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* ===== ОПЦИИ УПРАВЛЕНИЯ ===== */
+.manage-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.manage-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    background: var(--card-color);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: left;
+    width: 100%;
+}
+
+.manage-option:hover {
+    border-color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+.manage-option i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.manage-option span {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.manage-option small {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* ===== ИНФОРМАЦИЯ О КОЛЛЕКЦИИ ===== */
+.collection-info {
+    background: var(--card-color);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.collection-info h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item span {
+    color: var(--text-secondary);
+}
+
+.info-item strong {
+    color: var(--text-color);
+}
+
+/* ===== УВЕДОМЛЕНИЯ ===== */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--card-color);
+    color: var(--text-color);
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid var(--primary-color);
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    z-index: 10000;
+    max-width: 300px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    border-left-color: #00b894;
+}
+
+.notification.error {
+    border-left-color: #ff4757;
+}
+
+.notification.warning {
+    border-left-color: #fdcb6e;
+}
+
+/* ===== КНОПКА ДОБАВЛЕНИЯ В ПОДВАЛЕ ===== */
+.add-game-btn {
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.add-game-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+}
+
+/* ===== КНОПКА УПРАВЛЕНИЯ В ШАПКЕ ===== */
+.manage-btn {
+    position: absolute;
+    top: 20px;
+    right: 80px;
+    background: var(--card-color);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    transition: var(--transition);
+}
+
+.manage-btn:hover {
+    transform: rotate(30deg);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
+
+/* ===== АДАПТИВНОСТЬ ДЛЯ ФОРМ ===== */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .manage-btn {
+        right: 70px;
+        top: 15px;
+    }
+    
+    .notification {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+}
