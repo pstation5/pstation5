@@ -1,5 +1,5 @@
 // Horror Games Collection App - PS4/PS5 Edition
-const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
+const ADMIN_USER_ID = 321407568; // Ваш Telegram ID
 
 // Telegram WebApp
 const tg = window.Telegram?.WebApp || {
@@ -61,7 +61,7 @@ async function initApp() {
       // Detect platform
       if (window.Telegram.WebApp.platform === 'tdesktop') {
         document.documentElement.classList.add('telegram-desktop');
-        console.log('Telegram Desktop detected - applying desktop optimizations');
+        console.log('Telegram Desktop detected');
       }
     } catch (e) {
       console.error('Telegram WebApp error:', e);
@@ -112,13 +112,57 @@ function setupTelegramUser() {
 
 async function loadData() {
   try {
-    const response = await fetch('games.json');
-    const data = await response.json();
+    console.log('Начинаю загрузку данных...');
     
-    games = data.games || [];
-    upcomingGames = data.upcomingGames || [];
-    comments = data.comments || [];
-    userCollections = data.userCollections || {};
+    // Сначала проверяем localStorage
+    const savedData = localStorage.getItem('psHorrorGamesData');
+    
+    if (savedData) {
+      console.log('Найдены данные в localStorage');
+      const data = JSON.parse(savedData);
+      games = data.games || [];
+      upcomingGames = data.upcomingGames || [];
+      comments = data.comments || [];
+      userCollections = data.userCollections || {};
+      
+      console.log('Загружено из localStorage:', games.length, 'игр');
+    } else {
+      console.log('Данных в localStorage нет, загружаю из games.json');
+      // Если localStorage пустой, читаем из файла
+      try {
+        const response = await fetch('games.json');
+        const data = await response.json();
+        
+        games = data.games || [];
+        upcomingGames = data.upcomingGames || [];
+        comments = data.comments || [];
+        userCollections = data.userCollections || {};
+        
+        console.log('Загружено из games.json:', games.length, 'игр');
+        
+        // Сохраняем в localStorage
+        await saveData();
+      } catch (fetchError) {
+        console.error('Ошибка загрузки games.json:', fetchError);
+        // Если файла нет или ошибка, начинаем с пустых данных
+        games = [];
+        upcomingGames = [];
+        comments = [];
+        userCollections = {};
+      }
+    }
+    
+    // Convert old games from 'genre' to 'genres' if needed
+    games = games.map(game => {
+      if (game.genre && !game.genres) {
+        // Convert single genre to array
+        game.genres = [game.genre];
+        delete game.genre;
+      } else if (!game.genres) {
+        game.genres = [];
+      }
+      return game;
+    });
     
     // Initialize user collection if not exists
     if (currentUser && !userCollections[currentUser.id]) {
@@ -129,6 +173,8 @@ async function loadData() {
     }
     
     filteredGames = [...games];
+    console.log('Всего игр после обработки:', games.length);
+    
   } catch (error) {
     console.error('Error loading data:', error);
     // Fallback to empty data
@@ -141,20 +187,30 @@ async function loadData() {
 }
 
 async function saveData() {
-  const data = {
-    games,
-    upcomingGames,
-    comments,
-    userCollections,
-    lastUpdate: new Date().toISOString()
-  };
-  
-  // For GitHub Pages demo, use localStorage
   try {
+    console.log('Сохранение данных...');
+    
+    const data = {
+      games,
+      upcomingGames,
+      comments,
+      userCollections,
+      lastUpdate: new Date().toISOString()
+    };
+    
+    console.log('Сохраняю:', {
+      totalGames: games.length,
+      games: games.map(g => ({ id: g.id, title: g.title }))
+    });
+    
+    // Save to localStorage
     localStorage.setItem('psHorrorGamesData', JSON.stringify(data));
-    console.log('Data saved successfully');
+    console.log('Данные успешно сохранены в localStorage');
+    
+    return true;
   } catch (e) {
-    console.error('Error saving data:', e);
+    console.error('Ошибка сохранения данных:', e);
+    return false;
   }
 }
 
@@ -172,6 +228,13 @@ function setupEventListeners() {
   // Form submissions
   document.getElementById('addGameForm')?.addEventListener('submit', handleAddGame);
   document.getElementById('addUpcomingForm')?.addEventListener('submit', handleAddUpcomingGame);
+  
+  // Enter key in search
+  elements.searchInput?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      applyFilters();
+    }
+  });
   
   // Close modals on outside click
   document.querySelectorAll('.modal').forEach(modal => {
@@ -278,10 +341,17 @@ function applyFilters() {
     }
     
     // Search filter
-    if (searchTerm && !game.title.toLowerCase().includes(searchTerm) &&
-        !(game.developer && game.developer.toLowerCase().includes(searchTerm)) &&
-        !(game.description && game.description.toLowerCase().includes(searchTerm))) {
-      return false;
+    if (searchTerm) {
+      const searchInTitle = game.title.toLowerCase().includes(searchTerm);
+      const searchInDeveloper = game.developer && game.developer.toLowerCase().includes(searchTerm);
+      const searchInDescription = game.description && game.description.toLowerCase().includes(searchTerm);
+      const searchInGenres = game.genres && game.genres.some(genre => 
+        genre.toLowerCase().includes(searchTerm)
+      );
+      
+      if (!searchInTitle && !searchInDeveloper && !searchInDescription && !searchInGenres) {
+        return false;
+      }
     }
     
     return true;
@@ -364,6 +434,16 @@ function renderGames() {
     const inCollection = currentUser && userCollections[currentUser.id]?.games.includes(game.id);
     const userStatus = currentUser ? userCollections[currentUser.id]?.status[game.id] : null;
     
+    // Format genres for display
+    const genresHTML = game.genres && game.genres.length > 0 ? `
+      <div class="genre-tags">
+        ${game.genres.slice(0, 3).map(genre => `
+          <span class="genre-tag">${formatGenreName(genre)}</span>
+        `).join('')}
+        ${game.genres.length > 3 ? `<span class="genre-tag">+${game.genres.length - 3}</span>` : ''}
+      </div>
+    ` : '';
+    
     card.innerHTML = `
       ${game.isPhysical ? '<div class="physical-badge"><i class="fas fa-compact-disc"></i> Диск</div>' : ''}
       
@@ -385,7 +465,8 @@ function renderGames() {
         ` : ''}
       </div>
       
-      <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover">
+      <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover"
+           onerror="this.src='https://via.placeholder.com/300x400/333333/666666?text=No+Image'">
       
       <div class="game-info">
         <div class="game-title">${escapeHtml(game.title)}</div>
@@ -393,15 +474,7 @@ function renderGames() {
           ${game.platform.toUpperCase()}
         </div>
         
-        <!-- ДОБАВЛЯЕМ ТЕГИ ЖАНРОВ -->
-        ${game.genres && game.genres.length > 0 ? `
-          <div class="genre-tags">
-            ${game.genres.slice(0, 3).map(genre => `
-              <span class="genre-tag">${formatGenreName(genre)}</span>
-            `).join('')}
-            ${game.genres.length > 3 ? `<span class="genre-tag">+${game.genres.length - 3}</span>` : ''}
-          </div>
-        ` : ''}
+        ${genresHTML}
         
         <div class="game-meta">
           <span class="game-year">${game.releaseYear}</span>
@@ -474,67 +547,93 @@ function getStatusText(status) {
 async function handleAddGame(e) {
   e.preventDefault();
   
-  // Получаем жанры и преобразуем в массив
-  const genresInput = document.getElementById('gameGenres').value.trim();
-  const genresArray = genresInput
-    .split(',')
-    .map(genre => genre.trim())
-    .filter(genre => genre.length > 0)
-    .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
-  
-  const newGame = {
-    id: Date.now(),
-    title: document.getElementById('gameTitle').value.trim(),
-    platform: document.getElementById('gamePlatform').value,
-    coverImage: document.getElementById('gameCover').value.trim(),
-    releaseYear: parseInt(document.getElementById('gameYear').value),
-    developer: document.getElementById('gameDeveloper').value.trim(),
-    genres: genresArray, // Теперь это массив!
-    status: document.getElementById('gameStatus').value,
-    isPhysical: document.getElementById('isPhysical').checked,
-    description: document.getElementById('gameDescription').value.trim(),
-    addedDate: new Date().toISOString(),
-    screenshots: []
-  };
-  
-  games.unshift(newGame);
-  filteredGames.unshift(newGame);
-  
-  await saveData();
-  closeAddGameModal();
-  e.target.reset();
-  renderAll();
+  try {
+    // Получаем жанры и преобразуем в массив
+    const genresInput = document.getElementById('gameGenres').value.trim();
+    const genresArray = genresInput
+      .split(',')
+      .map(genre => genre.trim())
+      .filter(genre => genre.length > 0)
+      .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
+    
+    const newGame = {
+      id: Date.now() + Math.floor(Math.random() * 1000), // Уникальный ID
+      title: document.getElementById('gameTitle').value.trim(),
+      platform: document.getElementById('gamePlatform').value,
+      coverImage: document.getElementById('gameCover').value.trim(),
+      releaseYear: parseInt(document.getElementById('gameYear').value),
+      developer: document.getElementById('gameDeveloper').value.trim(),
+      genres: genresArray,
+      status: document.getElementById('gameStatus').value,
+      isPhysical: document.getElementById('isPhysical').checked,
+      description: document.getElementById('gameDescription').value.trim(),
+      addedDate: new Date().toISOString(),
+      screenshots: []
+    };
+    
+    console.log('Добавляю игру:', newGame);
+    
+    games.unshift(newGame);
+    filteredGames.unshift(newGame);
+    
+    const saved = await saveData();
+    if (saved) {
+      console.log('Игра успешно добавлена и сохранена');
+      closeAddGameModal();
+      e.target.reset();
+      renderAll();
+      
+      // Показать уведомление
+      alert(`Игра "${newGame.title}" успешно добавлена!`);
+    } else {
+      alert('Ошибка при сохранении игры!');
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении игры:', error);
+    alert('Произошла ошибка при добавлении игры. Проверьте консоль для деталей.');
+  }
 }
 
 async function handleAddUpcomingGame(e) {
   e.preventDefault();
   
-  const platforms = [];
-  if (document.getElementById('platformPs5').checked) platforms.push('ps5');
-  if (document.getElementById('platformPs4').checked) platforms.push('ps4');
-  
-  const newUpcoming = {
-    id: Date.now(),
-    title: document.getElementById('upcomingTitle').value.trim(),
-    coverImage: document.getElementById('upcomingCover').value.trim(),
-    releaseDate: document.getElementById('upcomingDate').value,
-    developer: document.getElementById('upcomingDeveloper').value.trim(),
-    genre: document.getElementById('upcomingGenre').value,
-    platforms: platforms,
-    addedDate: new Date().toISOString()
-  };
-  
-  upcomingGames.unshift(newUpcoming);
-  
-  await saveData();
-  closeAddUpcomingModal();
-  e.target.reset();
-  renderUpcomingGames();
+  try {
+    const platforms = [];
+    if (document.getElementById('platformPs5').checked) platforms.push('ps5');
+    if (document.getElementById('platformPs4').checked) platforms.push('ps4');
+    
+    const newUpcoming = {
+      id: Date.now() + Math.floor(Math.random() * 1000),
+      title: document.getElementById('upcomingTitle').value.trim(),
+      coverImage: document.getElementById('upcomingCover').value.trim(),
+      releaseDate: document.getElementById('upcomingDate').value,
+      developer: document.getElementById('upcomingDeveloper').value.trim(),
+      genre: document.getElementById('upcomingGenre').value,
+      platforms: platforms,
+      addedDate: new Date().toISOString()
+    };
+    
+    upcomingGames.unshift(newUpcoming);
+    
+    const saved = await saveData();
+    if (saved) {
+      closeAddUpcomingModal();
+      e.target.reset();
+      renderUpcomingGames();
+      alert(`Ожидаемая игра "${newUpcoming.title}" добавлена!`);
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении ожидаемой игры:', error);
+    alert('Ошибка при добавлении игры!');
+  }
 }
 
 function editGame(id) {
   const game = games.find(g => g.id === id);
-  if (!game) return;
+  if (!game) {
+    alert('Игра не найдена!');
+    return;
+  }
   
   // Преобразуем массив жанров в строку через запятую
   const genresString = game.genres ? game.genres.join(', ') : '';
@@ -544,7 +643,7 @@ function editGame(id) {
   document.getElementById('gameCover').value = game.coverImage;
   document.getElementById('gameYear').value = game.releaseYear;
   document.getElementById('gameDeveloper').value = game.developer || '';
-  document.getElementById('gameGenres').value = genresString; // Теперь строкой
+  document.getElementById('gameGenres').value = genresString;
   document.getElementById('gameStatus').value = game.status || 'not-started';
   document.getElementById('isPhysical').checked = game.isPhysical || false;
   document.getElementById('gameDescription').value = game.description || '';
@@ -553,26 +652,39 @@ function editGame(id) {
   const form = document.getElementById('addGameForm');
   const submitBtn = form.querySelector('.btn-primary');
   submitBtn.textContent = 'Сохранить изменения';
-  submitBtn.onclick = async (e) => {
+  
+  // Remove existing event listeners
+  const newSubmitBtn = submitBtn.cloneNode(true);
+  submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+  
+  newSubmitBtn.onclick = async (e) => {
     e.preventDefault();
     
-    game.title = document.getElementById('gameTitle').value.trim();
-    game.platform = document.getElementById('gamePlatform').value;
-    game.coverImage = document.getElementById('gameCover').value.trim();
-    game.releaseYear = parseInt(document.getElementById('gameYear').value);
-    game.developer = document.getElementById('gameDeveloper').value.trim();
-    game.genres = document.getElementById('gameGenres').value
-      .split(',')
-      .map(genre => genre.trim())
-      .filter(genre => genre.length > 0)
-      .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
-    game.status = document.getElementById('gameStatus').value;
-    game.isPhysical = document.getElementById('isPhysical').checked;
-    game.description = document.getElementById('gameDescription').value.trim();
-    
-    await saveData();
-    closeAddGameModal();
-    renderAll();
+    try {
+      game.title = document.getElementById('gameTitle').value.trim();
+      game.platform = document.getElementById('gamePlatform').value;
+      game.coverImage = document.getElementById('gameCover').value.trim();
+      game.releaseYear = parseInt(document.getElementById('gameYear').value);
+      game.developer = document.getElementById('gameDeveloper').value.trim();
+      game.genres = document.getElementById('gameGenres').value
+        .split(',')
+        .map(genre => genre.trim())
+        .filter(genre => genre.length > 0)
+        .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
+      game.status = document.getElementById('gameStatus').value;
+      game.isPhysical = document.getElementById('isPhysical').checked;
+      game.description = document.getElementById('gameDescription').value.trim();
+      
+      const saved = await saveData();
+      if (saved) {
+        closeAddGameModal();
+        renderAll();
+        alert('Изменения сохранены!');
+      }
+    } catch (error) {
+      console.error('Ошибка при сохранении изменений:', error);
+      alert('Ошибка при сохранении изменений!');
+    }
   };
   
   openAddGameModal();
@@ -581,25 +693,68 @@ function editGame(id) {
 async function deleteGame(id) {
   if (!confirm('Удалить игру из коллекции?')) return;
   
-  games = games.filter(g => g.id !== id);
-  filteredGames = filteredGames.filter(g => g.id !== id);
-  
-  await saveData();
-  renderAll();
+  try {
+    const gameIndex = games.findIndex(g => g.id === id);
+    if (gameIndex === -1) {
+      alert('Игра не найдена!');
+      return;
+    }
+    
+    const gameTitle = games[gameIndex].title;
+    
+    games = games.filter(g => g.id !== id);
+    filteredGames = filteredGames.filter(g => g.id !== id);
+    
+    // Remove from all user collections
+    Object.keys(userCollections).forEach(userId => {
+      const userGames = userCollections[userId].games;
+      const userIndex = userGames.indexOf(id);
+      if (userIndex !== -1) {
+        userGames.splice(userIndex, 1);
+      }
+      if (userCollections[userId].status) {
+        delete userCollections[userId].status[id];
+      }
+    });
+    
+    const saved = await saveData();
+    if (saved) {
+      renderAll();
+      alert(`Игра "${gameTitle}" удалена!`);
+    }
+  } catch (error) {
+    console.error('Ошибка при удалении игры:', error);
+    alert('Ошибка при удалении игры!');
+  }
 }
 
 // Open game detail modal
 function openGameDetail(id) {
+  console.log('Открываю детали игры ID:', id);
+  
   const game = games.find(g => g.id === id);
-  if (!game) return;
+  if (!game) {
+    console.error('Игра не найдена с ID:', id);
+    alert('Игра не найдена!');
+    return;
+  }
   
   currentGameId = id;
   
   document.getElementById('detailTitle').textContent = game.title;
   
   const detailContent = document.getElementById('gameDetailContent');
+  
+  // Format genres
+  const genresHTML = game.genres && game.genres.length > 0 
+    ? game.genres.map(genre => `
+        <span class="genre-tag">${formatGenreName(genre)}</span>
+      `).join('')
+    : '<p style="color: var(--text-muted);">Не указаны</p>';
+  
   detailContent.innerHTML = `
-    <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-detail-cover">
+    <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-detail-cover"
+         onerror="this.src='https://via.placeholder.com/600x400/333333/666666?text=No+Image'">
     
     <div class="game-detail-info">
       <div class="info-item">
@@ -617,12 +772,7 @@ function openGameDetail(id) {
       <div class="info-item">
         <h4>Жанры</h4>
         <div class="genre-tags">
-          ${game.genres && game.genres.length > 0 
-            ? game.genres.map(genre => `
-                <span class="genre-tag">${formatGenreName(genre)}</span>
-              `).join('')
-            : '<p style="color: var(--text-muted);">Не указаны</p>'
-          }
+          ${genresHTML}
         </div>
       </div>
       <div class="info-item">
@@ -638,7 +788,7 @@ function openGameDetail(id) {
     ${game.description ? `
       <div class="game-description">
         <h3>Описание</h3>
-        <p>${escapeHtml(game.description)}</p>
+        <p style="white-space: pre-line;">${escapeHtml(game.description)}</p>
       </div>
     ` : ''}
     
@@ -686,30 +836,49 @@ async function toggleCollection(gameId) {
     return;
   }
   
-  if (!userCollections[currentUser.id]) {
-    userCollections[currentUser.id] = {
-      games: [],
-      status: {}
-    };
+  try {
+    if (!userCollections[currentUser.id]) {
+      userCollections[currentUser.id] = {
+        games: [],
+        status: {}
+      };
+    }
+    
+    const userCollection = userCollections[currentUser.id];
+    const game = games.find(g => g.id === gameId);
+    
+    if (!game) {
+      alert('Игра не найдена!');
+      return;
+    }
+    
+    const index = userCollection.games.indexOf(gameId);
+    
+    if (index === -1) {
+      // Add to collection
+      userCollection.games.push(gameId);
+      userCollection.status[gameId] = 'not-started';
+      
+      const saved = await saveData();
+      if (saved) {
+        renderGames();
+        alert(`"${game.title}" добавлена в вашу коллекцию!`);
+      }
+    } else {
+      // Remove from collection
+      userCollection.games.splice(index, 1);
+      delete userCollection.status[gameId];
+      
+      const saved = await saveData();
+      if (saved) {
+        renderGames();
+        alert(`"${game.title}" удалена из вашей коллекции`);
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при работе с коллекцией:', error);
+    alert('Произошла ошибка!');
   }
-  
-  const userCollection = userCollections[currentUser.id];
-  const index = userCollection.games.indexOf(gameId);
-  
-  if (index === -1) {
-    // Add to collection
-    userCollection.games.push(gameId);
-    userCollection.status[gameId] = 'not-started';
-    alert('Игра добавлена в вашу коллекцию!');
-  } else {
-    // Remove from collection
-    userCollection.games.splice(index, 1);
-    delete userCollection.status[gameId];
-    alert('Игра удалена из вашей коллекции');
-  }
-  
-  await saveData();
-  renderGames();
 }
 
 // Share game
@@ -749,7 +918,7 @@ function copyShareLink() {
   const game = games.find(g => g.id === currentGameId);
   if (!game) return;
   
-  const shareText = `Посмотрите "${game.title}" в коллекции хоррор игр для PS4/PS5!`;
+  const shareText = `Посмотрите "${game.title}" в коллекции хоррор игр для PS4/PS5! ${window.location.href}`;
   
   navigator.clipboard.writeText(shareText).then(() => {
     alert('Ссылка скопирована в буфер обмена!');
@@ -799,21 +968,28 @@ function restoreTheme() {
 // Modal functions
 function openAddGameModal() {
   document.getElementById('addGameModal').style.display = 'block';
-  document.getElementById('gameTitle').focus();
+  setTimeout(() => document.getElementById('gameTitle').focus(), 100);
 }
 
 function closeAddGameModal() {
   document.getElementById('addGameModal').style.display = 'none';
   const form = document.getElementById('addGameForm');
   form.reset();
+  
+  // Reset submit button
   const submitBtn = form.querySelector('.btn-primary');
   submitBtn.textContent = 'Добавить игру';
-  submitBtn.onclick = handleAddGame;
+  
+  // Remove old event listeners by cloning
+  const newSubmitBtn = submitBtn.cloneNode(true);
+  submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+  
+  newSubmitBtn.onclick = handleAddGame;
 }
 
 function openAddUpcomingModal() {
   document.getElementById('addUpcomingModal').style.display = 'block';
-  document.getElementById('upcomingTitle').focus();
+  setTimeout(() => document.getElementById('upcomingTitle').focus(), 100);
 }
 
 function closeAddUpcomingModal() {
@@ -837,12 +1013,16 @@ function escapeHtml(str) {
 }
 
 function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  } catch (e) {
+    return dateString;
+  }
 }
 
 function getGameAverageRating(gameId) {
@@ -855,14 +1035,18 @@ function getGameAverageRating(gameId) {
 function formatGenreName(genre) {
   const genreMap = {
     'survival-horror': 'Survival Horror',
-    'psychological-horror': 'Psychological',
+    'survival': 'Survival Horror',
+    'psychological-horror': 'Psychological Horror',
+    'psychological': 'Psychological Horror',
     'action-horror': 'Action Horror',
+    'action': 'Action Horror',
     'sci-fi-horror': 'Sci-Fi Horror',
-    'psychological': 'Psychological',
-    'survival': 'Survival',
-    'action': 'Action',
+    'sci-fi': 'Sci-Fi Horror',
     'horror': 'Horror',
-    'sci-fi': 'Sci-Fi'
+    'adventure': 'Adventure',
+    'puzzle': 'Puzzle',
+    'first-person': 'First Person',
+    'third-person': 'Third Person'
   };
   
   // Если есть в мапе - возвращаем красивое название
@@ -875,4 +1059,33 @@ function formatGenreName(genre) {
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+// Debug function to check data
+function debugData() {
+  console.log('=== DEBUG DATA ===');
+  console.log('Games in memory:', games.length);
+  console.log('Games array:', games);
+  console.log('LocalStorage data:', localStorage.getItem('psHorrorGamesData'));
+  console.log('Current user:', currentUser);
+  console.log('User collections:', userCollections);
+  console.log('==================');
+}
+
+// Clear all data (for testing)
+function clearAllData() {
+  if (confirm('Вы уверены? Это удалит ВСЕ данные приложения.')) {
+    localStorage.removeItem('psHorrorGamesData');
+    localStorage.removeItem('psHorrorTheme');
+    games = [];
+    upcomingGames = [];
+    comments = [];
+    userCollections = {};
+    filteredGames = [];
+    
+    setTimeout(() => {
+      alert('Все данные очищены!');
+      location.reload();
+    }, 500);
+  }
 }
