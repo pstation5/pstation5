@@ -1032,32 +1032,37 @@ body {
     }
 }
 
-/* FIX: скролл внутри модалок и карточек (деталей) */
+/* === FIX SCROLL FOR MODALS & STATS === */
+
+/* фон модалки может скроллиться */
 .modal {
-    overflow-y: auto;              /* скролл по фону модалки */
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
 
+/* ограничиваем высоту окна */
 .modal-content {
-    max-height: 92vh;              /* чтобы модалка не вылезала за экран */
-    overflow: hidden;              /* скролл будет в .modal-body */
+    max-height: 92vh;
+    overflow: hidden;
 }
 
+/* основной скролл внутри контента */
 .modal-body {
-    max-height: calc(92vh - 90px); /* 90px - примерная высота хедера модалки */
-    overflow-y: auto;              /* главный фикс: скролл внутри контента */
+    max-height: calc(92vh - 90px); /* header ≈ 90px */
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-/* На всякий случай: большие модалки тоже */
+/* большие модалки (статистика, карточка игры) */
 .modal-content.modal-large {
     max-height: 92vh !important;
 }
 
-/* FIX: горизонтальный скролл в слайдере ожидаемых релизов на мобилках */
+/* горизонтальный скролл upcoming */
 .upcoming-slider {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x;
 }
+
