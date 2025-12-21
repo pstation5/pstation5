@@ -8,45 +8,7 @@ const tg = window.Telegram?.WebApp || {
   setHeaderColor() {},
   setBackgroundColor() {}
 };
-// Detect Telegram Desktop
-if (window.Telegram?.WebApp?.platform) {
-  if (window.Telegram.WebApp.platform === 'tdesktop') {
-    document.documentElement.classList.add('telegram-desktop');
-    console.log('Running in Telegram Desktop');
-  }
-}
 
-// Обновить функцию initApp:
-async function initApp() {
-  // Telegram setup
-  if (window.Telegram && tg.initDataUnsafe) {
-    try {
-      tg.expand();
-      tg.setHeaderColor('#dc143c');
-      tg.setBackgroundColor('#0a0a0a');
-      
-      // Detect platform
-      if (window.Telegram.WebApp.platform === 'tdesktop') {
-        document.documentElement.classList.add('telegram-desktop');
-        console.log('Telegram Desktop detected - applying desktop optimizations');
-      }
-    } catch (e) {
-      console.error('Telegram WebApp error:', e);
-    }
-    setupTelegramUser();
-  }
-  
-  // Добавить класс если это Telegram Desktop
-  if (navigator.userAgent.includes('TelegramDesktop')) {
-    document.documentElement.classList.add('telegram-desktop');
-  }
-  
-  restoreTheme();
-  await loadData();
-  setupEventListeners();
-  initSwiper();
-  renderAll();
-}
 // App State
 const elements = {
   searchInput: document.getElementById('searchInput'),
@@ -95,8 +57,21 @@ async function initApp() {
       tg.expand();
       tg.setHeaderColor('#dc143c');
       tg.setBackgroundColor('#0a0a0a');
-    } catch (e) {}
+      
+      // Detect platform
+      if (window.Telegram.WebApp.platform === 'tdesktop') {
+        document.documentElement.classList.add('telegram-desktop');
+        console.log('Telegram Desktop detected - applying desktop optimizations');
+      }
+    } catch (e) {
+      console.error('Telegram WebApp error:', e);
+    }
     setupTelegramUser();
+  }
+  
+  // Добавить класс если это Telegram Desktop
+  if (navigator.userAgent.includes('TelegramDesktop')) {
+    document.documentElement.classList.add('telegram-desktop');
   }
   
   restoreTheme();
@@ -184,23 +159,6 @@ async function saveData() {
 }
 
 function setupEventListeners() {
-
-// Валидация поля жанров
-document.getElementById('gameGenres')?.addEventListener('input', function(e) {
-  const value = e.target.value;
-  const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag);
-  
-  // Можно добавить предпросмотр тегов
-  const preview = document.getElementById('tagsPreview');
-  if (preview) {
-    preview.innerHTML = tags.map(tag => `
-      <span class="genre-tag">
-        <i class="fas fa-tag"></i> ${formatGenreName(tag)}
-      </span>
-    `).join('');
-  }
-});
-
   // Search
   elements.searchInput?.addEventListener('input', applyFilters);
   elements.searchButton?.addEventListener('click', applyFilters);
@@ -406,45 +364,59 @@ function renderGames() {
     const inCollection = currentUser && userCollections[currentUser.id]?.games.includes(game.id);
     const userStatus = currentUser ? userCollections[currentUser.id]?.status[game.id] : null;
     
-card.innerHTML = `
-  ${game.isPhysical ? '<div class="physical-badge"><i class="fas fa-compact-disc"></i> Диск</div>' : ''}
-  
-  <div class="game-actions">
-    <!-- Кнопки без изменений -->
-  </div>
-  
-  <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover">
-  
-  <div class="game-info">
-    <div class="game-title">${escapeHtml(game.title)}</div>
-    <div class="game-platform platform-${game.platform}">
-      ${game.platform.toUpperCase()}
-    </div>
-    
-    <!-- ДОБАВЛЯЕМ ТЕГИ ЖАНРОВ -->
-    ${game.genres && game.genres.length > 0 ? `
-      <div class="genre-tags">
-        ${game.genres.slice(0, 3).map(genre => `
-          <span class="genre-tag">${formatGenreName(genre)}</span>
-        `).join('')}
-        ${game.genres.length > 3 ? `<span class="genre-tag">+${game.genres.length - 3}</span>` : ''}
+    card.innerHTML = `
+      ${game.isPhysical ? '<div class="physical-badge"><i class="fas fa-compact-disc"></i> Диск</div>' : ''}
+      
+      <div class="game-actions">
+        <button class="action-btn" onclick="toggleCollection(${game.id}); event.stopPropagation()" 
+                title="${inCollection ? 'Удалить из коллекции' : 'Добавить в коллекцию'}">
+          <i class="fas fa-${inCollection ? 'heart' : 'heart-plus'}"></i>
+        </button>
+        <button class="action-btn" onclick="shareGame(${game.id}); event.stopPropagation()" title="Поделиться">
+          <i class="fas fa-share-alt"></i>
+        </button>
+        ${currentUser?.id === ADMIN_USER_ID ? `
+          <button class="action-btn" onclick="editGame(${game.id}); event.stopPropagation()" title="Редактировать">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="action-btn" onclick="deleteGame(${game.id}); event.stopPropagation()" title="Удалить">
+            <i class="fas fa-trash"></i>
+          </button>
+        ` : ''}
       </div>
-    ` : ''}
-    
-    <div class="game-meta">
-      <span class="game-year">${game.releaseYear}</span>
-      <span class="game-status status-${game.status}">
-        ${getStatusText(game.status)}
-      </span>
-    </div>
-    
-    ${currentUser && userStatus ? `
-      <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
-        Ваш статус: <strong>${getStatusText(userStatus)}</strong>
+      
+      <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover">
+      
+      <div class="game-info">
+        <div class="game-title">${escapeHtml(game.title)}</div>
+        <div class="game-platform platform-${game.platform}">
+          ${game.platform.toUpperCase()}
+        </div>
+        
+        <!-- ДОБАВЛЯЕМ ТЕГИ ЖАНРОВ -->
+        ${game.genres && game.genres.length > 0 ? `
+          <div class="genre-tags">
+            ${game.genres.slice(0, 3).map(genre => `
+              <span class="genre-tag">${formatGenreName(genre)}</span>
+            `).join('')}
+            ${game.genres.length > 3 ? `<span class="genre-tag">+${game.genres.length - 3}</span>` : ''}
+          </div>
+        ` : ''}
+        
+        <div class="game-meta">
+          <span class="game-year">${game.releaseYear}</span>
+          <span class="game-status status-${game.status}">
+            ${getStatusText(game.status)}
+          </span>
+        </div>
+        
+        ${currentUser && userStatus ? `
+          <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+            Ваш статус: <strong>${getStatusText(userStatus)}</strong>
+          </div>
+        ` : ''}
       </div>
-    ` : ''}
-  </div>
-`;
+    `;
     
     elements.gameGrid.appendChild(card);
   });
@@ -590,10 +562,10 @@ function editGame(id) {
     game.releaseYear = parseInt(document.getElementById('gameYear').value);
     game.developer = document.getElementById('gameDeveloper').value.trim();
     game.genres = document.getElementById('gameGenres').value
-  .split(',')
-  .map(genre => genre.trim())
-  .filter(genre => genre.length > 0)
-  .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
+      .split(',')
+      .map(genre => genre.trim())
+      .filter(genre => genre.length > 0)
+      .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
     game.status = document.getElementById('gameStatus').value;
     game.isPhysical = document.getElementById('isPhysical').checked;
     game.description = document.getElementById('gameDescription').value.trim();
@@ -642,17 +614,17 @@ function openGameDetail(id) {
         <h4>Разработчик</h4>
         <p>${escapeHtml(game.developer || 'Не указан')}</p>
       </div>
-`<div class="info-item">
-  <h4>Жанры</h4>
-  <div class="genre-tags">
-    ${game.genres && game.genres.length > 0 
-      ? game.genres.map(genre => `
-          <span class="genre-tag">${formatGenreName(genre)}</span>
-        `).join('')
-      : '<p style="color: var(--text-muted);">Не указаны</p>'
-    }
-  </div>
-</div>`
+      <div class="info-item">
+        <h4>Жанры</h4>
+        <div class="genre-tags">
+          ${game.genres && game.genres.length > 0 
+            ? game.genres.map(genre => `
+                <span class="genre-tag">${formatGenreName(genre)}</span>
+              `).join('')
+            : '<p style="color: var(--text-muted);">Не указаны</p>'
+          }
+        </div>
+      </div>
       <div class="info-item">
         <h4>Статус</h4>
         <p>${getStatusText(game.status)}</p>
@@ -904,5 +876,3 @@ function formatGenreName(genre) {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
-
-
