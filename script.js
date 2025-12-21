@@ -8,7 +8,45 @@ const tg = window.Telegram?.WebApp || {
   setHeaderColor() {},
   setBackgroundColor() {}
 };
+// Detect Telegram Desktop
+if (window.Telegram?.WebApp?.platform) {
+  if (window.Telegram.WebApp.platform === 'tdesktop') {
+    document.documentElement.classList.add('telegram-desktop');
+    console.log('Running in Telegram Desktop');
+  }
+}
 
+// Обновить функцию initApp:
+async function initApp() {
+  // Telegram setup
+  if (window.Telegram && tg.initDataUnsafe) {
+    try {
+      tg.expand();
+      tg.setHeaderColor('#dc143c');
+      tg.setBackgroundColor('#0a0a0a');
+      
+      // Detect platform
+      if (window.Telegram.WebApp.platform === 'tdesktop') {
+        document.documentElement.classList.add('telegram-desktop');
+        console.log('Telegram Desktop detected - applying desktop optimizations');
+      }
+    } catch (e) {
+      console.error('Telegram WebApp error:', e);
+    }
+    setupTelegramUser();
+  }
+  
+  // Добавить класс если это Telegram Desktop
+  if (navigator.userAgent.includes('TelegramDesktop')) {
+    document.documentElement.classList.add('telegram-desktop');
+  }
+  
+  restoreTheme();
+  await loadData();
+  setupEventListeners();
+  initSwiper();
+  renderAll();
+}
 // App State
 const elements = {
   searchInput: document.getElementById('searchInput'),
@@ -51,28 +89,13 @@ let currentGameId = null;
 document.addEventListener('DOMContentLoaded', initApp);
 
 async function initApp() {
-  // Detect Telegram Desktop
-  if (navigator.userAgent.includes('TelegramDesktop')) {
-    document.documentElement.classList.add('telegram-desktop');
-    console.log('Telegram Desktop detected');
-  }
-  
-  // Telegram WebApp setup
-  if (window.Telegram?.WebApp) {
+  // Telegram setup
+  if (window.Telegram && tg.initDataUnsafe) {
     try {
       tg.expand();
       tg.setHeaderColor('#dc143c');
       tg.setBackgroundColor('#0a0a0a');
-      
-      // Detect platform
-      if (tg.platform === 'tdesktop') {
-        document.documentElement.classList.add('telegram-desktop');
-        console.log('Telegram Desktop WebApp detected');
-      }
-    } catch (e) {
-      console.error('Telegram WebApp error:', e);
-    }
-    
+    } catch (e) {}
     setupTelegramUser();
   }
   
@@ -85,35 +108,25 @@ async function initApp() {
 
 function setupTelegramUser() {
   try {
-    const user = tg.initDataUnsafe?.user;
+    const user = tg.initDataUnsafe.user;
     if (user) {
       currentUser = {
         id: user.id,
-        firstName: user.first_name || 'Пользователь',
-        lastName: user.last_name || '',
+        firstName: user.first_name,
+        lastName: user.last_name,
         username: user.username,
-        photoUrl: user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name || 'User')}&background=dc143c&color=fff`
+        photoUrl: user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name)}&background=dc143c&color=fff`
       };
       
-      if (elements.userGreeting) {
-        elements.userGreeting.textContent = currentUser.firstName;
-      }
-      if (elements.userAvatar) {
-        elements.userAvatar.src = currentUser.photoUrl;
-      }
+      elements.userGreeting.textContent = currentUser.firstName;
+      elements.userAvatar.src = currentUser.photoUrl;
       
       // Check if admin
       if (user.id === ADMIN_USER_ID) {
-        if (elements.userRole) {
-          elements.userRole.textContent = 'Администратор';
-        }
-        if (elements.adminControls) {
-          elements.adminControls.style.display = 'flex';
-        }
-        if (elements.adminControls2) {
-          elements.adminControls2.style.display = 'flex';
-        }
-      } else if (elements.userRole) {
+        elements.userRole.textContent = 'Администратор';
+        elements.adminControls.style.display = 'flex';
+        elements.adminControls2.style.display = 'flex';
+      } else {
         elements.userRole.textContent = 'Коллекционер';
       }
     }
@@ -172,31 +185,18 @@ async function saveData() {
 
 function setupEventListeners() {
   // Search
-  if (elements.searchInput) {
-    elements.searchInput.addEventListener('input', applyFilters);
-  }
-  if (elements.searchButton) {
-    elements.searchButton.addEventListener('click', applyFilters);
-  }
+  elements.searchInput?.addEventListener('input', applyFilters);
+  elements.searchButton?.addEventListener('click', applyFilters);
   
   // Sort
-  if (elements.sortSelect) {
-    elements.sortSelect.addEventListener('change', function() {
-      currentSort = this.value;
-      applyFilters();
-    });
-  }
+  elements.sortSelect?.addEventListener('change', function() {
+    currentSort = this.value;
+    applyFilters();
+  });
   
   // Form submissions
-  const addGameForm = document.getElementById('addGameForm');
-  if (addGameForm) {
-    addGameForm.addEventListener('submit', handleAddGame);
-  }
-  
-  const addUpcomingForm = document.getElementById('addUpcomingForm');
-  if (addUpcomingForm) {
-    addUpcomingForm.addEventListener('submit', handleAddUpcomingGame);
-  }
+  document.getElementById('addGameForm')?.addEventListener('submit', handleAddGame);
+  document.getElementById('addUpcomingForm')?.addEventListener('submit', handleAddUpcomingGame);
   
   // Close modals on outside click
   document.querySelectorAll('.modal').forEach(modal => {
@@ -210,24 +210,22 @@ function setupEventListeners() {
 
 // Initialize Swiper for upcoming games
 function initSwiper() {
-  if (document.querySelector('.upcoming-swiper')) {
-    swiper = new Swiper('.upcoming-swiper', {
-      slidesPerView: 1,
-      spaceBetween: 20,
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      breakpoints: {
-        640: { slidesPerView: 2 },
-        1024: { slidesPerView: 3 }
-      }
-    });
-  }
+  swiper = new Swiper('.upcoming-swiper', {
+    slidesPerView: 1,
+    spaceBetween: 20,
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    breakpoints: {
+      640: { slidesPerView: 2 },
+      1024: { slidesPerView: 3 }
+    }
+  });
 }
 
 // Render all components
@@ -252,7 +250,6 @@ function renderUpcomingGames() {
         </div>
       </div>
     `;
-    if (swiper) swiper.update();
     return;
   }
   
@@ -280,8 +277,6 @@ function renderUpcomingGames() {
 
 // Update statistics
 function updateStats() {
-  if (!elements.totalGames) return;
-  
   elements.totalGames.textContent = games.length;
   
   const completed = games.filter(g => g.status === 'completed').length;
@@ -448,7 +443,7 @@ function renderPagination() {
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
   
-  if (!pageNumbers || !prevBtn || !nextBtn) return;
+  if (!pageNumbers) return;
   
   pageNumbers.innerHTML = '';
   
@@ -561,12 +556,7 @@ function editGame(id) {
   const form = document.getElementById('addGameForm');
   const submitBtn = form.querySelector('.btn-primary');
   submitBtn.textContent = 'Сохранить изменения';
-  
-  // Remove old event listener
-  const newSubmitBtn = submitBtn.cloneNode(true);
-  submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
-  
-  newSubmitBtn.onclick = async (e) => {
+  submitBtn.onclick = async (e) => {
     e.preventDefault();
     
     game.title = document.getElementById('gameTitle').value.trim();
@@ -604,14 +594,9 @@ function openGameDetail(id) {
   
   currentGameId = id;
   
-  const detailTitle = document.getElementById('detailTitle');
-  if (detailTitle) {
-    detailTitle.textContent = game.title;
-  }
+  document.getElementById('detailTitle').textContent = game.title;
   
   const detailContent = document.getElementById('gameDetailContent');
-  if (!detailContent) return;
-  
   detailContent.innerHTML = `
     <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-detail-cover">
     
@@ -727,10 +712,7 @@ function shareGame(gameId) {
   currentGameId = gameId;
   
   const shareMessage = `Посмотрите эту игру: ${game.title} (${game.platform.toUpperCase()}, ${game.releaseYear})`;
-  const shareMessageEl = document.getElementById('shareMessage');
-  if (shareMessageEl) {
-    shareMessageEl.textContent = shareMessage;
-  }
+  document.getElementById('shareMessage').textContent = shareMessage;
   
   document.getElementById('shareModal').style.display = 'block';
 }
@@ -741,7 +723,7 @@ function shareToTelegram() {
   
   const text = `🎮 *${game.title}*\n\n📀 Платформа: ${game.platform.toUpperCase()}\n🗓️ Год: ${game.releaseYear}\n🏢 Разработчик: ${game.developer || 'Не указан'}\n\n${game.description ? game.description.substring(0, 200) + '...' : 'Отличная хоррор игра для PS4/PS5!'}`;
   
-  if (window.Telegram?.WebApp && tg.initDataUnsafe?.user) {
+  if (window.Telegram && tg.initDataUnsafe.user) {
     tg.sendData(JSON.stringify({
       action: 'share_game',
       gameId: currentGameId,
@@ -815,14 +797,10 @@ function openAddGameModal() {
 function closeAddGameModal() {
   document.getElementById('addGameModal').style.display = 'none';
   const form = document.getElementById('addGameForm');
-  if (form) {
-    form.reset();
-    const submitBtn = form.querySelector('.btn-primary');
-    if (submitBtn) {
-      submitBtn.textContent = 'Добавить игру';
-      submitBtn.onclick = handleAddGame;
-    }
-  }
+  form.reset();
+  const submitBtn = form.querySelector('.btn-primary');
+  submitBtn.textContent = 'Добавить игру';
+  submitBtn.onclick = handleAddGame;
 }
 
 function openAddUpcomingModal() {
@@ -832,10 +810,7 @@ function openAddUpcomingModal() {
 
 function closeAddUpcomingModal() {
   document.getElementById('addUpcomingModal').style.display = 'none';
-  const form = document.getElementById('addUpcomingForm');
-  if (form) {
-    form.reset();
-  }
+  document.getElementById('addUpcomingForm').reset();
 }
 
 function closeShareModal() {
@@ -845,22 +820,21 @@ function closeShareModal() {
 // Utility functions
 function escapeHtml(str) {
   if (typeof str !== 'string') return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function formatDate(dateString) {
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  } catch (e) {
-    return dateString;
-  }
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 }
 
 function getGameAverageRating(gameId) {
@@ -869,3 +843,6 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
+
+
+
