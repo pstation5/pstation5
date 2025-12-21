@@ -153,11 +153,6 @@
                   <option value="">Выберите платформу</option>
                   <option value="ps5">PlayStation 5</option>
                   <option value="ps4">PlayStation 4</option>
-                  <option value="pc">PC</option>
-                  <option value="xbox">Xbox Series X/S</option>
-                  <option value="switch">Nintendo Switch</option>
-                  <option value="mobile">Mobile</option>
-                  <option value="multi">Multiplatform</option>
                 </select>
               </div>
 
@@ -197,6 +192,12 @@
               <label>Описание</label>
               <textarea id="gameDescription" rows="3" placeholder="Краткое описание игры..."></textarea>
             </div>
+
+            <div class="form-group">
+  <label>Теги (через запятую)</label>
+  <input id="gameTags" type="text" placeholder="Например: open-world, action, fantasy"/>
+  <small>Укажите ключевые слова через запятую</small>
+</div>
 
             <div class="modal-actions">
               <button type="button" class="btn-secondary" onclick="closeAddGameModal()">Отмена</button>
@@ -457,5 +458,6 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
