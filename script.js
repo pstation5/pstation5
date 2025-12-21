@@ -1,9 +1,9 @@
-// Game Collection Hub - Community Edition
+// Game Collection Hub - Community Edition (Enhanced)
 
 // ========== CONFIGURATION ==========
-// ЗАМЕНИТЕ на ваш Telegram ID (может быть как числом, так и строкой)
-const ADMIN_TELEGRAM_ID = "123456789"; // Измените на ваш реальный ID
-const APP_VERSION = '1.0.0';
+// ЗАМЕНИТЕ на ваш Telegram ID
+const ADMIN_TELEGRAM_ID = "321407568"; // Ваш Telegram ID
+const APP_VERSION = '2.0.0';
 
 // ========== TELEGRAM INIT ==========
 const tg = (window.Telegram && window.Telegram.WebApp) 
@@ -41,7 +41,12 @@ let currentUser = {
   name: 'Гость',
   avatar: '',
   isAdmin: false,
-  joinDate: new Date().toISOString()
+  joinDate: new Date().toISOString(),
+  settings: {
+    notifications: true,
+    theme: 'dark',
+    language: 'ru'
+  }
 };
 
 let gamesCatalog = [];
@@ -49,6 +54,7 @@ let userCollection = [];
 let userComments = [];
 let allUsers = [];
 let allComments = [];
+let notifications = [];
 
 let filteredGames = [];
 let currentPage = 1;
@@ -70,7 +76,8 @@ const elements = {
   currentPageEl: document.getElementById('currentPage'),
   totalPagesEl: document.getElementById('totalPages'),
   totalCatalogGames: document.getElementById('totalCatalogGames'),
-  activeUsers: document.getElementById('activeUsers')
+  activeUsers: document.getElementById('activeUsers'),
+  notificationBadge: document.getElementById('notificationBadge')
 };
 
 // ========== MODAL MANAGEMENT ==========
@@ -113,48 +120,8 @@ function closeModal(modalId) {
     modalId.style.display = 'none';
   }
   
-  // Убрать обработчики
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.onclick = null;
-    const closeBtn = modal.querySelector('.close-modal');
-    if (closeBtn) {
-      closeBtn.onclick = null;
-    }
-  }
-  
   currentModal = null;
   unlockBodyScroll();
-}
-
-// Функции для удобства (оставляем для обратной совместимости)
-function closeAddGameModal() {
-  closeModal('addGameModal');
-  document.getElementById('addGameForm').reset();
-}
-
-function closeGameDetailModal() {
-  closeModal('gameDetailModal');
-}
-
-function closeMyCollectionModal() {
-  closeModal('myCollectionModal');
-}
-
-function closeCommentsModal() {
-  closeModal('commentsModal');
-  window.currentCommentGameId = null;
-  window.currentCommentGameTitle = null;
-  document.getElementById('newComment').value = '';
-  setStarRating(0);
-}
-
-function closeProfileModal() {
-  closeModal('profileModal');
-}
-
-function closeStatsModal() {
-  closeModal('statsModal');
 }
 
 // ========== INITIALIZATION ==========
@@ -172,10 +139,9 @@ async function initApp() {
       setupTelegramUser();
     } catch (e) {
       console.warn('Telegram setup error:', e);
-      setupMockUser(true); // Force admin in browser for testing
+      setupMockUser(true);
     }
   } else {
-    // Mock user for browser testing - АДМИН ПО УМОЛЧАНИЮ ДЛЯ ТЕСТИРОВАНИЯ
     setupMockUser(true);
   }
 
@@ -187,22 +153,13 @@ async function initApp() {
   renderGamesCatalog();
   updateFilters();
   updateHeaderStats();
+  updateNotificationBadge();
   
   // Check admin status
   checkAdminStatus();
   
-  // Set up modal close handlers
-  setupModalCloseHandlers();
-}
-
-function setupModalCloseHandlers() {
-  // Устанавливаем обработчики для всех кнопок закрытия
-  document.querySelectorAll('.close-modal').forEach(btn => {
-    const modal = btn.closest('.modal');
-    if (modal) {
-      btn.onclick = () => closeModal(modal.id);
-    }
-  });
+  // Set theme
+  applyTheme();
 }
 
 // ========== USER MANAGEMENT ==========
@@ -210,7 +167,6 @@ function setupTelegramUser() {
   try {
     const user = tg.initDataUnsafe.user;
     if (user) {
-      // Преобразуем ID в строку для надежного сравнения
       const userId = String(user.id);
       const adminId = String(ADMIN_TELEGRAM_ID);
       
@@ -219,13 +175,10 @@ function setupTelegramUser() {
       currentUser.avatar = user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=8b0000&color=fff`;
       currentUser.isAdmin = userId === adminId;
       
-      console.log('User ID:', userId, 'Admin ID:', adminId, 'Is Admin:', currentUser.isAdmin);
-      
       elements.userGreeting.textContent = `Привет, ${user.first_name}!`;
       elements.userAvatar.src = currentUser.avatar;
       elements.userType.textContent = currentUser.isAdmin ? 'Администратор' : 'Пользователь';
       
-      // Register user if new
       registerUser(currentUser);
     }
   } catch (e) {
@@ -235,8 +188,7 @@ function setupTelegramUser() {
 }
 
 function setupMockUser(forceAdmin = false) {
-  // Для тестирования в браузере используем фиксированный ID
-  const mockId = "999999999"; // Фиксированный ID для тестирования
+  const mockId = "999999999";
   const isAdmin = forceAdmin || mockId === String(ADMIN_TELEGRAM_ID);
   
   currentUser = {
@@ -244,14 +196,18 @@ function setupMockUser(forceAdmin = false) {
     name: isAdmin ? 'Администратор' : `Игрок${mockId}`,
     avatar: `https://ui-avatars.com/api/?name=${isAdmin ? 'Admin' : 'Player'}&background=8b0000&color=fff`,
     isAdmin: isAdmin,
-    joinDate: new Date().toISOString()
+    joinDate: new Date().toISOString(),
+    settings: {
+      notifications: true,
+      theme: 'dark',
+      language: 'ru'
+    }
   };
   
   elements.userGreeting.textContent = `Привет, ${currentUser.name}!`;
   elements.userAvatar.src = currentUser.avatar;
   elements.userType.textContent = currentUser.isAdmin ? 'Администратор' : 'Пользователь';
   
-  console.log('Mock user created:', currentUser);
   registerUser(currentUser);
 }
 
@@ -263,7 +219,12 @@ function registerUser(user) {
       name: user.name,
       avatar: user.avatar,
       joinDate: new Date().toISOString(),
-      lastActive: new Date().toISOString()
+      lastActive: new Date().toISOString(),
+      stats: {
+        gamesAdded: 0,
+        commentsPosted: 0,
+        ratingsGiven: 0
+      }
     });
     saveAllData();
   } else {
@@ -273,12 +234,9 @@ function registerUser(user) {
 
 // ========== ADMIN FUNCTIONS ==========
 function checkAdminStatus() {
-  console.log('Checking admin status:', currentUser);
-  
   if (currentUser.isAdmin) {
     elements.adminPanel.style.display = 'block';
     elements.adminToggleBtn.classList.add('admin-active');
-    showNotification('Режим администратора активен', 'success');
   } else {
     elements.adminPanel.style.display = 'none';
     elements.adminToggleBtn.classList.remove('admin-active');
@@ -302,7 +260,6 @@ function toggleAdminMode() {
 
 // ========== DATA MANAGEMENT ==========
 async function loadAllData() {
-  // Try to load from localStorage first
   const saved = localStorage.getItem('gameCollectionHub');
   if (saved) {
     try {
@@ -310,21 +267,21 @@ async function loadAllData() {
       gamesCatalog = data.gamesCatalog || [];
       allUsers = data.allUsers || [];
       allComments = data.allComments || [];
+      notifications = data.notifications || [];
       
-      // Load user-specific data
       const userKey = `user_${currentUser.id}`;
       const userData = localStorage.getItem(userKey);
       if (userData) {
         const user = JSON.parse(userData);
         userCollection = user.collection || [];
         userComments = user.comments || [];
+        currentUser.settings = user.settings || currentUser.settings;
       }
     } catch (e) {
       console.error('Data load error:', e);
     }
   }
   
-  // If no games, add some sample games (admin can add more)
   if (gamesCatalog.length === 0) {
     gamesCatalog = getSampleGames();
   }
@@ -333,21 +290,20 @@ async function loadAllData() {
 }
 
 function saveAllData() {
-  // Save public data
   const publicData = {
     gamesCatalog,
     allUsers,
     allComments,
+    notifications,
     lastUpdate: new Date().toISOString()
   };
   localStorage.setItem('gameCollectionHub', JSON.stringify(publicData));
   
-  // Save user data
   const userKey = `user_${currentUser.id}`;
   const userData = {
     collection: userCollection,
     comments: userComments,
-    preferences: { theme: currentTheme }
+    settings: currentUser.settings
   };
   localStorage.setItem(userKey, JSON.stringify(userData));
 }
@@ -368,7 +324,8 @@ function getSampleGames() {
       addedBy: ADMIN_TELEGRAM_ID,
       addedDate: new Date().toISOString(),
       rating: 4.8,
-      ratingCount: 1250
+      ratingCount: 1250,
+      tags: ["open-world", "action", "fantasy"]
     },
     {
       id: 2,
@@ -384,7 +341,8 @@ function getSampleGames() {
       addedBy: ADMIN_TELEGRAM_ID,
       addedDate: new Date().toISOString(),
       rating: 4.7,
-      ratingCount: 980
+      ratingCount: 980,
+      tags: ["mythology", "action", "story-driven"]
     },
     {
       id: 3,
@@ -400,33 +358,28 @@ function getSampleGames() {
       addedBy: ADMIN_TELEGRAM_ID,
       addedDate: new Date().toISOString(),
       rating: 4.6,
-      ratingCount: 750
+      ratingCount: 750,
+      tags: ["survival-horror", "remake", "action"]
     }
   ];
 }
 
 // ========== EVENT LISTENERS ==========
 function setupEventListeners() {
-  // Search and filter events
   elements.searchInput?.addEventListener('input', applyFilters);
   elements.platformFilter?.addEventListener('change', applyFilters);
   elements.genreFilter?.addEventListener('change', applyFilters);
   elements.sortSelect?.addEventListener('change', applyFilters);
   
-  // Form submissions
   document.getElementById('addGameForm')?.addEventListener('submit', handleAddGame);
   
-  // Also trigger search on Enter key
   elements.searchInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      applyFilters();
-    }
+    if (e.key === 'Enter') applyFilters();
   });
 }
 
 // ========== RENDER FUNCTIONS ==========
 function updateFilters() {
-  // Update platform filter
   const platforms = [...new Set(gamesCatalog.map(g => g.platformName).filter(Boolean))];
   elements.platformFilter.innerHTML = '<option value="">Все платформы</option>';
   platforms.forEach(platform => {
@@ -436,7 +389,6 @@ function updateFilters() {
     elements.platformFilter.appendChild(option);
   });
   
-  // Update genre filter
   const genres = [...new Set(gamesCatalog.map(g => g.genreName).filter(Boolean))];
   elements.genreFilter.innerHTML = '<option value="">Все жанры</option>';
   genres.forEach(genre => {
@@ -456,25 +408,24 @@ function applyFilters() {
   filteredGames = gamesCatalog.filter(game => {
     const matchesSearch = !searchTerm || 
       (game.title || '').toLowerCase().includes(searchTerm) ||
-      (game.developer || '').toLowerCase().includes(searchTerm);
+      (game.developer || '').toLowerCase().includes(searchTerm) ||
+      (game.description || '').toLowerCase().includes(searchTerm) ||
+      (game.tags || []).some(tag => tag.toLowerCase().includes(searchTerm));
+    
     const matchesPlatform = !platform || game.platformName === platform;
     const matchesGenre = !genre || game.genreName === genre;
+    
     return matchesSearch && matchesPlatform && matchesGenre;
   });
   
-  // Sort
   filteredGames.sort((a, b) => {
     switch (sortBy) {
-      case 'rating':
-        return (b.rating || 0) - (a.rating || 0);
-      case 'popular':
-        return (b.ratingCount || 0) - (a.ratingCount || 0);
-      case 'newest':
-        return b.year - a.year;
-      case 'title':
-        return (a.title || '').localeCompare(b.title || '');
-      default:
-        return 0;
+      case 'rating': return (b.rating || 0) - (a.rating || 0);
+      case 'popular': return (b.ratingCount || 0) - (a.ratingCount || 0);
+      case 'newest': return new Date(b.addedDate) - new Date(a.addedDate);
+      case 'year': return b.year - a.year;
+      case 'title': return (a.title || '').localeCompare(b.title || '');
+      default: return 0;
     }
   });
   
@@ -496,8 +447,8 @@ function renderGamesCatalog() {
   
   if (pageGames.length === 0) {
     elements.gameGrid.innerHTML = `
-      <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
-        <i class="fas fa-gamepad" style="font-size: 3rem; margin-bottom: 20px;"></i>
+      <div class="empty-state">
+        <i class="fas fa-gamepad"></i>
         <h3>Игры не найдены</h3>
         <p>Попробуйте изменить параметры поиска</p>
       </div>
@@ -507,11 +458,23 @@ function renderGamesCatalog() {
   
   pageGames.forEach(game => {
     const isInCollection = userCollection.some(g => g.id === game.id);
+    const userComment = userComments.find(c => c.gameId === game.id);
+    const userRating = userComment ? userComment.rating : null;
     
     const card = document.createElement('div');
     card.className = 'game-card';
     card.innerHTML = `
       <img class="game-cover" src="${game.coverImage || 'https://via.placeholder.com/280x200/1a1a1a/ffffff?text=No+Cover'}" alt="${escapeHtml(game.title)}">
+      ${currentUser.isAdmin ? `
+        <div class="game-admin-actions">
+          <button class="admin-action-btn edit-game-btn" onclick="editGame(${game.id}); event.stopPropagation()">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="admin-action-btn delete-game-btn" onclick="deleteGame(${game.id}); event.stopPropagation()">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      ` : ''}
       <div class="game-info">
         <div class="game-title">${escapeHtml(game.title)}</div>
         <div class="game-meta">
@@ -522,6 +485,7 @@ function renderGamesCatalog() {
           <i class="fas fa-star"></i>
           <span>${game.rating?.toFixed(1) || 'Нет оценок'}</span>
           <small>(${game.ratingCount || 0})</small>
+          ${userRating ? `<span class="user-rating">Ваша оценка: ${userRating}/5</span>` : ''}
         </div>
         <div class="game-actions">
           <button class="add-to-collection-btn ${isInCollection ? 'in-collection' : ''}" 
@@ -558,7 +522,6 @@ function toggleGameCollection(gameId) {
   const index = userCollection.findIndex(g => g.id === gameId);
   
   if (index === -1) {
-    // Add to collection
     userCollection.push({
       id: game.id,
       title: game.title,
@@ -569,11 +532,12 @@ function toggleGameCollection(gameId) {
       addedDate: new Date().toISOString(),
       status: 'owned',
       userRating: null,
-      notes: ''
+      notes: '',
+      playtime: 0,
+      completion: 0
     });
     showNotification('Игра добавлена в вашу коллекцию!', 'success');
   } else {
-    // Remove from collection
     userCollection.splice(index, 1);
     showNotification('Игра удалена из коллекции', 'info');
   }
@@ -595,8 +559,8 @@ function renderMyCollection() {
   
   if (userCollection.length === 0) {
     container.innerHTML = `
-      <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
-        <i class="fas fa-heart" style="font-size: 3rem; margin-bottom: 20px;"></i>
+      <div class="empty-state">
+        <i class="fas fa-heart"></i>
         <h3>Коллекция пуста</h3>
         <p>Добавляйте игры, нажимая на сердечко</p>
       </div>
@@ -606,6 +570,7 @@ function renderMyCollection() {
   
   container.innerHTML = '';
   userCollection.forEach(game => {
+    const originalGame = gamesCatalog.find(g => g.id === game.id);
     const card = document.createElement('div');
     card.className = 'game-card';
     card.innerHTML = `
@@ -622,6 +587,20 @@ function renderMyCollection() {
             <span>${game.userRating}/5</span>
           </div>
         ` : ''}
+        ${game.completion ? `
+          <div class="completion-bar">
+            <div class="completion-fill" style="width: ${game.completion}%"></div>
+            <span>${game.completion}% завершено</span>
+          </div>
+        ` : ''}
+        <div class="collection-actions">
+          <button class="btn-small" onclick="editCollectionGame(${game.id}); event.stopPropagation()">
+            <i class="fas fa-edit"></i> Изменить
+          </button>
+          <button class="btn-small btn-danger" onclick="removeFromCollection(${game.id}); event.stopPropagation()">
+            <i class="fas fa-trash"></i> Удалить
+          </button>
+        </div>
       </div>
     `;
     card.onclick = () => openGameDetail(game.id);
@@ -639,6 +618,91 @@ function updateMyCollectionStats() {
   document.getElementById('myAvgRating').textContent = avgRating;
   
   document.getElementById('myCommentsCount').textContent = userComments.length;
+  
+  const totalPlaytime = userCollection.reduce((sum, g) => sum + (g.playtime || 0), 0);
+  document.getElementById('myPlaytime').textContent = `${Math.floor(totalPlaytime / 60)}ч ${totalPlaytime % 60}м`;
+}
+
+function editCollectionGame(gameId) {
+  const game = userCollection.find(g => g.id === gameId);
+  if (!game) return;
+  
+  const modalContent = `
+    <div class="form-group">
+      <label>Статус</label>
+      <select id="editGameStatus">
+        <option value="planned" ${game.status === 'planned' ? 'selected' : ''}>В планах</option>
+        <option value="playing" ${game.status === 'playing' ? 'selected' : ''}>Играю</option>
+        <option value="completed" ${game.status === 'completed' ? 'selected' : ''}>Пройдена</option>
+        <option value="abandoned" ${game.status === 'abandoned' ? 'selected' : ''}>Заброшена</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Ваша оценка (1-10)</label>
+      <input type="number" id="editGameRating" min="1" max="10" value="${game.userRating || ''}" step="0.5">
+    </div>
+    <div class="form-group">
+      <label>Время игры (часы)</label>
+      <input type="number" id="editGamePlaytime" min="0" value="${Math.floor((game.playtime || 0) / 60)}">
+    </div>
+    <div class="form-group">
+      <label>Процент завершения</label>
+      <input type="range" id="editGameCompletion" min="0" max="100" value="${game.completion || 0}">
+      <span id="completionValue">${game.completion || 0}%</span>
+    </div>
+    <div class="form-group">
+      <label>Заметки</label>
+      <textarea id="editGameNotes" rows="3">${game.notes || ''}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('editCollectionModal')">Отмена</button>
+      <button class="btn-primary" onclick="saveCollectionGame(${gameId})">Сохранить</button>
+    </div>
+  `;
+  
+  document.getElementById('editCollectionContent').innerHTML = modalContent;
+  document.getElementById('editGameCompletion').addEventListener('input', (e) => {
+    document.getElementById('completionValue').textContent = e.target.value + '%';
+  });
+  
+  openModal('editCollectionModal');
+}
+
+function saveCollectionGame(gameId) {
+  const gameIndex = userCollection.findIndex(g => g.id === gameId);
+  if (gameIndex === -1) return;
+  
+  const status = document.getElementById('editGameStatus').value;
+  const rating = document.getElementById('editGameRating').value;
+  const playtime = document.getElementById('editGamePlaytime').value;
+  const completion = document.getElementById('editGameCompletion').value;
+  const notes = document.getElementById('editGameNotes').value;
+  
+  userCollection[gameIndex] = {
+    ...userCollection[gameIndex],
+    status: status,
+    userRating: rating ? parseFloat(rating) : null,
+    playtime: playtime ? parseInt(playtime) * 60 : 0,
+    completion: parseInt(completion),
+    notes: notes
+  };
+  
+  saveAllData();
+  closeModal('editCollectionModal');
+  renderMyCollection();
+  updateMyCollectionStats();
+  showNotification('Настройки игры обновлены', 'success');
+}
+
+function removeFromCollection(gameId) {
+  if (!confirm('Удалить игру из коллекции?')) return;
+  
+  userCollection = userCollection.filter(g => g.id !== gameId);
+  saveAllData();
+  renderMyCollection();
+  updateMyCollectionStats();
+  renderGamesCatalog();
+  showNotification('Игра удалена из коллекции', 'info');
 }
 
 // ========== COMMENTS SYSTEM ==========
@@ -666,8 +730,8 @@ function renderComments(gameId) {
   
   if (gameComments.length === 0) {
     container.innerHTML = `
-      <div class="empty-state" style="text-align: center; padding: 20px; color: var(--text-secondary);">
-        <i class="fas fa-comment-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+      <div class="empty-state">
+        <i class="fas fa-comment-slash"></i>
         <p>Пока нет комментариев. Будьте первым!</p>
       </div>
     `;
@@ -676,6 +740,7 @@ function renderComments(gameId) {
   
   container.innerHTML = '';
   gameComments.forEach(comment => {
+    const isOwnComment = comment.userId === currentUser.id;
     const commentElement = document.createElement('div');
     commentElement.className = 'comment-item';
     commentElement.innerHTML = `
@@ -687,15 +752,35 @@ function renderComments(gameId) {
             <div class="comment-date">${formatDate(comment.date)}</div>
           </div>
         </div>
-        ${comment.rating ? `
-          <div class="comment-rating">
-            ${Array(5).fill(0).map((_, i) => 
-              `<i class="fas fa-star ${i < comment.rating ? 'active' : ''}"></i>`
-            ).join('')}
-          </div>
-        ` : ''}
+        <div class="comment-actions">
+          ${comment.rating ? `
+            <div class="comment-rating">
+              ${Array(5).fill(0).map((_, i) => 
+                `<i class="fas fa-star ${i < comment.rating ? 'active' : ''}"></i>`
+              ).join('')}
+            </div>
+          ` : ''}
+          ${isOwnComment ? `
+            <button class="comment-delete-btn" onclick="deleteComment(${comment.id})">
+              <i class="fas fa-trash"></i>
+            </button>
+          ` : ''}
+        </div>
       </div>
       <div class="comment-text">${escapeHtml(comment.text)}</div>
+      ${comment.replies && comment.replies.length > 0 ? `
+        <div class="comment-replies">
+          ${comment.replies.map(reply => `
+            <div class="reply-item">
+              <div class="reply-header">
+                <strong>${escapeHtml(reply.userName)}</strong>
+                <span class="reply-date">${formatDate(reply.date)}</span>
+              </div>
+              <div class="reply-text">${escapeHtml(reply.text)}</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
     `;
     container.appendChild(commentElement);
   });
@@ -740,29 +825,36 @@ function submitComment() {
     userName: currentUser.name,
     userAvatar: currentUser.avatar,
     text: text,
-    rating: rating,
-    date: new Date().toISOString()
+    rating: rating > 0 ? rating : null,
+    date: new Date().toISOString(),
+    replies: []
   };
   
-  // Add to global comments
   allComments.push(comment);
-  
-  // Add to user comments
   userComments.push(comment);
   
-  // Update game rating
   updateGameRating(window.currentCommentGameId);
   
-  // Clear form
   document.getElementById('newComment').value = '';
   setStarRating(0);
   
-  // Save and update
   saveAllData();
   renderComments(window.currentCommentGameId);
   renderGamesCatalog();
   
   showNotification('Комментарий добавлен!', 'success');
+}
+
+function deleteComment(commentId) {
+  if (!confirm('Удалить комментарий?')) return;
+  
+  allComments = allComments.filter(c => c.id !== commentId);
+  userComments = userComments.filter(c => c.id !== commentId);
+  
+  saveAllData();
+  renderComments(window.currentCommentGameId);
+  renderGamesCatalog();
+  showNotification('Комментарий удален', 'info');
 }
 
 function updateGameRating(gameId) {
@@ -786,6 +878,8 @@ function openGameDetail(gameId) {
   if (!game) return;
   
   const inCollection = userCollection.some(g => g.id === gameId);
+  const collectionGame = userCollection.find(g => g.id === gameId);
+  const userComment = userComments.find(c => c.gameId === gameId);
   
   document.getElementById('detailTitle').textContent = game.title;
   document.getElementById('gameDetailContent').innerHTML = `
@@ -806,6 +900,25 @@ function openGameDetail(gameId) {
           </span>
         </div>
         <p style="color: var(--text-secondary); line-height: 1.6;">${escapeHtml(game.description || '')}</p>
+        ${game.tags && game.tags.length > 0 ? `
+          <div style="margin-top: 15px;">
+            <strong>Теги:</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+              ${game.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+        ${collectionGame ? `
+          <div style="margin-top: 20px; padding: 15px; background: var(--card-bg); border-radius: 10px;">
+            <h4><i class="fas fa-heart"></i> В вашей коллекции</h4>
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 10px; margin-top: 10px;">
+              ${collectionGame.status ? `<strong>Статус:</strong><span>${getStatusText(collectionGame.status)}</span>` : ''}
+              ${collectionGame.userRating ? `<strong>Ваша оценка:</strong><span>${collectionGame.userRating}/10</span>` : ''}
+              ${collectionGame.playtime ? `<strong>Время игры:</strong><span>${Math.floor(collectionGame.playtime / 60)}ч ${collectionGame.playtime % 60}м</span>` : ''}
+              ${collectionGame.completion ? `<strong>Завершено:</strong><span>${collectionGame.completion}%</span>` : ''}
+            </div>
+          </div>
+        ` : ''}
       </div>
     </div>
     
@@ -816,13 +929,28 @@ function openGameDetail(gameId) {
       <button class="btn-secondary" onclick="closeModal('gameDetailModal'); openGameComments(${game.id})">
         <i class="fas fa-comment"></i> Комментарии (${getGameCommentsCount(game.id)})
       </button>
+      ${currentUser.isAdmin ? `
+        <button class="btn-warning" onclick="closeModal('gameDetailModal'); editGame(${game.id})">
+          <i class="fas fa-edit"></i> Редактировать
+        </button>
+      ` : ''}
     </div>
   `;
   
   openModal('gameDetailModal');
 }
 
-// ========== ADMIN: ADD GAME ==========
+function getStatusText(status) {
+  const statuses = {
+    'planned': 'В планах',
+    'playing': 'Играю',
+    'completed': 'Пройдена',
+    'abandoned': 'Заброшена'
+  };
+  return statuses[status] || status;
+}
+
+// ========== ADMIN: GAME MANAGEMENT ==========
 function openAddGameModal() {
   if (!currentUser.isAdmin) {
     showNotification('Только администратор может добавлять игры', 'warning');
@@ -834,10 +962,8 @@ function openAddGameModal() {
 function handleAddGame(e) {
   e.preventDefault();
   
-  console.log('Trying to add game as admin:', currentUser);
-  
   if (!currentUser.isAdmin) {
-    showNotification('Доступ запрещен. Вы не администратор.', 'error');
+    showNotification('Доступ запрещен', 'error');
     return;
   }
   
@@ -848,6 +974,7 @@ function handleAddGame(e) {
   const coverImage = document.getElementById('gameCover').value.trim();
   const developer = document.getElementById('gameDeveloper').value.trim();
   const description = document.getElementById('gameDescription').value.trim();
+  const tags = document.getElementById('gameTags').value.trim();
   
   if (!title || !platform || !year || !genre || !coverImage) {
     showNotification('Заполните обязательные поля', 'warning');
@@ -855,24 +982,15 @@ function handleAddGame(e) {
   }
   
   const platformNames = {
-    ps5: 'PlayStation 5',
-    ps4: 'PlayStation 4',
-    pc: 'PC',
-    xbox: 'Xbox Series X/S',
-    switch: 'Nintendo Switch',
-    mobile: 'Mobile',
-    multi: 'Multiplatform'
+    ps5: 'PlayStation 5', ps4: 'PlayStation 4', pc: 'PC',
+    xbox: 'Xbox Series X/S', switch: 'Nintendo Switch',
+    mobile: 'Mobile', multi: 'Multiplatform'
   };
   
   const genreNames = {
-    action: 'Экшн',
-    rpg: 'RPG',
-    horror: 'Хоррор',
-    adventure: 'Приключение',
-    strategy: 'Стратегия',
-    sports: 'Спорт',
-    racing: 'Гонки',
-    simulator: 'Симулятор'
+    action: 'Экшн', rpg: 'RPG', horror: 'Хоррор',
+    adventure: 'Приключение', strategy: 'Стратегия',
+    sports: 'Спорт', racing: 'Гонки', simulator: 'Симулятор'
   };
   
   const newGame = {
@@ -886,6 +1004,7 @@ function handleAddGame(e) {
     coverImage,
     developer,
     description,
+    tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : [],
     addedBy: currentUser.id,
     addedDate: new Date().toISOString(),
     rating: null,
@@ -906,35 +1025,361 @@ function handleAddGame(e) {
   showNotification('Игра добавлена в каталог!', 'success');
 }
 
+function editGame(gameId) {
+  if (!currentUser.isAdmin) {
+    showNotification('Доступ запрещен', 'error');
+    return;
+  }
+  
+  const game = gamesCatalog.find(g => g.id === gameId);
+  if (!game) return;
+  
+  const modalContent = `
+    <div class="form-group">
+      <label>Название игры *</label>
+      <input id="editGameTitle" type="text" value="${escapeHtml(game.title)}" required>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Платформа *</label>
+        <select id="editGamePlatform" required>
+          <option value="ps5" ${game.platform === 'ps5' ? 'selected' : ''}>PlayStation 5</option>
+          <option value="ps4" ${game.platform === 'ps4' ? 'selected' : ''}>PlayStation 4</option>
+          <option value="pc" ${game.platform === 'pc' ? 'selected' : ''}>PC</option>
+          <option value="xbox" ${game.platform === 'xbox' ? 'selected' : ''}>Xbox Series X/S</option>
+          <option value="switch" ${game.platform === 'switch' ? 'selected' : ''}>Nintendo Switch</option>
+          <option value="mobile" ${game.platform === 'mobile' ? 'selected' : ''}>Mobile</option>
+          <option value="multi" ${game.platform === 'multi' ? 'selected' : ''}>Multiplatform</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Год релиза *</label>
+        <input id="editGameYear" type="number" value="${game.year}" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Жанр *</label>
+      <select id="editGameGenre" required>
+        <option value="action" ${game.genre === 'action' ? 'selected' : ''}>Экшн</option>
+        <option value="rpg" ${game.genre === 'rpg' ? 'selected' : ''}>RPG</option>
+        <option value="horror" ${game.genre === 'horror' ? 'selected' : ''}>Хоррор</option>
+        <option value="adventure" ${game.genre === 'adventure' ? 'selected' : ''}>Приключение</option>
+        <option value="strategy" ${game.genre === 'strategy' ? 'selected' : ''}>Стратегия</option>
+        <option value="sports" ${game.genre === 'sports' ? 'selected' : ''}>Спорт</option>
+        <option value="racing" ${game.genre === 'racing' ? 'selected' : ''}>Гонки</option>
+        <option value="simulator" ${game.genre === 'simulator' ? 'selected' : ''}>Симулятор</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Обложка (URL) *</label>
+      <input id="editGameCover" type="url" value="${game.coverImage}" required>
+    </div>
+    <div class="form-group">
+      <label>Разработчик</label>
+      <input id="editGameDeveloper" type="text" value="${game.developer || ''}">
+    </div>
+    <div class="form-group">
+      <label>Описание</label>
+      <textarea id="editGameDescription" rows="3">${game.description || ''}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Теги (через запятую)</label>
+      <input id="editGameTags" type="text" value="${game.tags ? game.tags.join(', ') : ''}">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('editGameModal')">Отмена</button>
+      <button class="btn-primary" onclick="saveGameEdit(${gameId})">Сохранить</button>
+    </div>
+  `;
+  
+  document.getElementById('editGameContent').innerHTML = modalContent;
+  openModal('editGameModal');
+}
+
+function saveGameEdit(gameId) {
+  const gameIndex = gamesCatalog.findIndex(g => g.id === gameId);
+  if (gameIndex === -1) return;
+  
+  const title = document.getElementById('editGameTitle').value.trim();
+  const platform = document.getElementById('editGamePlatform').value;
+  const year = parseInt(document.getElementById('editGameYear').value);
+  const genre = document.getElementById('editGameGenre').value;
+  const coverImage = document.getElementById('editGameCover').value.trim();
+  const developer = document.getElementById('editGameDeveloper').value.trim();
+  const description = document.getElementById('editGameDescription').value.trim();
+  const tags = document.getElementById('editGameTags').value.trim();
+  
+  const platformNames = {
+    ps5: 'PlayStation 5', ps4: 'PlayStation 4', pc: 'PC',
+    xbox: 'Xbox Series X/S', switch: 'Nintendo Switch',
+    mobile: 'Mobile', multi: 'Multiplatform'
+  };
+  
+  const genreNames = {
+    action: 'Экшн', rpg: 'RPG', horror: 'Хоррор',
+    adventure: 'Приключение', strategy: 'Стратегия',
+    sports: 'Спорт', racing: 'Гонки', simulator: 'Симулятор'
+  };
+  
+  gamesCatalog[gameIndex] = {
+    ...gamesCatalog[gameIndex],
+    title,
+    platform,
+    platformName: platformNames[platform] || platform,
+    year,
+    genre,
+    genreName: genreNames[genre] || genre,
+    coverImage,
+    developer,
+    description,
+    tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : []
+  };
+  
+  saveAllData();
+  closeModal('editGameModal');
+  applyFilters();
+  showNotification('Игра обновлена', 'success');
+}
+
+function deleteGame(gameId) {
+  if (!currentUser.isAdmin) {
+    showNotification('Доступ запрещен', 'error');
+    return;
+  }
+  
+  if (!confirm('Удалить игру из каталога?\nВсе комментарии и рейтинги также будут удалены.')) return;
+  
+  gamesCatalog = gamesCatalog.filter(g => g.id !== gameId);
+  allComments = allComments.filter(c => c.gameId !== gameId);
+  userCollection = userCollection.filter(g => g.id !== gameId);
+  userComments = userComments.filter(c => c.gameId !== gameId);
+  
+  filteredGames = filteredGames.filter(g => g.id !== gameId);
+  
+  saveAllData();
+  renderGamesCatalog();
+  updateHeaderStats();
+  showNotification('Игра удалена', 'info');
+}
+
 function manageGames() {
   if (!currentUser.isAdmin) {
     showNotification('Доступ запрещен', 'error');
     return;
   }
   
-  let gamesList = 'Список всех игр в каталоге:\n\n';
-  gamesCatalog.forEach((game, index) => {
-    gamesList += `${index + 1}. ${game.title} (${game.platformName}, ${game.year})\n`;
+  openModal('manageGamesModal');
+  renderGamesManagement();
+}
+
+function renderGamesManagement() {
+  const container = document.getElementById('gamesManagementList');
+  if (!container) return;
+  
+  if (gamesCatalog.length === 0) {
+    container.innerHTML = '<div class="empty-state">Каталог игр пуст</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  gamesCatalog.forEach(game => {
+    const gameElement = document.createElement('div');
+    gameElement.className = 'manage-game-item';
+    gameElement.innerHTML = `
+      <div class="manage-game-info">
+        <img src="${game.coverImage || 'https://via.placeholder.com/60x60/1a1a1a/ffffff?text=No+Cover'}" alt="${escapeHtml(game.title)}">
+        <div>
+          <strong>${escapeHtml(game.title)}</strong>
+          <small>${escapeHtml(game.platformName)} • ${game.year} • ${game.genreName}</small>
+        </div>
+      </div>
+      <div class="manage-game-stats">
+        <span><i class="fas fa-star"></i> ${game.rating?.toFixed(1) || '—'}</span>
+        <span><i class="fas fa-comment"></i> ${allComments.filter(c => c.gameId === game.id).length}</span>
+        <span><i class="fas fa-heart"></i> ${userCollection.filter(g => g.id === game.id).length}</span>
+      </div>
+      <div class="manage-game-actions">
+        <button class="btn-small" onclick="editGame(${game.id})"><i class="fas fa-edit"></i></button>
+        <button class="btn-small btn-danger" onclick="deleteGame(${game.id})"><i class="fas fa-trash"></i></button>
+      </div>
+    `;
+    container.appendChild(gameElement);
   });
-  
-  alert(gamesList);
 }
 
-// ========== PROFILE FUNCTIONS ==========
-function openProfileModal() {
-  document.getElementById('profileName').textContent = currentUser.name;
-  document.getElementById('profileAvatar').src = currentUser.avatar;
-  document.getElementById('profileId').textContent = currentUser.id;
-  document.getElementById('profileGamesCount').textContent = userCollection.length;
-  document.getElementById('profileCommentsCount').textContent = userComments.length;
-  document.getElementById('profileRatingsCount').textContent = userComments.filter(c => c.rating).length;
-  document.getElementById('profileJoinDate').textContent = formatDate(currentUser.joinDate, true);
+// ========== NOTIFICATIONS ==========
+function addNotification(type, message, gameId = null) {
+  const notification = {
+    id: Date.now(),
+    type,
+    message,
+    gameId,
+    userId: currentUser.id,
+    date: new Date().toISOString(),
+    read: false
+  };
   
-  openModal('profileModal');
+  notifications.push(notification);
+  updateNotificationBadge();
+  saveAllData();
 }
 
-// ========== STATISTICS FUNCTIONS ==========
+function updateNotificationBadge() {
+  const unreadCount = notifications.filter(n => !n.read && n.userId === currentUser.id).length;
+  
+  if (elements.notificationBadge) {
+    if (unreadCount > 0) {
+      elements.notificationBadge.textContent = unreadCount;
+      elements.notificationBadge.style.display = 'flex';
+    } else {
+      elements.notificationBadge.style.display = 'none';
+    }
+  }
+}
+
+function openNotifications() {
+  openModal('notificationsModal');
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const container = document.getElementById('notificationsList');
+  if (!container) return;
+  
+  const userNotifications = notifications.filter(n => n.userId === currentUser.id).reverse();
+  
+  if (userNotifications.length === 0) {
+    container.innerHTML = '<div class="empty-state">Нет уведомлений</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  userNotifications.forEach(notification => {
+    const notificationElement = document.createElement('div');
+    notificationElement.className = `notification-item ${notification.read ? '' : 'unread'}`;
+    notificationElement.innerHTML = `
+      <div class="notification-icon">
+        <i class="fas fa-${getNotificationIcon(notification.type)}"></i>
+      </div>
+      <div class="notification-content">
+        <p>${notification.message}</p>
+        <small>${formatDate(notification.date, true)}</small>
+      </div>
+      ${!notification.read ? `
+        <button class="notification-mark-read" onclick="markNotificationRead(${notification.id})">
+          <i class="fas fa-check"></i>
+        </button>
+      ` : ''}
+    `;
+    
+    if (notification.gameId) {
+      notificationElement.onclick = () => {
+        closeModal('notificationsModal');
+        openGameDetail(notification.gameId);
+      };
+      notificationElement.style.cursor = 'pointer';
+    }
+    
+    container.appendChild(notificationElement);
+  });
+}
+
+function markNotificationRead(notificationId) {
+  const notification = notifications.find(n => n.id === notificationId);
+  if (notification) {
+    notification.read = true;
+    saveAllData();
+    renderNotifications();
+    updateNotificationBadge();
+  }
+}
+
+function getNotificationIcon(type) {
+  const icons = {
+    'comment': 'comment',
+    'rating': 'star',
+    'reply': 'reply',
+    'game': 'gamepad',
+    'system': 'info-circle'
+  };
+  return icons[type] || 'bell';
+}
+
+// ========== EXPORT/IMPORT ==========
+function exportData() {
+  if (!currentUser.isAdmin) {
+    showNotification('Доступ запрещен', 'error');
+    return;
+  }
+  
+  const data = {
+    gamesCatalog,
+    allUsers,
+    allComments,
+    exportDate: new Date().toISOString(),
+    exportBy: currentUser.id
+  };
+  
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `game-collection-export-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showNotification('Данные экспортированы', 'success');
+}
+
+function importData() {
+  if (!currentUser.isAdmin) {
+    showNotification('Доступ запрещен', 'error');
+    return;
+  }
+  
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        
+        if (confirm(`Импортировать данные?\nИгр: ${data.gamesCatalog?.length || 0}\nПользователей: ${data.allUsers?.length || 0}\nКомментариев: ${data.allComments?.length || 0}`)) {
+          gamesCatalog = data.gamesCatalog || gamesCatalog;
+          allUsers = data.allUsers || allUsers;
+          allComments = data.allComments || allComments;
+          
+          saveAllData();
+          applyFilters();
+          updateHeaderStats();
+          showNotification('Данные импортированы', 'success');
+        }
+      } catch (err) {
+        showNotification('Ошибка импорта файла', 'error');
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
+  };
+  
+  input.click();
+}
+
+// ========== STATISTICS ==========
 function openStatsModal() {
+  updateStats();
+  renderCharts();
+  openModal('statsModal');
+}
+
+function updateStats() {
   document.getElementById('communityGames').textContent = gamesCatalog.length;
   document.getElementById('communityUsers').textContent = allUsers.length;
   document.getElementById('communityComments').textContent = allComments.length;
@@ -945,20 +1390,74 @@ function openStatsModal() {
     : '0.0';
   document.getElementById('communityAvgRating').textContent = avgRating;
   
-  renderCommunityCharts();
-  openModal('statsModal');
-}
-
-function renderCommunityCharts() {
-  // Genre distribution chart
-  const genreCount = {};
+  // Platform stats
+  const platformStats = {};
   gamesCatalog.forEach(game => {
-    const genre = game.genreName || 'Не указан';
-    genreCount[genre] = (genreCount[genre] || 0) + 1;
+    const platform = game.platformName || 'Не указано';
+    platformStats[platform] = (platformStats[platform] || 0) + 1;
   });
   
-  const chartContainer = document.getElementById('genreChart');
-  chartContainer.innerHTML = createBarChart(genreCount);
+  const topPlatform = Object.entries(platformStats).sort((a, b) => b[1] - a[1])[0];
+  document.getElementById('topPlatform').textContent = topPlatform ? `${topPlatform[0]} (${topPlatform[1]})` : '-';
+  
+  // Genre stats
+  const genreStats = {};
+  gamesCatalog.forEach(game => {
+    const genre = game.genreName || 'Не указано';
+    genreStats[genre] = (genreStats[genre] || 0) + 1;
+  });
+  
+  const topGenre = Object.entries(genreStats).sort((a, b) => b[1] - a[1])[0];
+  document.getElementById('topGenre').textContent = topGenre ? `${topGenre[0]} (${topGenre[1]})` : '-';
+  
+  // Most commented game
+  const gameComments = {};
+  allComments.forEach(comment => {
+    gameComments[comment.gameId] = (gameComments[comment.gameId] || 0) + 1;
+  });
+  
+  const mostCommentedGameId = Object.entries(gameComments).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const mostCommentedGame = gamesCatalog.find(g => g.id == mostCommentedGameId);
+  document.getElementById('mostCommented').textContent = mostCommentedGame ? `${mostCommentedGame.title} (${gameComments[mostCommentedGameId]})` : '-';
+  
+  // Most collected game
+  const collectionStats = {};
+  userCollection.forEach(game => {
+    collectionStats[game.id] = (collectionStats[game.id] || 0) + 1;
+  });
+  
+  const mostCollectedGameId = Object.entries(collectionStats).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const mostCollectedGame = gamesCatalog.find(g => g.id == mostCollectedGameId);
+  document.getElementById('mostCollected').textContent = mostCollectedGame ? `${mostCollectedGame.title} (${collectionStats[mostCollectedGameId]})` : '-';
+}
+
+function renderCharts() {
+  // Platform chart
+  const platformData = {};
+  gamesCatalog.forEach(game => {
+    const platform = game.platformName || 'Другое';
+    platformData[platform] = (platformData[platform] || 0) + 1;
+  });
+  
+  document.getElementById('platformChart').innerHTML = createBarChart(platformData);
+  
+  // Genre chart
+  const genreData = {};
+  gamesCatalog.forEach(game => {
+    const genre = game.genreName || 'Другое';
+    genreData[genre] = (genreData[genre] || 0) + 1;
+  });
+  
+  document.getElementById('genreChart').innerHTML = createBarChart(genreData);
+  
+  // Year chart
+  const yearData = {};
+  gamesCatalog.forEach(game => {
+    const year = game.year || 'Не указан';
+    yearData[year] = (yearData[year] || 0) + 1;
+  });
+  
+  document.getElementById('yearChart').innerHTML = createBarChart(yearData);
 }
 
 // ========== PAGINATION ==========
@@ -980,14 +1479,17 @@ function prevPage() {
 // ========== THEME FUNCTIONS ==========
 function toggleTheme() {
   currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  currentUser.settings.theme = currentTheme;
+  applyTheme();
+  saveAllData();
+}
+
+function applyTheme() {
   document.documentElement.setAttribute('data-theme', currentTheme);
   const icon = document.getElementById('themeIcon');
   if (icon) {
     icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
   }
-  
-  localStorage.setItem('gameHubTheme', currentTheme);
-  saveAllData();
 }
 
 // Load theme on startup
@@ -995,15 +1497,10 @@ const savedTheme = localStorage.getItem('gameHubTheme');
 if (savedTheme) {
   currentTheme = savedTheme;
   document.documentElement.setAttribute('data-theme', currentTheme);
-  const icon = document.getElementById('themeIcon');
-  if (icon) {
-    icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-  }
 }
 
 // ========== UTILITY FUNCTIONS ==========
 function showNotification(message, type = 'info') {
-  // Create notification element
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
   notification.innerHTML = `
@@ -1013,10 +1510,8 @@ function showNotification(message, type = 'info') {
     </div>
   `;
   
-  // Add to body
   document.body.appendChild(notification);
   
-  // Remove after 3 seconds
   setTimeout(() => {
     notification.style.animation = 'slideOut 0.3s ease';
     setTimeout(() => {
@@ -1077,20 +1572,15 @@ function createBarChart(data) {
   return html;
 }
 
-// ========== DEBUG FUNCTION ==========
-// Функция для отладки - показывает текущий статус пользователя
+// ========== DEBUG ==========
 function debugUserStatus() {
-  console.log('=== DEBUG USER STATUS ===');
-  console.log('Current User:', currentUser);
-  console.log('Admin ID:', ADMIN_TELEGRAM_ID);
-  console.log('Is Admin:', currentUser.isAdmin);
-  console.log('User ID type:', typeof currentUser.id);
-  console.log('Admin ID type:', typeof ADMIN_TELEGRAM_ID);
-  console.log('Comparison:', String(currentUser.id) === String(ADMIN_TELEGRAM_ID));
-  console.log('=== END DEBUG ===');
-  
-  alert(`Текущий пользователь: ${currentUser.name}\nID: ${currentUser.id}\nАдмин: ${currentUser.isAdmin ? 'Да' : 'Нет'}`);
+  console.log('=== DEBUG ===');
+  console.log('User:', currentUser);
+  console.log('Games:', gamesCatalog.length);
+  console.log('Users:', allUsers.length);
+  console.log('Comments:', allComments.length);
+  console.log('Collection:', userCollection.length);
+  console.log('=== END ===');
 }
 
-// Экспортируем для отладки в консоли
 window.debugUserStatus = debugUserStatus;
