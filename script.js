@@ -1,5 +1,5 @@
 // Horror Games Collection App - PS4/PS5 Edition
-const ADMIN_USER_ID = 123456789; // Замените на ваш Telegram ID
+const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
 
 // Telegram WebApp
 const tg = window.Telegram?.WebApp || {
@@ -805,3 +805,4 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
+
