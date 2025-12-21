@@ -925,3 +925,79 @@ html, body {
     opacity: 1;
   }
 }
+/* Стили для тегов жанров */
+.genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.genre-tag {
+  background: rgba(220, 20, 60, 0.15);
+  color: var(--accent-red);
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(220, 20, 60, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.genre-tag i {
+  font-size: 0.7rem;
+}
+
+/* Форма для тегов */
+.tag-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-card);
+  min-height: 50px;
+  align-items: center;
+}
+
+.tag-input {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 150px;
+  outline: none;
+  font-size: 1rem;
+}
+
+.tag-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+/* Карточка с тегами */
+.game-card .genre-tags {
+  margin: 8px 0;
+  max-height: 40px;
+  overflow: hidden;
+}
+
+.game-card .genre-tag {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+}
+
+.game-card:hover .genre-tag {
+  background: rgba(220, 20, 60, 0.2);
+  color: var(--accent-red);
+  border-color: rgba(220, 20, 60, 0.3);
+}
