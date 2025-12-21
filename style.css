@@ -1,4 +1,3 @@
-/* === ТВОЙ ОРИГИНАЛЬНЫЙ style.css (без удалений) === */
 :root {
     --bg-primary: #0a0a0a;
     --bg-secondary: #121212;
@@ -777,38 +776,38 @@ body {
     .app-container {
         padding: 15px;
     }
-    
+
     .header {
         padding: 20px;
         flex-direction: column;
         text-align: center;
     }
-    
+
     .subtitle {
         margin-left: 0;
     }
-    
+
     .header-right {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .filter-controls {
         flex-direction: column;
     }
-    
+
     .filter-controls select {
         min-width: 100%;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .game-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .upcoming-card {
         min-width: 200px;
     }
@@ -818,39 +817,39 @@ body {
     .logo h1 {
         font-size: 1.8rem;
     }
-    
+
     .section-header h2 {
         font-size: 1.5rem;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 10% auto;
     }
-    
+
     .modal-body {
         padding: 20px;
     }
-    
+
     .stats {
         grid-template-columns: 1fr;
     }
-    
+
     .upcoming-card {
         min-width: 180px;
     }
-    
+
     .game-cover {
         height: 180px;
     }
-    
+
     .detail-cover {
         max-height: 400px;
         object-fit: cover;
     }
-    
+
     .upcoming-actions {
-        opacity: 1; /* Всегда показываем кнопки на мобильных */
+        opacity: 1;
     }
 }
 
@@ -926,7 +925,7 @@ body {
     text-align: right;
 }
 
-/* === ДОБАВЛЕНО ДЛЯ НОВОЙ МОДАЛКИ СТАТИСТИКИ === */
+/* Статистика: модалка */
 .modal-large {
     max-width: 900px !important;
 }
@@ -935,7 +934,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px;
-    margin: 15px 0 25pxlA
+    margin: 15px 0 25px;
 }
 
 .stat-card {
