@@ -1,7 +1,7 @@
 // Game Collection Hub - Community Edition (Fixed)
 
 // ========== CONFIGURATION ==========
-const ADMIN_TELEGRAM_ID = "123456789"; // Ваш Telegram ID
+const ADMIN_TELEGRAM_ID = "321407568"; // Ваш Telegram ID
 const APP_VERSION = '2.0.1';
 
 // ========== TELEGRAM INIT ==========
@@ -1580,3 +1580,4 @@ function debugUserStatus() {
 }
 
 window.debugUserStatus = debugUserStatus;
+
