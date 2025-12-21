@@ -190,15 +190,13 @@
             </div>
             
             <div class="form-group">
-              <label>Жанр</label>
-              <select id="gameGenre">
-                <option value="survival-horror">Survival Horror</option>
-                <option value="psychological">Psychological Horror</option>
-                <option value="action-horror">Action Horror</option>
-                <option value="sci-fi-horror">Sci-Fi Horror</option>
-              </select>
-            </div>
-          </div>
+  <label>Жанры (через запятую)*</label>
+  <input type="text" id="gameGenres" required 
+         placeholder="survival-horror, psychological-horror, action">
+  <small style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; display: block;">
+    Пример: survival-horror, psychological, action-horror
+  </small>
+</div>
           
           <div class="form-group">
             <label>Статус</label>
@@ -330,4 +328,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
