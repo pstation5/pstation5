@@ -1,523 +1,424 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horror | PS4 | PS5 - Коллекция ужасов</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👻</text></svg>">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Horror Collection</title>
+<link href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%91%BB%3C/text%3E%3C/svg%3E" rel="icon"/>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка -->
-        <header class="header">
-            <div class="user-info">
-                <div class="avatar-placeholder" id="userAvatar">
-                    <i class="fas fa-ghost"></i>
-                </div>
-                <div>
-                    <h1 id="userGreeting">Horror | PS4 | PS5</h1>
-                    <p class="subtitle">Коллекция физических изданий horror игр</p>
-                </div>
-            </div>
-            
-            <div class="header-buttons">
-                <button class="manage-btn" onclick="openAddUpcomingModal()" title="Добавить ожидаемую игру">
-                    <i class="fas fa-calendar-plus"></i>
-                </button>
-                <button class="manage-btn" onclick="openStatsModal()" title="Статистика">
-                    <i class="fas fa-chart-bar"></i>
-                </button>
-                <button class="manage-btn" onclick="openManageModal()" title="Управление">
-                    <i class="fas fa-cog"></i>
-                </button>
-                <button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Поиск -->
-        <div class="search-section">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Поиск horror игр..." class="search-input">
-                <button class="clear-search" onclick="clearSearch()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Слайдер ожидаемых игр -->
-        <section class="upcoming-section">
-            <div class="section-header">
-                <h2><i class="fas fa-calendar-star"></i> Ожидаемые игры</h2>
-                <button class="btn-small" onclick="openAddUpcomingModal()">
-                    <i class="fas fa-plus"></i> Добавить
-                </button>
-            </div>
-            <div class="upcoming-slider" id="upcomingSlider">
-                <!-- Карточки загружаются через JS -->
-            </div>
-        </section>
-
-        <!-- Статистика -->
-        <div class="stats">
-            <div class="stat-item">
-                <i class="fas fa-gamepad"></i>
-                <span class="stat-number" id="totalGames">0</span>
-                <span class="stat-label">всего игр</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-ghost"></i>
-                <span class="stat-number" id="horrorGames">0</span>
-                <span class="stat-label">horror игр</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-tv"></i>
-                <span class="stat-number" id="uniquePlatforms">0</span>
-                <span class="stat-label">платформ</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-star"></i>
-                <span class="stat-number" id="avgRating">0</span>
-                <span class="stat-label">средний рейтинг</span>
-            </div>
-        </div>
-
-        <!-- Фильтры и сортировка -->
-        <div class="filters-section">
-            <div class="filters-row">
-                <div class="filter-group">
-                    <label for="platformFilter"><i class="fas fa-filter"></i> Платформа:</label>
-                    <select id="platformFilter" class="filter-select">
-                        <option value="all">Все</option>
-                        <option value="ps4">PlayStation 4</option>
-                        <option value="ps5">PlayStation 5</option>
-                        <option value="ps4-ps5">PS4 + PS5</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="statusFilter"><i class="fas fa-flag"></i> Статус:</label>
-                    <select id="statusFilter" class="filter-select">
-                        <option value="all">Все</option>
-                        <option value="completed">Пройдена</option>
-                        <option value="playing">В процессе</option>
-                        <option value="planned">В планах</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="sortSelect"><i class="fas fa-sort"></i> Сортировка:</label>
-                    <select id="sortSelect" class="filter-select">
-                        <option value="newest">Новые</option>
-                        <option value="oldest">Старые</option>
-                        <option value="title">По названию (А-Я)</option>
-                        <option value="rating">По рейтингу</option>
-                    </select>
-                </div>
-            </div>
-            
-            <!-- Быстрые фильтры -->
-            <div class="quick-filters" id="quickFilters">
-                <button class="tag active" data-platform="all">Все игры</button>
-                <button class="tag" data-platform="ps4">PS4 Horror</button>
-                <button class="tag" data-platform="ps5">PS5 Horror</button>
-                <button class="tag" data-platform="survival">Survival Horror</button>
-                <button class="tag" data-platform="psychological">Психологические</button>
-            </div>
-        </div>
-
-        <!-- Сетка игр -->
-        <div id="gameGrid" class="game-grid">
-            <!-- Игры загружаются через JS -->
-        </div>
-
-        <!-- Пагинация -->
-        <div class="pagination" id="pagination">
-            <button class="page-btn" onclick="prevPage()"><i class="fas fa-chevron-left"></i></button>
-            <span class="page-info">Страница <span id="currentPage">1</span> из <span id="totalPages">1</span></span>
-            <button class="page-btn" onclick="nextPage()"><i class="fas fa-chevron-right"></i></button>
-        </div>
-
-        <!-- Модальные окна -->
-        <div id="gameModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalTitle"></h2>
-                    <button class="close-modal" onclick="closeModal()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body" id="modalBody"></div>
-            </div>
-        </div>
-
-<!-- Модальное окно статистики -->
-<div id="statsModal" class="modal">
-    <div class="modal-content" style="max-width: 900px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-chart-bar"></i> Статистика коллекции Horror игр</h2>
-            <button class="close-modal" onclick="closeStatsModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <!-- Быстрая статистика -->
-            <div class="quick-stats">
-                <div class="quick-stat">
-                    <i class="fas fa-ghost"></i>
-                    <span class="stat-number">${collection.games.length}</span>
-                    <span class="stat-label">Всего игр</span>
-                </div>
-                <div class="quick-stat">
-                    <i class="fas fa-calendar-star"></i>
-                    <span class="stat-number">${collection.upcoming.length}</span>
-                    <span class="stat-label">Ожидаемых</span>
-                </div>
-                <div class="quick-stat">
-                    <i class="fas fa-playstation"></i>
-                    <span class="stat-number">${new Set(collection.games.map(g => g.platform)).size}</span>
-                    <span class="stat-label">Платформ</span>
-                </div>
-                <div class="quick-stat">
-                    <i class="fas fa-star"></i>
-                    <span class="stat-number">
-                        ${collection.games.filter(g => g.rating).length > 0 
-                            ? (collection.games.filter(g => g.rating).reduce((sum, g) => sum + g.rating, 0) / 
-                               collection.games.filter(g => g.rating).length).toFixed(1) 
-                            : '0.0'}
-                    </span>
-                    <span class="stat-label">Средний рейтинг</span>
-                </div>
-            </div>
-
-            <!-- Основные графики -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3><i class="fas fa-tv"></i> Распределение по платформам</h3>
-                    <div id="platformChart" class="chart-container">
-                        <div class="chart-placeholder">
-                            <i class="fas fa-chart-pie"></i>
-                            <p>Загрузка данных...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <h3><i class="fas fa-flag"></i> Статус игр</h3>
-                    <div id="statusChart" class="chart-container">
-                        <div class="chart-placeholder">
-                            <i class="fas fa-chart-bar"></i>
-                            <p>Загрузка данных...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <h3><i class="fas fa-calendar-alt"></i> По годам выпуска</h3>
-                    <div id="yearChart" class="chart-container">
-                        <div class="chart-placeholder">
-                            <i class="fas fa-chart-line"></i>
-                            <p>Загрузка данных...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <h3><i class="fas fa-theater-masks"></i> Жанры</h3>
-                    <div id="genreChart" class="chart-container">
-                        <div class="chart-placeholder">
-                            <i class="fas fa-chart-pie"></i>
-                            <p>Загрузка данных...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Расширенная статистика -->
-            <div class="detailed-stats">
-                <h3><i class="fas fa-chart-line"></i> Подробная статистика</h3>
-                <div class="detailed-grid">
-                    <div class="detail-item">
-                        <span class="detail-label">Самый старый релиз:</span>
-                        <span class="detail-value" id="oldestRelease">-</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Самый новый релиз:</span>
-                        <span class="detail-value" id="newestRelease">-</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Самый частый разработчик:</span>
-                        <span class="detail-value" id="topDeveloper">-</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Чаще всего платформа:</span>
-                        <span class="detail-value" id="topPlatform">-</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Пройдено игр:</span>
-                        <span class="detail-value" id="completedCount">-</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">В процессе:</span>
-                        <span class="detail-value" id="playingCount">-</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">В планах:</span>
-                        <span class="detail-value" id="plannedCount">-</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Средняя оценка:</span>
-                        <span class="detail-value" id="averageRating">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Интересные факты -->
-            <div class="fun-facts">
-                <h3><i class="fas fa-lightbulb"></i> Интересные факты</h3>
-                <div class="facts-grid" id="funFacts">
-                    <!-- Факты будут добавляться через JS -->
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="app-container">
+<header class="header">
+<div class="header-left">
+<div class="logo">
+<i class="fas fa-ghost"></i>
+<h1>Horror Collection</h1>
 </div>
-
-        
-        <div id="addGameModal" class="modal">
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h2><i class="fas fa-plus-circle"></i> Добавить игру</h2>
-                    <button class="close-modal" onclick="closeAddGameModal()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="addGameForm" onsubmit="addNewGame(event)">
-                        <div class="form-group">
-                            <label for="gameTitle"><i class="fas fa-ghost"></i> Название игры *</label>
-                            <input type="text" id="gameTitle" required class="form-input" placeholder="Например: Resident Evil Village">
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="gamePlatform"><i class="fas fa-tv"></i> Платформа *</label>
-                                <select id="gamePlatform" required class="form-input">
-                                    <option value="ps4">PlayStation 4</option>
-                                    <option value="ps5">PlayStation 5</option>
-                                    <option value="ps4-ps5">PS4 + PS5</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="gameYear"><i class="fas fa-calendar-alt"></i> Год выпуска</label>
-                                <input type="number" id="gameYear" class="form-input" placeholder="2023" min="1990" max="2025">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="gameStatus"><i class="fas fa-flag"></i> Статус</label>
-                                <select id="gameStatus" class="form-input">
-                                    <option value="planned">В планах</option>
-                                    <option value="playing">В процессе</option>
-                                    <option value="completed">Пройдена</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="gameRating"><i class="fas fa-star"></i> Рейтинг (1-10)</label>
-                                <input type="number" id="gameRating" class="form-input" min="1" max="10" placeholder="8">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gameDeveloper"><i class="fas fa-code"></i> Разработчик</label>
-                            <input type="text" id="gameDeveloper" class="form-input" placeholder="Capcom">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gameGenre"><i class="fas fa-theater-masks"></i> Жанр</label>
-                            <select id="gameGenre" class="form-input">
-                                <option value="survival-horror">Survival Horror</option>
-                                <option value="psychological">Психологический хоррор</option>
-                                <option value="action-horror">Экшен-хоррор</option>
-                                <option value="horror-adventure">Хоррор-приключение</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gameCover"><i class="fas fa-image"></i> Обложка (URL)</label>
-                            <input type="url" id="gameCover" class="form-input" placeholder="https://example.com/cover.jpg">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="gameDescription"><i class="fas fa-align-left"></i> Описание</label>
-                            <textarea id="gameDescription" class="form-input" rows="4" placeholder="Описание игры..."></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn-secondary" onclick="closeAddGameModal()">Отмена</button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save"></i> Добавить игру
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно для ожидаемых игр -->
-        <div id="addUpcomingModal" class="modal">
-            <div class="modal-content" style="max-width: 500px;">
-                <div class="modal-header">
-                    <h2><i class="fas fa-calendar-plus"></i> Добавить ожидаемую игру</h2>
-                    <button class="close-modal" onclick="closeAddUpcomingModal()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-<!-- Заменяем старую форму на эту -->
-<form id="addUpcomingForm">
-    <div class="form-group">
-        <label for="upcomingTitle">Название *</label>
-        <input type="text" id="upcomingTitle" required class="form-input" placeholder="Silent Hill 2 Remake">
-    </div>
-    
-    <div class="form-group">
-        <label for="upcomingCover">Обложка (URL)</label>
-        <input type="url" id="upcomingCover" class="form-input" placeholder="https://example.com/cover.jpg">
-    </div>
-    
-    <div class="form-row">
-        <div class="form-group">
-            <label for="upcomingDeveloper">Разработчик</label>
-            <input type="text" id="upcomingDeveloper" class="form-input" placeholder="Bloober Team">
-        </div>
-        
-        <div class="form-group">
-            <label for="upcomingReleaseDate">Дата выхода *</label>
-            <input type="date" id="upcomingReleaseDate" required class="form-input">
-        </div>
-    </div>
-    
-    <div class="form-group">
-        <label for="upcomingGenre">Жанр</label>
-        <input type="text" id="upcomingGenre" class="form-input" placeholder="Psychological Horror">
-    </div>
-    
-    <div class="form-group">
-        <label for="upcomingPlatform">Платформа</label>
-        <select id="upcomingPlatform" class="form-input">
-            <option value="ps5">PS5</option>
-            <option value="ps4">PS4</option>
-            <option value="ps4-ps5">PS4 + PS5</option>
-        </select>
-    </div>
-    
-    <div class="form-actions">
-        <button type="button" class="btn-secondary" onclick="closeAddUpcomingModal()">
-            Отмена
-        </button>
-        <button type="submit" class="btn-primary">
-            <i class="fas fa-plus"></i> Добавить
-        </button>
-    </div>
+<p class="subtitle">Моя коллекция хоррор игр</p>
+</div>
+<div class="header-right">
+<div class="user-profile">
+<img alt="Avatar" class="user-avatar" id="userAvatar" src=""/>
+<div class="user-info">
+<span class="user-name" id="userGreeting">Привет!</span>
+<span class="user-status">Коллекционер</span>
+</div>
+</div>
+<div class="header-actions">
+<button class="manage-btn" onclick="openStatsModal()" title="Статистика">
+<i class="fas fa-chart-bar"></i>
+</button>
+<button class="manage-btn" onclick="openManageModal()" title="Управление">
+<i class="fas fa-cog"></i>
+</button>
+<button class="theme-toggle" onclick="toggleTheme()" title="Смена темы">
+<i class="fas fa-moon" id="themeIcon"></i>
+</button>
+</div>
+</div>
+</header>
+<main class="main-content">
+<section class="stats-section">
+<div class="stats">
+<div class="stat-item">
+<i class="fas fa-gamepad"></i>
+<div class="stat-number" id="totalGames">0</div>
+<div class="stat-label">Всего игр</div>
+</div>
+<div class="stat-item">
+<i class="fas fa-skull"></i>
+<div class="stat-number" id="horrorGames">0</div>
+<div class="stat-label">Хоррор игр</div>
+</div>
+<div class="stat-item">
+<i class="fas fa-laptop"></i>
+<div class="stat-number" id="uniquePlatforms">0</div>
+<div class="stat-label">Платформ</div>
+</div>
+<div class="stat-item">
+<i class="fas fa-star"></i>
+<div class="stat-number" id="avgRating">0.0</div>
+<div class="stat-label">Средний рейтинг</div>
+</div>
+</div>
+</section>
+<section class="upcoming-section">
+<div class="section-header">
+<h2><i class="fas fa-calendar-alt"></i> Ожидаемые релизы</h2>
+<button class="add-upcoming-btn" onclick="openAddUpcomingModal()">
+<i class="fas fa-plus"></i> Добавить
+</button>
+</div>
+<div class="upcoming-slider" id="upcomingSlider">
+</div>
+</section>
+<section class="collection-section">
+<div class="section-header">
+<h2><i class="fas fa-archive"></i> Коллекция игр</h2>
+<button class="add-game-btn" onclick="openAddGameModal()">
+<i class="fas fa-plus"></i> Добавить игру
+</button>
+</div>
+<div class="filters-section">
+<div class="search-box">
+<i class="fas fa-search"></i>
+<input id="searchInput" placeholder="Поиск по названию..." type="text"/>
+</div>
+<div class="filter-controls">
+<select id="platformFilter">
+<option value="">Все платформы</option>
+</select>
+<select id="statusFilter">
+<option value="">Все статусы</option>
+<option value="completed">Пройдена</option>
+<option value="playing">Играю</option>
+<option value="planned">В планах</option>
+</select>
+<select id="sortSelect">
+<option value="title">По названию</option>
+<option value="year">По году</option>
+<option value="rating">По рейтингу</option>
+<option value="status">По статусу</option>
+</select>
+</div>
+</div>
+<div class="game-grid" id="gameGrid">
+</div>
+<div class="pagination">
+<button class="page-btn" onclick="prevPage()">
+<i class="fas fa-chevron-left"></i>
+</button>
+<span class="page-info">
+Страница <span id="currentPage">1</span> из <span id="totalPages">1</span>
+</span>
+<button class="page-btn" onclick="nextPage()">
+<i class="fas fa-chevron-right"></i>
+</button>
+</div>
+</section>
+</main>
+<div class="modal" id="addGameModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2><i class="fas fa-plus"></i> Добавить игру</h2>
+<button class="close-modal" onclick="closeAddGameModal()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="modal-body">
+<form id="addGameForm">
+<div class="form-group">
+<label>Название игры *</label>
+<input id="gameTitle" placeholder="Введите название" required="" type="text"/>
+</div>
+<div class="form-group">
+<label>Платформа *</label>
+<select id="gamePlatform" required="">
+<option value="">Выберите платформу</option>
+<option value="ps5">PlayStation 5</option>
+<option value="ps4">PlayStation 4</option>
+<option value="pc">PC</option>
+<option value="xbox">Xbox</option>
+<option value="switch">Nintendo Switch</option>
+</select>
+</div>
+<div class="form-group">
+<label>Обложка (URL)</label>
+<input id="gameCover" placeholder="https://..." type="url"/>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>Год релиза</label>
+<input id="gameYear" max="2026" min="1990" type="number"/>
+</div>
+<div class="form-group">
+<label>Статус *</label>
+<select id="gameStatus" required="">
+<option value="planned">В планах</option>
+<option value="playing">Играю</option>
+<option value="completed">Пройдена</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label>Рейтинг (1-10)</label>
+<input id="gameRating" max="10" min="1" step="0.5" type="number"/>
+</div>
+<div class="form-group">
+<label>Разработчик</label>
+<input id="gameDeveloper" placeholder="Например: Capcom" type="text"/>
+</div>
+<div class="form-group">
+<label>Жанр</label>
+<input id="gameGenre" placeholder="Например: survival-horror" type="text"/>
+</div>
+<div class="form-group">
+<label>Описание</label>
+<textarea id="gameDescription" placeholder="Краткое описание игры..." rows="3"></textarea>
+</div>
+<div class="form-group">
+<label>Заметки</label>
+<textarea id="gameNotes" placeholder="Ваши заметки..." rows="2"></textarea>
+</div>
+<div class="modal-actions">
+<button class="btn-secondary" onclick="closeAddGameModal()" type="button">Отмена</button>
+<button class="btn-primary" type="submit">
+<i class="fas fa-save"></i> Сохранить
+</button>
+</div>
 </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно управления -->
-       
-<div id="manageModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-cog"></i> Управление коллекцией</h2>
-            <button class="close-modal" onclick="closeManageModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="manage-options">
-                <button class="manage-option" onclick="exportCollection()">
-                    <i class="fas fa-file-export"></i>
-                    <span>Экспорт коллекции</span>
-                    <small>Скачать JSON файл</small>
-                </button>
-                
-                <button class="manage-option" onclick="importCollection()">
-                    <i class="fas fa-file-import"></i>
-                    <span>Импорт коллекции</span>
-                    <small>Загрузить из JSON</small>
-                </button>
-                
-                <!-- НОВАЯ КНОПКА: Удалить все ожидаемые игры -->
-                <button class="manage-option" onclick="clearUpcomingGames()" style="color: #ff6b6b;">
-                    <i class="fas fa-calendar-times"></i>
-                    <span>Очистить ожидаемые игры</span>
-                    <small>Удалить все ожидаемые игры</small>
-                </button>
-                
-                <button class="manage-option" onclick="clearCollection()" style="color: #e74c3c;">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>Очистить коллекцию</span>
-                    <small>Удалить все игры</small>
-                </button>
-            </div>
-            
-            <div class="collection-info">
-                <h3><i class="fas fa-info-circle"></i> Информация</h3>
-                <div class="info-item">
-                    <span>Всего игр:</span>
-                    <strong id="collectionCount">0</strong>
-                </div>
-                <div class="info-item">
-                    <span>Ожидаемых:</span>
-                    <strong id="upcomingCount">0</strong>
-                </div>
-                <div class="info-item">
-                    <span>Обновлено:</span>
-                    <strong id="lastUpdateTime">Сегодня</strong>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Уведомления -->
-        <div id="notification" class="notification"></div>
-
-        <!-- Подвал -->
-        <footer class="footer">
-            <div class="footer-content">
-                <p>Horror Collection v1.0</p>
-                <p class="footer-note">
-                    <i class="fas fa-ghost"></i> Коллекция физических horror игр для PS4/PS5
-                </p>
-                <button class="add-game-btn" onclick="openAddGameModal()">
-                    <i class="fas fa-plus"></i> Добавить игру
-                </button>
-            </div>
-        </footer>
-    </div>
-
-    <!-- Скрытый input для импорта -->
-    <input type="file" id="importFileInput" accept=".json" style="display: none;">
-
-    <script src="script.js"></script>
+</div>
+</div>
+<div class="modal" id="addUpcomingModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2><i class="fas fa-calendar-plus"></i> Добавить ожидаемую игру</h2>
+<button class="close-modal" onclick="closeAddUpcomingModal()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="modal-body">
+<form id="addUpcomingForm">
+<div class="form-group">
+<label>Название игры *</label>
+<input id="upcomingTitle" placeholder="Введите название" required="" type="text"/>
+</div>
+<div class="form-group">
+<label>Платформа *</label>
+<select id="upcomingPlatform" required="">
+<option value="">Выберите платформу</option>
+<option value="ps5">PlayStation 5</option>
+<option value="ps4">PlayStation 4</option>
+<option value="pc">PC</option>
+<option value="xbox">Xbox</option>
+<option value="switch">Nintendo Switch</option>
+</select>
+</div>
+<div class="form-group">
+<label>Обложка (URL)</label>
+<input id="upcomingCover" placeholder="https://..." type="url"/>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>Ожидаемый год</label>
+<input id="upcomingYear" max="2030" min="2024" type="number"/>
+</div>
+<div class="form-group">
+<label>Ожидаемая дата</label>
+<input id="upcomingDate" type="date"/>
+</div>
+</div>
+<div class="form-group">
+<label>Разработчик</label>
+<input id="upcomingDeveloper" placeholder="Например: Bloober Team" type="text"/>
+</div>
+<div class="form-group">
+<label>Жанр</label>
+<input id="upcomingGenre" placeholder="Например: psychological-horror" type="text"/>
+</div>
+<div class="form-group">
+<label>Описание</label>
+<textarea id="upcomingDescription" placeholder="Краткое описание..." rows="3"></textarea>
+</div>
+<div class="modal-actions">
+<button class="btn-secondary" onclick="closeAddUpcomingModal()" type="button">Отмена</button>
+<button class="btn-primary" type="submit">
+<i class="fas fa-save"></i> Сохранить
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<div class="modal" id="gameDetailModal">
+<div class="modal-content modal-large">
+<div class="modal-header">
+<h2 id="detailTitle">Детали игры</h2>
+<button class="close-modal" onclick="closeGameDetailModal()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="modal-body" id="gameDetailContent">
+</div>
+</div>
+</div>
+<div class="modal" id="manageModal">
+<div class="modal-content" style="max-width: 500px;">
+<div class="modal-header">
+<h2><i class="fas fa-cog"></i> Управление коллекцией</h2>
+<button class="close-modal" onclick="closeManageModal()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="modal-body">
+<div class="manage-options">
+<button class="manage-option" onclick="exportCollection()">
+<i class="fas fa-file-export"></i>
+<span>Экспорт коллекции</span>
+<small>Скачать JSON файл</small>
+</button>
+<button class="manage-option" onclick="importCollection()">
+<i class="fas fa-file-import"></i>
+<span>Импорт коллекции</span>
+<small>Загрузить JSON файл</small>
+</button>
+<button class="manage-option" onclick="clearCollection()">
+<i class="fas fa-trash"></i>
+<span>Очистить коллекцию</span>
+<small>Удалить все данные</small>
+</button>
+<button class="manage-option" onclick="resetToDefault()">
+<i class="fas fa-undo"></i>
+<span>Сброс к умолчанию</span>
+<small>Восстановить демо данные</small>
+</button>
+</div>
+<div class="collection-info">
+<h3><i class="fas fa-info-circle"></i> Информация</h3>
+<div class="info-item">
+<span>Всего игр:</span>
+<strong id="collectionCount">0</strong>
+</div>
+<div class="info-item">
+<span>Ожидаемых:</span>
+<strong id="upcomingCount">0</strong>
+</div>
+<div class="info-item">
+<span>Обновлено:</span>
+<strong id="lastUpdateTime">Сегодня</strong>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="modal" id="statsModal">
+<div class="modal-content modal-large">
+<div class="modal-header">
+<h2><i class="fas fa-chart-bar"></i> Статистика коллекции</h2>
+<button class="close-btn" onclick="closeStatsModal()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="modal-body">
+<div class="stats-overview">
+<div class="stat-card">
+<div class="stat-icon"><i class="fas fa-gamepad"></i></div>
+<div class="stat-content">
+<span class="stat-number" id="statsTotalGames">0</span>
+<span class="stat-label">В коллекции</span>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon"><i class="fas fa-clock"></i></div>
+<div class="stat-content">
+<span class="stat-number" id="statsUpcoming">0</span>
+<span class="stat-label">В ожидании</span>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon"><i class="fas fa-star"></i></div>
+<div class="stat-content">
+<span class="stat-number" id="statsAvgRating">0.0</span>
+<span class="stat-label">Средний рейтинг</span>
+</div>
+</div>
+</div>
+<div class="stats-details">
+<h3><i class="fas fa-info-circle"></i> Детальная информация</h3>
+<div class="details-grid">
+<div class="detail-item">
+<span class="detail-label">Самая старая:</span>
+<span class="detail-value" id="oldestRelease">-</span>
+</div>
+<div class="detail-item">
+<span class="detail-label">Самая новая:</span>
+<span class="detail-value" id="newestRelease">-</span>
+</div>
+<div class="detail-item">
+<span class="detail-label">Топ разработчик:</span>
+<span class="detail-value" id="topDeveloper">-</span>
+</div>
+<div class="detail-item">
+<span class="detail-label">Топ платформа:</span>
+<span class="detail-value" id="topPlatform">-</span>
+</div>
+<div class="detail-item">
+<span class="detail-label">Пройдены:</span>
+<span class="detail-value" id="completedCount">0</span>
+</div>
+<div class="detail-item">
+<span class="detail-label">Играю:</span>
+<span class="detail-value" id="playingCount">0</span>
+</div>
+<div class="detail-item">
+<span class="detail-label">В планах:</span>
+<span class="detail-value" id="plannedCount">0</span>
+</div>
+<div class="detail-item">
+<span class="detail-label">Оценено:</span>
+<span class="detail-value" id="ratedCount">0</span>
+</div>
+</div>
+</div>
+<div class="charts-section">
+<h3><i class="fas fa-chart-pie"></i> Графики</h3>
+<div class="charts-grid">
+<div class="chart-card">
+<h4>Платформы</h4>
+<div class="chart-container" id="platformChart"></div>
+</div>
+<div class="chart-card">
+<h4>Статусы</h4>
+<div class="chart-container" id="statusChart"></div>
+</div>
+<div class="chart-card">
+<h4>Годы релиза</h4>
+<div class="chart-container" id="yearChart"></div>
+</div>
+<div class="chart-card">
+<h4>Жанры</h4>
+<div class="chart-container" id="genreChart"></div>
+</div>
+<div class="chart-card chart-wide">
+<h4>Доля платформ</h4>
+<div class="chart-container" id="pieChart"></div>
+</div>
+</div>
+</div>
+<div class="modal-actions">
+<button class="btn-primary" onclick="closeStatsModal()">
+<i class="fas fa-check"></i> Закрыть
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script src="script.js"></script>
 </body>
 </html>
-
-
-
-
