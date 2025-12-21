@@ -131,12 +131,13 @@ html, body {
   gap: 10px;
 }
 
-.search-box i {
+.search-box .fa-search {
   position: absolute;
   left: 20px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
+  z-index: 2;
 }
 
 .search-box input {
@@ -165,6 +166,13 @@ html, body {
   cursor: pointer;
   font-weight: 600;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-btn i {
+  font-size: 1rem;
 }
 
 .search-btn:hover {
@@ -384,8 +392,9 @@ html, body {
 
 .game-cover {
   width: 100%;
-  height: 300px;
+  height: 350px; /* Увеличена высота для вертикальных изображений */
   object-fit: cover;
+  object-position: top center; /* Фокусировка на верхней части изображения */
 }
 
 .game-info {
@@ -855,74 +864,45 @@ html, body {
     padding: 20px;
   }
 }
-/* Добавить эти стили в конец файла style.css */
 
-/* Telegram WebApp container adjustments */
-@media (min-width: 768px) {
-  html.telegram-desktop .app-container {
-    padding: 30px;
-    max-width: 1600px;
-  }
-  
-  html.telegram-desktop .header-top {
-    margin-bottom: 50px;
-  }
-  
-  html.telegram-desktop .game-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 35px;
-  }
+/* Telegram Desktop specific */
+.telegram-desktop .app-container {
+  max-width: 1400px;
+  padding: 40px;
 }
 
-/* Better modal for desktop */
-@media (min-width: 768px) {
-  .modal-content {
-    margin: 100px auto;
-    border-radius: 20px;
-  }
-  
-  .modal-header {
-    padding: 25px 35px;
-  }
-  
-  .modal-body {
-    padding: 35px;
-  }
+.telegram-desktop .game-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
 }
 
-/* Improve typography for desktop */
-@media (min-width: 768px) {
-  body {
-    font-size: 16px;
-  }
-  
-  h1, h2, h3 {
-    letter-spacing: -0.5px;
-  }
-  
-  .game-title {
-    font-size: 1.3rem;
-    line-height: 1.4;
-  }
+.telegram-desktop .game-cover {
+  height: 380px;
 }
 
-/* Desktop-specific hover effects */
-@media (min-width: 768px) and (hover: hover) {
-  .game-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .game-card:hover {
-    box-shadow: 0 25px 50px rgba(220, 20, 60, 0.3);
-  }
-  
-  .action-btn {
-    opacity: 0.9;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-  
-  .game-card:hover .game-actions {
-    opacity: 1;
-  }
+.telegram-desktop .header-top {
+  margin-bottom: 40px;
 }
 
+.telegram-desktop .main-title {
+  font-size: 2.8rem;
+}
+
+.telegram-desktop .main-title i {
+  font-size: 3rem;
+}
+
+/* Scrollbar for modal */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--accent-red);
+  border-radius: 4px;
+}
