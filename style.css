@@ -1031,3 +1031,33 @@ body {
         grid-column: auto;
     }
 }
+
+/* FIX: скролл внутри модалок и карточек (деталей) */
+.modal {
+    overflow-y: auto;              /* скролл по фону модалки */
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-content {
+    max-height: 92vh;              /* чтобы модалка не вылезала за экран */
+    overflow: hidden;              /* скролл будет в .modal-body */
+}
+
+.modal-body {
+    max-height: calc(92vh - 90px); /* 90px - примерная высота хедера модалки */
+    overflow-y: auto;              /* главный фикс: скролл внутри контента */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* На всякий случай: большие модалки тоже */
+.modal-content.modal-large {
+    max-height: 92vh !important;
+}
+
+/* FIX: горизонтальный скролл в слайдере ожидаемых релизов на мобилках */
+.upcoming-slider {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+}
