@@ -948,3 +948,384 @@ body {
     from { transform: translateX(0); opacity: 1; }
     to { transform: translateX(100%); opacity: 0; }
 }
+
+/* Game Admin Actions */
+.game-admin-actions {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 5px;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.game-card:hover .game-admin-actions {
+    opacity: 1;
+}
+
+.admin-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.edit-game-btn {
+    background: rgba(33, 150, 243, 0.9);
+    color: white;
+}
+
+.delete-game-btn {
+    background: rgba(244, 67, 54, 0.9);
+    color: white;
+}
+
+.admin-action-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Collection Game Actions */
+.collection-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-small:hover {
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-warning {
+    background: var(--warning-color);
+    color: white;
+}
+
+/* Completion Bar */
+.completion-bar {
+    height: 20px;
+    background: var(--border-color);
+    border-radius: 10px;
+    margin: 10px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.completion-fill {
+    height: 100%;
+    background: var(--accent-color);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.completion-bar span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Tags */
+.tag {
+    background: var(--accent-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+/* Comment Actions */
+.comment-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.comment-delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.comment-delete-btn:hover {
+    color: var(--danger-color);
+}
+
+.comment-replies {
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid var(--border-color);
+}
+
+.reply-item {
+    background: var(--bg-primary);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+}
+
+.reply-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.reply-date {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+/* Manage Games */
+.manage-game-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: var(--card-bg);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.manage-game-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.manage-game-info img {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.manage-game-info div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.manage-game-info strong {
+    font-size: 1rem;
+}
+
+.manage-game-info small {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.manage-game-stats {
+    display: flex;
+    gap: 15px;
+    margin: 0 20px;
+}
+
+.manage-game-stats span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+}
+
+.manage-game-actions {
+    display: flex;
+    gap: 5px;
+}
+
+/* Notifications */
+.notification-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--card-bg);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.notification-item.unread {
+    border-left: 4px solid var(--accent-color);
+    background: rgba(139, 0, 0, 0.05);
+}
+
+.notification-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-content p {
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.notification-content small {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.notification-mark-read {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: var(--transition);
+}
+
+.notification-mark-read:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* User Rating */
+.user-rating {
+    margin-left: 10px;
+    padding: 2px 8px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    color: #ffd700;
+    font-size: 0.8rem;
+}
+
+/* Empty State */
+.empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+}
+
+/* Rating Filter */
+.rating-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 2px;
+    cursor: pointer;
+}
+
+.rating-stars i {
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.rating-stars i.active {
+    color: #ffd700;
+}
+
+/* Mobile Improvements */
+@media (max-width: 768px) {
+    .manage-game-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .manage-game-stats {
+        margin: 0;
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    .manage-game-actions {
+        align-self: flex-end;
+    }
+    
+    .game-admin-actions {
+        opacity: 1;
+    }
+    
+    .collection-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .notification-icon {
+        align-self: flex-start;
+    }
+    
+    .comment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .comment-actions {
+        align-self: flex-end;
+    }
+}
