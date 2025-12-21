@@ -926,3 +926,255 @@ html, body {
   }
 }
 
+/* Platform colors for other platforms */
+.platform-ps5 { color: #0066cc; background: rgba(0, 102, 204, 0.1); }
+.platform-ps4 { color: #003399; background: rgba(0, 51, 153, 0.1); }
+.platform-ps3 { color: #000080; background: rgba(0, 0, 128, 0.1); }
+.platform-ps2 { color: #800000; background: rgba(128, 0, 0, 0.1); }
+.platform-ps1 { color: #808080; background: rgba(128, 128, 128, 0.1); }
+.platform-xbox { color: #107c10; background: rgba(16, 124, 16, 0.1); }
+.platform-pc { color: #e60012; background: rgba(230, 0, 18, 0.1); }
+.platform-switch { color: #e60012; background: rgba(230, 0, 18, 0.1); }
+
+/* Telegram Desktop Fixes */
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+  
+  /* Improve readability on desktop */
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Header adjustments for desktop */
+  .header-top {
+    padding: 20px 0;
+    margin-bottom: 40px;
+  }
+  
+  .main-title {
+    font-size: 2.8rem;
+  }
+  
+  .main-title i {
+    font-size: 3rem;
+  }
+  
+  .search-box input {
+    font-size: 1.1rem;
+    padding: 18px 20px 18px 60px;
+  }
+  
+  .search-btn {
+    padding: 0 30px;
+    font-size: 1.1rem;
+  }
+  
+  /* Larger cards for desktop */
+  .game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+  }
+  
+  .game-cover {
+    height: 350px;
+  }
+  
+  .upcoming-swiper {
+    height: 400px;
+  }
+  
+  .upcoming-cover {
+    height: 300px;
+  }
+  
+  /* Better modal sizing for desktop */
+  .modal-content {
+    max-width: 700px;
+    margin: 80px auto;
+  }
+  
+  .large-modal .modal-content {
+    max-width: 900px;
+  }
+  
+  /* Improve button sizes */
+  .action-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+  }
+  
+  .page-btn {
+    width: 50px;
+    height: 50px;
+  }
+  
+  /* Better spacing */
+  .stats {
+    gap: 30px;
+  }
+  
+  .stat-item {
+    padding: 30px;
+  }
+  
+  .stat-number {
+    font-size: 2.8rem;
+  }
+  
+  /* Desktop navigation improvements */
+  .filter-buttons {
+    gap: 15px;
+  }
+  
+  .filter-btn {
+    padding: 12px 25px;
+    font-size: 1rem;
+  }
+  
+  /* Fix for Telegram WebApp container */
+  html.telegram-desktop .app-container {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+  
+  html.telegram-desktop body {
+    background: var(--bg-primary);
+  }
+}
+
+/* Telegram WebApp specific fixes */
+@media (min-width: 1024px) {
+  /* Detect Telegram Desktop */
+  html.telegram-desktop .game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  
+  html.telegram-desktop .game-card {
+    border-radius: 16px;
+  }
+  
+  html.telegram-desktop .game-cover {
+    height: 380px;
+  }
+  
+  /* Better text contrast in Telegram */
+  html.telegram-desktop [data-theme="dark"] {
+    --text-primary: #f0f0f0;
+    --text-secondary: #d0d0d0;
+    --text-muted: #a0a0a0;
+  }
+  
+  html.telegram-desktop .game-info {
+    padding: 20px;
+  }
+  
+  html.telegram-desktop .game-title {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+  
+  /* Larger fonts for desktop viewing */
+  html.telegram-desktop .section-header h2 {
+    font-size: 2rem;
+  }
+  
+  html.telegram-desktop .main-title {
+    font-size: 3rem;
+  }
+}
+
+/* Fix for very wide screens */
+@media (min-width: 1600px) {
+  .app-container {
+    max-width: 1600px;
+  }
+  
+  .game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+  
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Fix modal scroll on desktop */
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-red) var(--bg-card);
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--accent-red);
+  border-radius: 4px;
+}
+
+/* Improve form inputs on desktop */
+@media (min-width: 768px) {
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 14px 18px;
+    font-size: 1.1rem;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    padding: 14px 30px;
+    font-size: 1.1rem;
+  }
+}
+
+/* Better hover effects for desktop */
+@media (hover: hover) {
+  .game-card:hover {
+    transform: translateY(-10px) scale(1.02);
+  }
+  
+  .action-btn:hover {
+    transform: scale(1.15);
+  }
+  
+  .filter-btn:hover:not(.active) {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+  }
+  
+  .page-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+  }
+  
+  .page-number:hover:not(.active) {
+    background: var(--accent-red);
+    color: white;
+  }
+}
+
+/* Fix for platform badges */
+.game-platform {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
