@@ -2,54 +2,50 @@
   "games": [
     {
       "id": 1,
-      "title": "Resident Evil Village",
+      "title": "Resident Evil 4 Remake",
       "platform": "ps5",
-      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r3z.jpg",
-      "releaseYear": 2021,
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5s1s.png",
+      "releaseYear": 2023,
       "genre": "survival-horror",
       "developer": "Capcom",
       "publisher": "Capcom",
-      "description": "Опасности и ужас поджидают за каждым углом в Resident Evil Village — восьмой по счёту основной игре легендарной серии Resident Evil. Сражайтесь за выживание в одиночестве в окружении ужасающих монстров.",
-      "addedBy": "admin",
-      "addedDate": "2024-01-15T10:30:00.000Z"
-    },
-    
-  "comments": [
-    {
-      "id": 1,
-      "gameId": 1,
-      "userId": 123456789,
-      "userName": "Администратор",
-      "userAvatar": "https://via.placeholder.com/32/8b0000/ffffff?text=A",
-      "rating": 9,
-      "text": "Отличная игра! Атмосфера просто потрясающая, особенно дом леди Димитреску.",
-      "date": "2024-01-20T14:30:00.000Z"
+      "description": "Переосмысление классической игры Resident Evil 4 с современной графикой и геймплеем.",
+      "isPhysical": true,
+      "status": "completed",
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5r2t.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc5r2u.jpg"
+      ],
+      "addedDate": "2024-01-01T12:00:00.000Z"
     },
     {
       "id": 2,
-      "gameId": 2,
-      "userId": 123456789,
-      "userName": "Администратор",
-      "userAvatar": "https://via.placeholder.com/32/8b0000/ffffff?text=A",
-      "rating": 10,
-      "text": "Шедевр. Сюжет заставляет задуматься о морали, мести и прощении.",
-      "date": "2024-01-19T16:45:00.000Z"
-    },
-    {
-      "id": 3,
-      "gameId": 3,
-      "userId": 123456789,
-      "userName": "Администратор",
-      "userAvatar": "https://via.placeholder.com/32/8b0000/ffffff?text=A",
-      "rating": 10,
-      "text": "Величайший психологический хоррор всех времён. Музыка Акиры Ямаоки — отдельный вид искусства.",
-      "date": "2024-01-18T10:15:00.000Z"
+      "title": "The Last of Us Part I",
+      "platform": "ps5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co4j1m.png",
+      "releaseYear": 2022,
+      "genre": "action-horror",
+      "developer": "Naughty Dog",
+      "publisher": "Sony Interactive Entertainment",
+      "description": "Ремастер оригинальной игры с улучшенной графикой для PS5.",
+      "isPhysical": true,
+      "status": "completed",
+      "screenshots": [],
+      "addedDate": "2024-01-02T12:00:00.000Z"
     }
   ],
-  "userCollections": {
-    "123456789": [1, 2, 3],
-    "999999999": [1, 4]
-  },
-  "lastUpdate": "2024-01-20T14:30:00.000Z"
+  "upcomingGames": [
+    {
+      "id": 101,
+      "title": "Silent Hill 2 Remake",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6w2e.png",
+      "releaseDate": "2024-10-01",
+      "developer": "Bloober Team",
+      "genre": "psychological-horror",
+      "platforms": ["ps5"]
+    }
+  ],
+  "comments": [],
+  "userCollections": {},
+  "lastUpdate": "2024-01-01T00:00:00.000Z"
 }
-
