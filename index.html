@@ -2,7 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <title>Horror Games Community</title>
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%91%BB%3C/text%3E%3C/svg%3E">
@@ -24,16 +26,16 @@
 
       <div class="header-right">
         <div class="user-profile">
-          <img id="userAvatar" class="user-avatar" alt="Avatar" src=""/>
+          <img id="userAvatar" class="user-avatar" alt="Avatar" src="https://via.placeholder.com/45/8b0000/ffffff?text=?"/>
           <div class="user-info">
-            <span id="userGreeting" class="user-name">Привет!</span>
-            <span id="userRole" class="user-status">Пользователь</span>
+            <span id="userGreeting" class="user-name">Привет, Гость!</span>
+            <span id="userRole" class="user-status">Войдите через Telegram</span>
           </div>
         </div>
 
         <div class="header-actions">
           <button class="my-collection-btn" onclick="openMyCollection()" title="Моя коллекция">
-            <i class="fas fa-heart"></i> Моя коллекция
+            <i class="fas fa-heart"></i> <span class="btn-text">Моя коллекция</span>
           </button>
 
           <button class="theme-toggle" onclick="toggleTheme()" title="Смена темы">
@@ -83,7 +85,7 @@
           <h2><i class="fas fa-archive"></i> Каталог игр</h2>
           <div id="adminControls" style="display: none;">
             <button class="add-game-btn" onclick="openAddGameModal()">
-              <i class="fas fa-plus"></i> Добавить игру
+              <i class="fas fa-plus"></i> <span class="btn-text">Добавить игру</span>
             </button>
           </div>
         </div>
@@ -91,7 +93,7 @@
         <div class="filters-section">
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input id="searchInput" type="text" placeholder="Поиск по названию..."/>
+            <input id="searchInput" type="text" placeholder="Поиск по названию..." autocapitalize="off" autocomplete="off"/>
           </div>
 
           <div class="filter-controls">
@@ -116,7 +118,9 @@
           </div>
         </div>
 
-        <div class="game-grid" id="gameGrid"></div>
+        <div class="game-grid" id="gameGrid">
+          <!-- Games will be loaded here -->
+        </div>
 
         <div class="pagination">
           <button class="page-btn" onclick="prevPage()">
@@ -162,6 +166,9 @@
             <div class="form-group">
               <label>Обложка (URL) *</label>
               <input id="gameCover" type="url" required placeholder="https://images.igdb.com/..."/>
+              <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 5px; display: block;">
+                Рекомендуется использовать изображения с <a href="https://www.igdb.com/" target="_blank" style="color: var(--accent-color);">IGDB</a>
+              </small>
             </div>
 
             <div class="form-row">
@@ -200,7 +207,7 @@
 
             <div class="modal-actions">
               <button type="button" class="btn-secondary" onclick="closeAddGameModal()">Отмена</button>
-              <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Добавить игру</button>
+              <button type="submit" class="btn-primary"><i class="fas fa-save"></i> <span class="btn-text">Добавить игру</span></button>
             </div>
           </form>
         </div>
@@ -208,13 +215,15 @@
     </div>
 
     <!-- Game Detail Modal -->
-    <div class="modal" id="gameDetailModal">
-      <div class="modal-content modal-large">
+    <div class="modal modal-large" id="gameDetailModal">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 id="detailTitle">Детали игры</h2>
           <button class="close-modal" onclick="closeGameDetailModal()"><i class="fas fa-times"></i></button>
         </div>
-        <div class="modal-body" id="gameDetailContent"></div>
+        <div class="modal-body" id="gameDetailContent">
+          <!-- Game details will be loaded here -->
+        </div>
       </div>
     </div>
 
@@ -227,7 +236,7 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>Ваша оценка</label>
+            <label>Ваша оценка (0-10)</label>
             <div class="rating-stars" id="commentRating">
               <span class="star" data-value="1">★</span>
               <span class="star" data-value="2">★</span>
@@ -241,16 +250,22 @@
               <span class="star" data-value="10">★</span>
             </div>
             <input type="hidden" id="selectedRating" value="0">
+            <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 5px; display: block;">
+              Нажмите на звезду для оценки (необязательно)
+            </small>
           </div>
           
           <div class="form-group">
             <label>Комментарий *</label>
-            <textarea id="commentText" rows="4" required placeholder="Поделитесь вашим мнением об игре..."></textarea>
+            <textarea id="commentText" rows="4" required placeholder="Поделитесь вашим мнением об игре..." maxlength="500"></textarea>
+            <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 5px; display: block;">
+              Максимум 500 символов
+            </small>
           </div>
 
           <div class="modal-actions">
             <button type="button" class="btn-secondary" onclick="closeCommentModal()">Отмена</button>
-            <button type="button" class="btn-primary" onclick="submitComment()"><i class="fas fa-paper-plane"></i> Отправить</button>
+            <button type="button" class="btn-primary" onclick="submitComment()"><i class="fas fa-paper-plane"></i> <span class="btn-text">Отправить</span></button>
           </div>
         </div>
       </div>
@@ -267,8 +282,8 @@
           <div class="game-grid" id="collectionGrid"></div>
           <div id="emptyCollection" style="text-align: center; padding: 40px; color: var(--text-secondary);">
             <i class="fas fa-gamepad" style="font-size: 3rem; margin-bottom: 20px;"></i>
-            <p>Ваша коллекция пуста</p>
-            <p style="font-size: 0.9rem;">Добавляйте игры из каталога!</p>
+            <p style="margin-bottom: 10px; font-weight: 600;">Ваша коллекция пуста</p>
+            <p style="font-size: 0.9rem;">Добавляйте игры из каталога, нажимая на <i class="fas fa-heart-plus" style="color: #4caf50;"></i></p>
           </div>
         </div>
       </div>
