@@ -36,6 +36,15 @@
           <button class="manage-btn" onclick="openMyCollection()" title="Моя коллекция">
             <i class="fas fa-heart"></i>
           </button>
+
+<button class="manage-btn" onclick="openNotifications()" title="Уведомления">
+  <i class="fas fa-bell"></i>
+  <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+</button>
+
+<button class="manage-btn" onclick="openModal('settingsModal')" title="Настройки">
+  <i class="fas fa-cog"></i>
+</button>
           
           <button class="manage-btn" onclick="openStatsModal()" title="Статистика">
             <i class="fas fa-chart-bar"></i>
@@ -448,4 +457,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
