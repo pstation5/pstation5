@@ -8,7 +8,45 @@ const tg = window.Telegram?.WebApp || {
   setHeaderColor() {},
   setBackgroundColor() {}
 };
+// Detect Telegram Desktop
+if (window.Telegram?.WebApp?.platform) {
+  if (window.Telegram.WebApp.platform === 'tdesktop') {
+    document.documentElement.classList.add('telegram-desktop');
+    console.log('Running in Telegram Desktop');
+  }
+}
 
+// Обновить функцию initApp:
+async function initApp() {
+  // Telegram setup
+  if (window.Telegram && tg.initDataUnsafe) {
+    try {
+      tg.expand();
+      tg.setHeaderColor('#dc143c');
+      tg.setBackgroundColor('#0a0a0a');
+      
+      // Detect platform
+      if (window.Telegram.WebApp.platform === 'tdesktop') {
+        document.documentElement.classList.add('telegram-desktop');
+        console.log('Telegram Desktop detected - applying desktop optimizations');
+      }
+    } catch (e) {
+      console.error('Telegram WebApp error:', e);
+    }
+    setupTelegramUser();
+  }
+  
+  // Добавить класс если это Telegram Desktop
+  if (navigator.userAgent.includes('TelegramDesktop')) {
+    document.documentElement.classList.add('telegram-desktop');
+  }
+  
+  restoreTheme();
+  await loadData();
+  setupEventListeners();
+  initSwiper();
+  renderAll();
+}
 // App State
 const elements = {
   searchInput: document.getElementById('searchInput'),
@@ -805,4 +843,5 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
+
 
