@@ -3,12 +3,12 @@
 // Safe Telegram init (doesn't crash in regular browser)
 const tg = (window.Telegram && window.Telegram.WebApp)
   ? window.Telegram.WebApp
-  : {
-      initDataUnsafe: {},
-      expand() {},
-      setHeaderColor() {},
-      setBackgroundColor() {}
-    };
+  : { initDataUnsafe: {}, expand() {} };
+
+tg.expand();
+
+// ================== CONFIG ==================
+const ADMIN_ID = gnomvrn; // ← ВСТАВЬ СВОЙ TELEGRAM ID
 
 // ---------- iOS Safari/VH fix ----------
 function setVhUnit() {
@@ -943,4 +943,5 @@ async function resetToDefault() {
 function editGame(id) {
   alert('Редактирование пока не реализовано. Можно добавить, если нужно.');
 }
+
 
