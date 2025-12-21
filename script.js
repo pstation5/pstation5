@@ -1,4 +1,4 @@
-// Horror Collection App - Script (Fixed + iOS optimized)
+// Horror Collection App - Script (Fixed + iOS optimized + Telegram CloudStorage sync)
 
 // Safe Telegram init (doesn't crash in regular browser)
 const tg = (window.Telegram && window.Telegram.WebApp)
@@ -10,7 +10,7 @@ const tg = (window.Telegram && window.Telegram.WebApp)
       setBackgroundColor() {}
     };
 
-// iOS Safari/VH fix
+// ---------- iOS Safari/VH fix ----------
 function setVhUnit() {
   const vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -18,7 +18,7 @@ function setVhUnit() {
 window.addEventListener('resize', setVhUnit);
 setVhUnit();
 
-// iOS-safe body scroll lock for modals
+// ---------- iOS-safe body scroll lock for modals ----------
 let __scrollY = 0;
 function lockBodyScroll() {
   __scrollY = window.scrollY || 0;
@@ -37,7 +37,121 @@ function unlockBodyScroll() {
   window.scrollTo(0, __scrollY);
 }
 
-// DOM elements
+// ---------- Telegram CloudStorage helpers (chunked) ----------
+const cloud = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage)
+  ? window.Telegram.WebApp.CloudStorage
+  : null;
+
+// CloudStorage limits: value up to 4096 chars, up to 1024 keys :contentReference[oaicite:1]{index=1}
+const CLOUD_PREFIX = 'hc_v1_';
+const CLOUD_KEY_META = `${CLOUD_PREFIX}meta`;
+const CLOUD_KEY_DATA_PREFIX = `${CLOUD_PREFIX}data_`;
+const CLOUD_CHUNK_SIZE = 3800; // запас под JSON/служебные символы
+
+function cloudAvailable() {
+  return !!cloud && typeof cloud.getItem === 'function' && typeof cloud.setItem === 'function';
+}
+
+function cloudGetItem(key) {
+  return new Promise((resolve, reject) => {
+    try {
+      cloud.getItem(key, (err, value) => {
+        if (err) reject(err);
+        else resolve(value ?? null);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function cloudSetItem(key, value) {
+  return new Promise((resolve, reject) => {
+    try {
+      cloud.setItem(key, value, (err, ok) => {
+        if (err) reject(err);
+        else resolve(!!ok);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function cloudRemoveItem(key) {
+  return new Promise((resolve, reject) => {
+    try {
+      cloud.removeItem(key, (err, ok) => {
+        if (err) reject(err);
+        else resolve(!!ok);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+async function cloudSetLargeObject(obj) {
+  if (!cloudAvailable()) return false;
+
+  const json = JSON.stringify(obj);
+  const chunks = [];
+  for (let i = 0; i < json.length; i += CLOUD_CHUNK_SIZE) {
+    chunks.push(json.slice(i, i + CLOUD_CHUNK_SIZE));
+  }
+
+  // узнать старое кол-во чанков, чтобы удалить лишние
+  let oldChunkCount = 0;
+  try {
+    const metaRaw = await cloudGetItem(CLOUD_KEY_META);
+    if (metaRaw) {
+      const meta = JSON.parse(metaRaw);
+      oldChunkCount = Number(meta.chunks || 0);
+    }
+  } catch (_) {}
+
+  // записываем чанки
+  for (let i = 0; i < chunks.length; i++) {
+    await cloudSetItem(`${CLOUD_KEY_DATA_PREFIX}${i}`, chunks[i]);
+  }
+
+  // удаляем лишние старые чанки
+  for (let i = chunks.length; i < oldChunkCount; i++) {
+    try { await cloudRemoveItem(`${CLOUD_KEY_DATA_PREFIX}${i}`); } catch (_) {}
+  }
+
+  // мета в конце (как "commit")
+  const meta = { chunks: chunks.length, updatedAt: new Date().toISOString() };
+  await cloudSetItem(CLOUD_KEY_META, JSON.stringify(meta));
+  return true;
+}
+
+async function cloudGetLargeObject() {
+  if (!cloudAvailable()) return null;
+
+  const metaRaw = await cloudGetItem(CLOUD_KEY_META);
+  if (!metaRaw) return null;
+
+  let meta;
+  try { meta = JSON.parse(metaRaw); } catch { return null; }
+  const count = Number(meta.chunks || 0);
+  if (!count || count < 1) return null;
+
+  let json = '';
+  for (let i = 0; i < count; i++) {
+    const part = await cloudGetItem(`${CLOUD_KEY_DATA_PREFIX}${i}`);
+    if (part == null) return null; // неполные данные
+    json += part;
+  }
+
+  try {
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+// ---------- App state ----------
 const elements = {
   gameGrid: document.getElementById('gameGrid'),
   upcomingSlider: document.getElementById('upcomingSlider'),
@@ -75,9 +189,10 @@ let collection = {
   lastUpdate: new Date().toISOString()
 };
 
-document.addEventListener('DOMContentLoaded', initApp);
+// ---------- Init ----------
+document.addEventListener('DOMContentLoaded', () => { initApp(); });
 
-function initApp() {
+async function initApp() {
   // Telegram setup
   if (window.Telegram && tg.initDataUnsafe) {
     try {
@@ -88,13 +203,24 @@ function initApp() {
     setupTelegramUser();
   }
 
+  // theme first (local fallback)
   restoreTheme();
-  loadCollection();
+
+  // Load: CloudStorage -> localStorage -> games.json
+  const loaded = await loadCollectionPreferCloud();
+
   setupEventListeners();
   renderAll();
+
+  // если ничего не было вообще — подгрузим дефолт и сразу сохраним в Cloud
+  if (!loaded) {
+    await loadDefaultData();
+    await saveCollectionEverywhere();
+    renderAll();
+  }
 }
 
-// Telegram user
+// ---------- Telegram user ----------
 function setupTelegramUser() {
   try {
     const user = tg.initDataUnsafe.user;
@@ -111,8 +237,28 @@ function setupTelegramUser() {
   }
 }
 
-// Load data
-function loadCollection() {
+// ---------- Storage (Cloud + Local) ----------
+async function loadCollectionPreferCloud() {
+  // 1) CloudStorage
+  if (cloudAvailable()) {
+    try {
+      const cloudData = await cloudGetLargeObject();
+      if (cloudData && typeof cloudData === 'object') {
+        collection = cloudData;
+        games = collection.games || [];
+        upcomingGames = collection.upcoming || [];
+        filteredGames = [...games];
+
+        // продублируем в localStorage как кеш
+        localStorage.setItem('horrorCollection', JSON.stringify(collection));
+        return true;
+      }
+    } catch (e) {
+      console.warn('CloudStorage read failed:', e);
+    }
+  }
+
+  // 2) localStorage
   const saved = localStorage.getItem('horrorCollection');
   if (saved) {
     try {
@@ -120,14 +266,39 @@ function loadCollection() {
       games = collection.games || [];
       upcomingGames = collection.upcoming || [];
       filteredGames = [...games];
-      return;
+      return true;
     } catch (e) {
       console.error('localStorage parse error:', e);
     }
   }
-  loadDefaultData();
+
+  // 3) nothing
+  return false;
 }
 
+async function saveCollectionEverywhere() {
+  // local first
+  collection.games = games;
+  collection.upcoming = upcomingGames;
+  collection.lastUpdate = new Date().toISOString();
+  localStorage.setItem('horrorCollection', JSON.stringify(collection));
+
+  // theme тоже в local (быстро)
+  localStorage.setItem('horrorTheme', currentTheme);
+
+  // cloud
+  if (cloudAvailable()) {
+    try {
+      await cloudSetLargeObject(collection);
+      // (опционально) тема в облако отдельным ключом
+      await cloudSetItem(`${CLOUD_PREFIX}theme`, currentTheme);
+    } catch (e) {
+      console.warn('CloudStorage save failed:', e);
+    }
+  }
+}
+
+// ---------- Default data ----------
 async function loadDefaultData() {
   try {
     const response = await fetch('games.json', { cache: 'no-store' });
@@ -136,7 +307,6 @@ async function loadDefaultData() {
     games = collection.games || [];
     upcomingGames = collection.upcoming || [];
     filteredGames = [...games];
-    saveCollection();
   } catch (error) {
     console.error('Default data load error:', error);
     collection = { games: [], upcoming: [], lastUpdate: new Date().toISOString() };
@@ -146,14 +316,7 @@ async function loadDefaultData() {
   }
 }
 
-function saveCollection() {
-  collection.games = games;
-  collection.upcoming = upcomingGames;
-  collection.lastUpdate = new Date().toISOString();
-  localStorage.setItem('horrorCollection', JSON.stringify(collection));
-}
-
-// Events
+// ---------- Events ----------
 function setupEventListeners() {
   elements.searchInput?.addEventListener('input', applyFilters);
   elements.platformFilter?.addEventListener('change', applyFilters);
@@ -176,7 +339,7 @@ function setupEventListeners() {
   });
 }
 
-// Render
+// ---------- Render ----------
 function renderAll() {
   populatePlatformFilter();
   renderUpcoming();
@@ -345,7 +508,7 @@ function renderGames() {
   updateStats();
 }
 
-// Pagination
+// ---------- Pagination ----------
 function nextPage() {
   const totalPages = Math.max(1, Math.ceil(filteredGames.length / gamesPerPage));
   if (currentPage < totalPages) {
@@ -360,7 +523,7 @@ function prevPage() {
   }
 }
 
-// Utils
+// ---------- Utils ----------
 function getStatusText(status) {
   switch (status) {
     case 'completed': return 'Пройдена';
@@ -379,7 +542,7 @@ function escapeHtml(str) {
     .replaceAll("'", '&#039;');
 }
 
-// Modals open/close (iOS-safe)
+// ---------- Modals open/close (iOS-safe) ----------
 function openAddGameModal() {
   document.getElementById('addGameModal').style.display = 'block';
   lockBodyScroll();
@@ -424,7 +587,7 @@ function closeGameDetailModal() {
   unlockBodyScroll();
 }
 
-// Advanced stats
+// ---------- Advanced stats ----------
 function updateAdvancedStats() {
   const totalGames = collection.games.length;
   const upcoming = collection.upcoming.length;
@@ -480,7 +643,7 @@ function updateAdvancedStats() {
   document.getElementById('ratedCount').textContent = ratedGames.length;
 }
 
-// Charts
+// ---------- Charts ----------
 function renderCharts() {
   renderSimpleCharts();
 }
@@ -571,13 +734,18 @@ function createPieChart(data) {
   return html;
 }
 
-// Theme
+// ---------- Theme (also cloud) ----------
 function toggleTheme() {
   currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
   const icon = document.getElementById('themeIcon');
   if (icon) icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+
   localStorage.setItem('horrorTheme', currentTheme);
+
+  if (cloudAvailable()) {
+    cloudSetItem(`${CLOUD_PREFIX}theme`, currentTheme).catch(() => {});
+  }
 }
 
 function restoreTheme() {
@@ -586,10 +754,25 @@ function restoreTheme() {
   document.documentElement.setAttribute('data-theme', currentTheme);
   const icon = document.getElementById('themeIcon');
   if (icon) icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+
+  // попробуем подтянуть тему из облака (не блокирует запуск)
+  if (cloudAvailable()) {
+    cloudGetItem(`${CLOUD_PREFIX}theme`)
+      .then(v => {
+        if (v === 'dark' || v === 'light') {
+          currentTheme = v;
+          document.documentElement.setAttribute('data-theme', currentTheme);
+          const ic = document.getElementById('themeIcon');
+          if (ic) ic.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+          localStorage.setItem('horrorTheme', currentTheme);
+        }
+      })
+      .catch(() => {});
+  }
 }
 
-// CRUD
-function handleAddGame(e) {
+// ---------- CRUD ----------
+async function handleAddGame(e) {
   e.preventDefault();
 
   const platformSelect = document.getElementById('gamePlatform');
@@ -610,7 +793,9 @@ function handleAddGame(e) {
 
   games.unshift(newGame);
   filteredGames = [...games];
-  saveCollection();
+
+  await saveCollectionEverywhere();
+
   closeAddGameModal();
   e.target.reset();
   applyFilters();
@@ -618,7 +803,7 @@ function handleAddGame(e) {
   updateManageInfo();
 }
 
-function handleAddUpcoming(e) {
+async function handleAddUpcoming(e) {
   e.preventDefault();
 
   const platformSelect = document.getElementById('upcomingPlatform');
@@ -636,30 +821,34 @@ function handleAddUpcoming(e) {
   };
 
   upcomingGames.unshift(newUpcoming);
-  saveCollection();
+
+  await saveCollectionEverywhere();
+
   closeAddUpcomingModal();
   e.target.reset();
   renderUpcoming();
   updateManageInfo();
 }
 
-function deleteGame(id) {
+async function deleteGame(id) {
   if (!confirm('Удалить игру из коллекции?')) return;
   games = games.filter(g => g.id !== id);
   filteredGames = filteredGames.filter(g => g.id !== id);
-  saveCollection();
+
+  await saveCollectionEverywhere();
   renderAll();
 }
 
-function deleteUpcoming(id) {
+async function deleteUpcoming(id) {
   if (!confirm('Удалить ожидаемую игру?')) return;
   upcomingGames = upcomingGames.filter(g => g.id !== id);
-  saveCollection();
+
+  await saveCollectionEverywhere();
   renderUpcoming();
   updateManageInfo();
 }
 
-// Detail modal
+// ---------- Detail modal ----------
 function openGameDetail(id) {
   const game = games.find(g => g.id === id);
   if (!game) return;
@@ -687,7 +876,7 @@ function openGameDetail(id) {
   lockBodyScroll();
 }
 
-// Manage actions
+// ---------- Manage actions ----------
 function exportCollection() {
   const data = JSON.stringify(collection, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
@@ -717,7 +906,7 @@ function importCollection() {
       upcomingGames = collection.upcoming || [];
       filteredGames = [...games];
 
-      saveCollection();
+      await saveCollectionEverywhere();
       renderAll();
       alert('Импорт выполнен!');
     } catch (e) {
@@ -729,24 +918,28 @@ function importCollection() {
   input.click();
 }
 
-function clearCollection() {
+async function clearCollection() {
   if (!confirm('Точно удалить ВСЕ данные?')) return;
   collection = { games: [], upcoming: [], lastUpdate: new Date().toISOString() };
   games = [];
   upcomingGames = [];
   filteredGames = [];
-  saveCollection();
+
+  await saveCollectionEverywhere();
   renderAll();
 }
 
-function resetToDefault() {
+async function resetToDefault() {
   if (!confirm('Сбросить к демо-данным?')) return;
   localStorage.removeItem('horrorCollection');
-  loadCollection();
+
+  await loadDefaultData();
+  filteredGames = [...games];
+  await saveCollectionEverywhere();
   renderAll();
 }
 
-// Stubs to avoid errors if you haven't implemented editing yet
+// ---------- Stubs ----------
 function editGame(id) {
   alert('Редактирование пока не реализовано. Можно добавить, если нужно.');
 }
