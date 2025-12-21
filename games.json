@@ -9,7 +9,7 @@
       "genre": "survival-horror",
       "developer": "Capcom",
       "publisher": "Capcom",
-      "description": "Переосмысление классической игры Resident Evil 4 с современной графикой и геймплеем.",
+      "description": "Переосмысление классической игры Resident Evil 4 с современной графикой и геймплеем. Переживите ужасы испанской деревни снова.",
       "isPhysical": true,
       "status": "completed",
       "screenshots": [
@@ -27,11 +27,41 @@
       "genre": "action-horror",
       "developer": "Naughty Dog",
       "publisher": "Sony Interactive Entertainment",
-      "description": "Ремастер оригинальной игры с улучшенной графикой для PS5.",
+      "description": "Ремастер оригинальной игры с улучшенной графикой для PS5. Эпическая история выживания в постапокалиптическом мире.",
       "isPhysical": true,
       "status": "completed",
       "screenshots": [],
       "addedDate": "2024-01-02T12:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "title": "Silent Hill 2",
+      "platform": "ps4",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1j7i.png",
+      "releaseYear": 2001,
+      "genre": "psychological-horror",
+      "developer": "Konami",
+      "publisher": "Konami",
+      "description": "Культовая игра в жанре психологического хоррора. Джеймс Сандерланд получает письмо от своей умершей жены.",
+      "isPhysical": true,
+      "status": "in-progress",
+      "screenshots": [],
+      "addedDate": "2024-01-03T12:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "title": "Dead Space Remake",
+      "platform": "ps5",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5tjw.png",
+      "releaseYear": 2023,
+      "genre": "sci-fi-horror",
+      "developer": "Motive Studio",
+      "publisher": "Electronic Arts",
+      "description": "Полный ремейк классического космического хоррора. Исследуйте заброшенный космический корабль Ишмура.",
+      "isPhysical": true,
+      "status": "not-started",
+      "screenshots": [],
+      "addedDate": "2024-01-04T12:00:00.000Z"
     }
   ],
   "upcomingGames": [
@@ -43,6 +73,15 @@
       "developer": "Bloober Team",
       "genre": "psychological-horror",
       "platforms": ["ps5"]
+    },
+    {
+      "id": 102,
+      "title": "Alone in the Dark",
+      "coverImage": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5zpx.png",
+      "releaseDate": "2024-03-20",
+      "developer": "Pieces Interactive",
+      "genre": "survival-horror",
+      "platforms": ["ps5", "ps4"]
     }
   ],
   "comments": [],
