@@ -1,7 +1,7 @@
 // Game Collection Hub - Community Edition
 
 // ========== CONFIGURATION ==========
-const ADMIN_TELEGRAM_ID = 321407568; // ЗАМЕНИТЕ на ваш Telegram ID
+const ADMIN_TELEGRAM_ID = 123456789; // ЗАМЕНИТЕ на ваш Telegram ID
 const APP_VERSION = '1.0.0';
 
 // ========== TELEGRAM INIT ==========
@@ -72,6 +72,90 @@ const elements = {
   activeUsers: document.getElementById('activeUsers')
 };
 
+// ========== MODAL MANAGEMENT ==========
+let currentModal = null;
+
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    // Закрыть текущий модал, если есть
+    if (currentModal) {
+      closeModal(currentModal);
+    }
+    
+    modal.style.display = 'block';
+    currentModal = modalId;
+    lockBodyScroll();
+    
+    // Добавить обработчик для крестика
+    const closeBtn = modal.querySelector('.close-modal');
+    if (closeBtn) {
+      closeBtn.onclick = () => closeModal(modalId);
+    }
+    
+    // Добавить обработчик для клика вне модального окна
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        closeModal(modalId);
+      }
+    };
+  }
+}
+
+function closeModal(modalId) {
+  if (typeof modalId === 'string') {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  } else if (modalId && modalId.style) {
+    modalId.style.display = 'none';
+  }
+  
+  // Убрать обработчики
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.onclick = null;
+    const closeBtn = modal.querySelector('.close-modal');
+    if (closeBtn) {
+      closeBtn.onclick = null;
+    }
+  }
+  
+  currentModal = null;
+  unlockBodyScroll();
+}
+
+// Функции для удобства (оставляем для обратной совместимости)
+function closeAddGameModal() {
+  closeModal('addGameModal');
+  document.getElementById('addGameForm').reset();
+}
+
+function closeGameDetailModal() {
+  closeModal('gameDetailModal');
+}
+
+function closeMyCollectionModal() {
+  closeModal('myCollectionModal');
+}
+
+function closeCommentsModal() {
+  closeModal('commentsModal');
+  window.currentCommentGameId = null;
+  window.currentCommentGameTitle = null;
+  document.getElementById('newComment').value = '';
+  setStarRating(0);
+}
+
+function closeProfileModal() {
+  closeModal('profileModal');
+}
+
+function closeStatsModal() {
+  closeModal('statsModal');
+}
+
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', async () => {
   initApp();
@@ -82,7 +166,7 @@ async function initApp() {
   if (window.Telegram && tg.initDataUnsafe) {
     try {
       tg.expand();
-      tg.setHeaderColor('#4361ee');
+      tg.setHeaderColor('#8b0000');
       tg.setBackgroundColor('#121212');
       setupTelegramUser();
     } catch (e) {}
@@ -102,6 +186,19 @@ async function initApp() {
   
   // Check admin status
   checkAdminStatus();
+  
+  // Set up modal close handlers
+  setupModalCloseHandlers();
+}
+
+function setupModalCloseHandlers() {
+  // Устанавливаем обработчики для всех кнопок закрытия
+  document.querySelectorAll('.close-modal').forEach(btn => {
+    const modal = btn.closest('.modal');
+    if (modal) {
+      btn.onclick = () => closeModal(modal.id);
+    }
+  });
 }
 
 // ========== USER MANAGEMENT ==========
@@ -111,7 +208,7 @@ function setupTelegramUser() {
     if (user) {
       currentUser.id = user.id;
       currentUser.name = `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}`;
-      currentUser.avatar = user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=4361ee&color=fff`;
+      currentUser.avatar = user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=8b0000&color=fff`;
       currentUser.isAdmin = user.id === ADMIN_TELEGRAM_ID;
       
       elements.userGreeting.textContent = `Привет, ${user.first_name}!`;
@@ -132,7 +229,7 @@ function setupMockUser() {
   currentUser = {
     id: mockId,
     name: `Игрок${mockId}`,
-    avatar: `https://ui-avatars.com/api/?name=Player${mockId}&background=4361ee&color=fff`,
+    avatar: `https://ui-avatars.com/api/?name=Player${mockId}&background=8b0000&color=fff`,
     isAdmin: mockId === ADMIN_TELEGRAM_ID,
     joinDate: new Date().toISOString()
   };
@@ -168,7 +265,7 @@ function checkAdminStatus() {
 
 function toggleAdminMode() {
   if (!currentUser.isAdmin) {
-    alert('Только администратор может использовать этот режим');
+    showNotification('Только администратор может использовать этот режим', 'warning');
     return;
   }
   
@@ -296,17 +393,6 @@ function setupEventListeners() {
   
   // Form submissions
   document.getElementById('addGameForm')?.addEventListener('submit', handleAddGame);
-  
-  // Modal close events
-  window.addEventListener('click', (event) => {
-    const modals = ['addGameModal', 'gameDetailModal', 'myCollectionModal', 'commentsModal', 'profileModal', 'statsModal'];
-    modals.forEach(id => {
-      const modal = document.getElementById(id);
-      if (modal && event.target === modal) {
-        closeModal(modal);
-      }
-    });
-  });
 }
 
 // ========== RENDER FUNCTIONS ==========
@@ -566,7 +652,7 @@ function renderComments(gameId) {
     commentElement.innerHTML = `
       <div class="comment-header">
         <div class="comment-user">
-          <img class="comment-avatar" src="${comment.userAvatar || 'https://ui-avatars.com/api/?name=User&background=4361ee&color=fff'}" alt="${escapeHtml(comment.userName)}">
+          <img class="comment-avatar" src="${comment.userAvatar || 'https://ui-avatars.com/api/?name=User&background=8b0000&color=fff'}" alt="${escapeHtml(comment.userName)}">
           <div>
             <div class="comment-name">${escapeHtml(comment.userName)}</div>
             <div class="comment-date">${formatDate(comment.date)}</div>
@@ -695,10 +781,10 @@ function openGameDetail(gameId) {
     </div>
     
     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-      <button class="btn-primary" onclick="toggleGameCollection(${game.id})">
+      <button class="btn-primary" onclick="toggleGameCollection(${game.id}); closeModal('gameDetailModal')">
         <i class="fas fa-heart"></i> ${inCollection ? 'В коллекции' : 'В коллекцию'}
       </button>
-      <button class="btn-secondary" onclick="openGameComments(${game.id})">
+      <button class="btn-secondary" onclick="closeModal('gameDetailModal'); openGameComments(${game.id})">
         <i class="fas fa-comment"></i> Комментарии (${getGameCommentsCount(game.id)})
       </button>
     </div>
@@ -714,11 +800,6 @@ function openAddGameModal() {
     return;
   }
   openModal('addGameModal');
-}
-
-function closeAddGameModal() {
-  closeModal('addGameModal');
-  document.getElementById('addGameForm').reset();
 }
 
 function handleAddGame(e) {
@@ -785,7 +866,8 @@ function handleAddGame(e) {
   
   saveAllData();
   
-  closeAddGameModal();
+  closeModal('addGameModal');
+  document.getElementById('addGameForm').reset();
   applyFilters();
   updateFilters();
   updateHeaderStats();
@@ -820,10 +902,6 @@ function openProfileModal() {
   openModal('profileModal');
 }
 
-function closeProfileModal() {
-  closeModal('profileModal');
-}
-
 // ========== STATISTICS FUNCTIONS ==========
 function openStatsModal() {
   document.getElementById('communityGames').textContent = gamesCatalog.length;
@@ -838,10 +916,6 @@ function openStatsModal() {
   
   renderCommunityCharts();
   openModal('statsModal');
-}
-
-function closeStatsModal() {
-  closeModal('statsModal');
 }
 
 function renderCommunityCharts() {
@@ -897,26 +971,6 @@ if (savedTheme) {
 }
 
 // ========== UTILITY FUNCTIONS ==========
-function openModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.style.display = 'block';
-    lockBodyScroll();
-  }
-}
-
-function closeModal(modalId) {
-  if (typeof modalId === 'string') {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.style.display = 'none';
-    }
-  } else if (modalId && modalId.style) {
-    modalId.style.display = 'none';
-  }
-  unlockBodyScroll();
-}
-
 function showNotification(message, type = 'info') {
   // Create notification element
   const notification = document.createElement('div');
@@ -928,21 +982,7 @@ function showNotification(message, type = 'info') {
     </div>
   `;
   
-  // Add styles
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
-    color: white;
-    padding: 15px 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-    max-width: 350px;
-  `;
-  
+  // Add to body
   document.body.appendChild(notification);
   
   // Remove after 3 seconds
@@ -1005,23 +1045,3 @@ function createBarChart(data) {
   html += '</div>';
   return html;
 }
-
-// Add CSS animations for notifications
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-  }
-  .notification-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-`;
-document.head.appendChild(style);
-
