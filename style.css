@@ -855,3 +855,73 @@ html, body {
     padding: 20px;
   }
 }
+/* Добавить эти стили в конец файла style.css */
+
+/* Telegram WebApp container adjustments */
+@media (min-width: 768px) {
+  html.telegram-desktop .app-container {
+    padding: 30px;
+    max-width: 1600px;
+  }
+  
+  html.telegram-desktop .header-top {
+    margin-bottom: 50px;
+  }
+  
+  html.telegram-desktop .game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 35px;
+  }
+}
+
+/* Better modal for desktop */
+@media (min-width: 768px) {
+  .modal-content {
+    margin: 100px auto;
+    border-radius: 20px;
+  }
+  
+  .modal-header {
+    padding: 25px 35px;
+  }
+  
+  .modal-body {
+    padding: 35px;
+  }
+}
+
+/* Improve typography for desktop */
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+  
+  h1, h2, h3 {
+    letter-spacing: -0.5px;
+  }
+  
+  .game-title {
+    font-size: 1.3rem;
+    line-height: 1.4;
+  }
+}
+
+/* Desktop-specific hover effects */
+@media (min-width: 768px) and (hover: hover) {
+  .game-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .game-card:hover {
+    box-shadow: 0 25px 50px rgba(220, 20, 60, 0.3);
+  }
+  
+  .action-btn {
+    opacity: 0.9;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  
+  .game-card:hover .game-actions {
+    opacity: 1;
+  }
+}
