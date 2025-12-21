@@ -1,6 +1,6 @@
 // Horror Games Community App
 
-const ADMIN_USER_ID = 123456789; // Замените на ваш Telegram ID
+const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
 
 // Telegram WebApp
 const tg = window.Telegram?.WebApp || {
@@ -943,3 +943,4 @@ function formatDate(dateString) {
     return 'Неизвестно';
   }
 }
+
