@@ -1584,3 +1584,25 @@ function debugUserStatus() {
 }
 
 window.debugUserStatus = debugUserStatus;
+
+// ========== SETTINGS ==========
+function openSettingsModal() {
+  document.getElementById('notificationsToggle').checked = currentUser.settings.notifications;
+  document.getElementById('themeSelect').value = currentTheme;
+  openModal('settingsModal');
+}
+
+function saveSettings() {
+  currentUser.settings.notifications = document.getElementById('notificationsToggle').checked;
+  currentUser.settings.theme = document.getElementById('themeSelect').value;
+  
+  // Apply theme if changed
+  if (currentTheme !== currentUser.settings.theme) {
+    currentTheme = currentUser.settings.theme;
+    applyTheme();
+  }
+  
+  saveAllData();
+  closeModal('settingsModal');
+  showNotification('Настройки сохранены', 'success');
+}
