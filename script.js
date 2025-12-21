@@ -429,7 +429,21 @@ function renderGames() {
   pageGames.forEach(game => {
     const card = document.createElement('div');
     card.className = 'game-card';
-    card.onclick = () => openGameDetail(game.id);
+    card.onclick = (event) => {
+  console.log('🎯 Клик по карточке игры:', game.id, game.title);
+  console.log('Цель клика:', event.target);
+  
+  // Проверяем не кликнули ли мы на кнопку внутри карточки
+  if (event.target.closest('.game-actions') || 
+      event.target.closest('.action-btn') ||
+      event.target.classList.contains('action-btn')) {
+    console.log('Клик на кнопке, игнорирую');
+    return;
+  }
+  
+  console.log('Открываю детали игры...');
+  openGameDetail(game.id);
+};
     
     const inCollection = currentUser && userCollections[currentUser.id]?.games.includes(game.id);
     const userStatus = currentUser ? userCollections[currentUser.id]?.status[game.id] : null;
@@ -730,30 +744,48 @@ async function deleteGame(id) {
 
 // Open game detail modal
 function openGameDetail(id) {
-  console.log('Открываю детали игры ID:', id);
+  console.log('📱 Открываю детали игры ID:', id, 'Тип ID:', typeof id);
+  console.log('📊 Всего игр в базе:', games.length);
+  console.log('🎮 Все доступные ID:', games.map(g => ({ id: g.id, title: g.title })));
   
-  const game = games.find(g => g.id === id);
+  // Преобразуем ID к числу если нужно
+  const gameId = typeof id === 'string' ? parseInt(id) : id;
+  
+  const game = games.find(g => g.id == gameId); // Используем == вместо ===
+  
   if (!game) {
-    console.error('Игра не найдена с ID:', id);
-    alert('Игра не найдена!');
+    console.error('❌ Игра не найдена! ID:', gameId, 'Тип:', typeof gameId);
+    console.error('Искал среди игр:', games);
+    alert('Игра не найдена! ID: ' + gameId);
     return;
   }
   
-  currentGameId = id;
+  console.log('✅ Игра найдена:', game.title);
+  currentGameId = gameId;
+  
+  // Сначала скрываем все модальные окна
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.style.display = 'none';
+  });
   
   document.getElementById('detailTitle').textContent = game.title;
   
   const detailContent = document.getElementById('gameDetailContent');
   
-  // Format genres
+  // Форматируем жанры
   const genresHTML = game.genres && game.genres.length > 0 
     ? game.genres.map(genre => `
         <span class="genre-tag">${formatGenreName(genre)}</span>
       `).join('')
     : '<p style="color: var(--text-muted);">Не указаны</p>';
   
+  // Проверяем есть ли игра в коллекции пользователя
+  const isInCollection = currentUser && userCollections[currentUser.id]?.games.includes(gameId);
+  
   detailContent.innerHTML = `
-    <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-detail-cover"
+    <img src="${game.coverImage}" 
+         alt="${escapeHtml(game.title)}" 
+         class="game-detail-cover"
          onerror="this.src='https://via.placeholder.com/600x400/333333/666666?text=No+Image'">
     
     <div class="game-detail-info">
@@ -807,26 +839,27 @@ function openGameDetail(id) {
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeGameDetailModal()">Закрыть</button>
       ${currentUser ? `
-        <button class="btn-primary" onclick="toggleCollection(${game.id})">
+        <button class="btn-primary" onclick="toggleCollection(${game.id}); closeGameDetailModal()">
           <i class="fas fa-heart"></i> 
-          ${userCollections[currentUser.id]?.games.includes(game.id) ? 'Удалить из коллекции' : 'В мою коллекцию'}
+          ${isInCollection ? 'Удалить из коллекции' : 'В мою коллекцию'}
         </button>
       ` : ''}
     </div>
   `;
   
-  document.getElementById('gameDetailModal').style.display = 'block';
+  // Показываем модальное окно
+  const modal = document.getElementById('gameDetailModal');
+  modal.style.display = 'block';
+  
+  console.log('✅ Модальное окно открыто');
 }
 
 function closeGameDetailModal() {
-  document.getElementById('gameDetailModal').style.display = 'none';
-}
-
-function openUpcomingDetail(id) {
-  const game = upcomingGames.find(g => g.id === id);
-  if (!game) return;
-  
-  alert(`${game.title}\nДата выхода: ${formatDate(game.releaseDate)}\nРазработчик: ${game.developer || 'Не указан'}`);
+  const modal = document.getElementById('gameDetailModal');
+  if (modal) {
+    modal.style.display = 'none';
+    console.log('✅ Модальное окно закрыто');
+  }
 }
 
 // Collection management
@@ -1089,3 +1122,4 @@ function clearAllData() {
     }, 500);
   }
 }
+
