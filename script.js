@@ -8,45 +8,7 @@ const tg = window.Telegram?.WebApp || {
   setHeaderColor() {},
   setBackgroundColor() {}
 };
-// Detect Telegram Desktop
-if (window.Telegram?.WebApp?.platform) {
-  if (window.Telegram.WebApp.platform === 'tdesktop') {
-    document.documentElement.classList.add('telegram-desktop');
-    console.log('Running in Telegram Desktop');
-  }
-}
 
-// Обновить функцию initApp:
-async function initApp() {
-  // Telegram setup
-  if (window.Telegram && tg.initDataUnsafe) {
-    try {
-      tg.expand();
-      tg.setHeaderColor('#dc143c');
-      tg.setBackgroundColor('#0a0a0a');
-      
-      // Detect platform
-      if (window.Telegram.WebApp.platform === 'tdesktop') {
-        document.documentElement.classList.add('telegram-desktop');
-        console.log('Telegram Desktop detected - applying desktop optimizations');
-      }
-    } catch (e) {
-      console.error('Telegram WebApp error:', e);
-    }
-    setupTelegramUser();
-  }
-  
-  // Добавить класс если это Telegram Desktop
-  if (navigator.userAgent.includes('TelegramDesktop')) {
-    document.documentElement.classList.add('telegram-desktop');
-  }
-  
-  restoreTheme();
-  await loadData();
-  setupEventListeners();
-  initSwiper();
-  renderAll();
-}
 // App State
 const elements = {
   searchInput: document.getElementById('searchInput'),
@@ -95,8 +57,21 @@ async function initApp() {
       tg.expand();
       tg.setHeaderColor('#dc143c');
       tg.setBackgroundColor('#0a0a0a');
-    } catch (e) {}
+      
+      // Detect Telegram Desktop
+      if (window.Telegram.WebApp.platform === 'tdesktop') {
+        document.documentElement.classList.add('telegram-desktop');
+        console.log('Telegram Desktop detected');
+      }
+    } catch (e) {
+      console.error('Telegram WebApp error:', e);
+    }
     setupTelegramUser();
+  }
+  
+  // Detect Telegram Desktop from user agent
+  if (navigator.userAgent.includes('TelegramDesktop')) {
+    document.documentElement.classList.add('telegram-desktop');
   }
   
   restoreTheme();
@@ -137,13 +112,27 @@ function setupTelegramUser() {
 
 async function loadData() {
   try {
-    const response = await fetch('games.json');
-    const data = await response.json();
-    
-    games = data.games || [];
-    upcomingGames = data.upcomingGames || [];
-    comments = data.comments || [];
-    userCollections = data.userCollections || {};
+    // First try to load from localStorage (for demo)
+    const savedData = localStorage.getItem('psHorrorGamesData');
+    if (savedData) {
+      const data = JSON.parse(savedData);
+      games = data.games || [];
+      upcomingGames = data.upcomingGames || [];
+      comments = data.comments || [];
+      userCollections = data.userCollections || {};
+      console.log('Data loaded from localStorage:', games.length, 'games');
+    } else {
+      // If no localStorage data, try to load from games.json
+      const response = await fetch('games.json');
+      if (response.ok) {
+        const data = await response.json();
+        games = data.games || [];
+        upcomingGames = data.upcomingGames || [];
+        comments = data.comments || [];
+        userCollections = data.userCollections || {};
+        console.log('Data loaded from games.json:', games.length, 'games');
+      }
+    }
     
     // Initialize user collection if not exists
     if (currentUser && !userCollections[currentUser.id]) {
@@ -174,10 +163,19 @@ async function saveData() {
     lastUpdate: new Date().toISOString()
   };
   
-  // For GitHub Pages demo, use localStorage
   try {
+    // Save to localStorage for persistence
     localStorage.setItem('psHorrorGamesData', JSON.stringify(data));
-    console.log('Data saved successfully');
+    console.log('Data saved to localStorage successfully');
+    
+    // If you want to save to a server, you can add fetch here
+    // Example for GitHub Pages (would need server-side logic):
+    // await fetch('/save-data', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(data)
+    // });
+    
   } catch (e) {
     console.error('Error saving data:', e);
   }
@@ -187,6 +185,13 @@ function setupEventListeners() {
   // Search
   elements.searchInput?.addEventListener('input', applyFilters);
   elements.searchButton?.addEventListener('click', applyFilters);
+  
+  // Search on Enter key
+  elements.searchInput?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      applyFilters();
+    }
+  });
   
   // Sort
   elements.sortSelect?.addEventListener('change', function() {
@@ -205,6 +210,15 @@ function setupEventListeners() {
         this.style.display = 'none';
       }
     });
+  });
+  
+  // Close modals on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+      });
+    }
   });
 }
 
@@ -247,6 +261,11 @@ function renderUpcomingGames() {
         <div class="upcoming-card" style="text-align: center; padding: 40px;">
           <i class="fas fa-calendar" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px;"></i>
           <p>Нет ожидаемых игр</p>
+          ${currentUser?.id === ADMIN_USER_ID ? `
+            <button class="add-btn" onclick="openAddUpcomingModal()" style="margin-top: 15px;">
+              <i class="fas fa-plus"></i> Добавить первую игру
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
@@ -375,6 +394,11 @@ function renderGames() {
         <i class="fas fa-gamepad" style="font-size: 4rem; color: var(--text-muted); margin-bottom: 20px;"></i>
         <h3 style="color: var(--text-secondary); margin-bottom: 10px;">Игры не найдены</h3>
         <p style="color: var(--text-muted);">Попробуйте изменить фильтры поиска</p>
+        ${currentUser?.id === ADMIN_USER_ID ? `
+          <button class="add-btn" onclick="openAddGameModal()" style="margin-top: 20px;">
+            <i class="fas fa-plus"></i> Добавить первую игру
+          </button>
+        ` : ''}
       </div>
     `;
     renderPagination();
@@ -410,7 +434,8 @@ function renderGames() {
         ` : ''}
       </div>
       
-      <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover">
+      <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover" 
+           onerror="this.src='https://via.placeholder.com/300x400/222222/ffffff?text=No+Image'">
       
       <div class="game-info">
         <div class="game-title">${escapeHtml(game.title)}</div>
@@ -509,6 +534,8 @@ async function handleAddGame(e) {
   closeAddGameModal();
   e.target.reset();
   renderAll();
+  
+  alert('Игра успешно добавлена!');
 }
 
 async function handleAddUpcomingGame(e) {
@@ -535,6 +562,8 @@ async function handleAddUpcomingGame(e) {
   closeAddUpcomingModal();
   e.target.reset();
   renderUpcomingGames();
+  
+  alert('Ожидаемая игра успешно добавлена!');
 }
 
 function editGame(id) {
@@ -572,19 +601,21 @@ function editGame(id) {
     await saveData();
     closeAddGameModal();
     renderAll();
+    alert('Изменения сохранены!');
   };
   
   openAddGameModal();
 }
 
 async function deleteGame(id) {
-  if (!confirm('Удалить игру из коллекции?')) return;
+  if (!confirm('Удалить игру из коллекции? Это действие нельзя отменить.')) return;
   
   games = games.filter(g => g.id !== id);
   filteredGames = filteredGames.filter(g => g.id !== id);
   
   await saveData();
   renderAll();
+  alert('Игра удалена!');
 }
 
 // Open game detail modal
@@ -598,7 +629,8 @@ function openGameDetail(id) {
   
   const detailContent = document.getElementById('gameDetailContent');
   detailContent.innerHTML = `
-    <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-detail-cover">
+    <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-detail-cover"
+         onerror="this.src='https://via.placeholder.com/800x400/222222/ffffff?text=No+Image'">
     
     <div class="game-detail-info">
       <div class="info-item">
@@ -711,7 +743,7 @@ function shareGame(gameId) {
   
   currentGameId = gameId;
   
-  const shareMessage = `Посмотрите эту игру: ${game.title} (${game.platform.toUpperCase()}, ${game.releaseYear})`;
+  const shareMessage = `🎮 Посмотрите эту игру: ${game.title} (${game.platform.toUpperCase()}, ${game.releaseYear})`;
   document.getElementById('shareMessage').textContent = shareMessage;
   
   document.getElementById('shareModal').style.display = 'block';
@@ -741,10 +773,10 @@ function copyShareLink() {
   const game = games.find(g => g.id === currentGameId);
   if (!game) return;
   
-  const shareText = `Посмотрите "${game.title}" в коллекции хоррор игр для PS4/PS5!`;
+  const shareText = `🎮 Посмотрите "${game.title}" в коллекции хоррор игр для PS4/PS5!`;
   
   navigator.clipboard.writeText(shareText).then(() => {
-    alert('Ссылка скопирована в буфер обмена!');
+    alert('Текст скопирован в буфер обмена!');
     closeShareModal();
   });
 }
@@ -800,7 +832,8 @@ function closeAddGameModal() {
   form.reset();
   const submitBtn = form.querySelector('.btn-primary');
   submitBtn.textContent = 'Добавить игру';
-  submitBtn.onclick = handleAddGame;
+  submitBtn.onclick = null;
+  form.onsubmit = handleAddGame;
 }
 
 function openAddUpcomingModal() {
@@ -843,6 +876,3 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
-
-
-
