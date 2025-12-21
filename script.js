@@ -1,107 +1,113 @@
-// Horror Collection App - Multi-user version with admin/user separation
+// Horror Games Community App
 
-// ---------- Configuration ----------
-const ADMIN_USER_ID = 321407568; // ЗАМЕНИТЕ на ваш Telegram ID
-const PLATFORMS = {
-  ps5: 'PlayStation 5',
-  ps4: 'PlayStation 4'
+const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
+
+// Telegram WebApp
+const tg = window.Telegram?.WebApp || {
+  initDataUnsafe: { user: null },
+  expand() {},
+  setHeaderColor() {},
+  setBackgroundColor() {}
 };
 
-// ---------- App state ----------
-let currentUser = null;
-let isAdmin = false;
-let games = [];
-let comments = {};
-let userRatings = {};
-let userCollections = {};
-let currentGameId = null;
-let currentUserRating = 0;
-
-// ---------- DOM elements ----------
+// App state
 const elements = {
   gameGrid: document.getElementById('gameGrid'),
-  adminPanel: document.getElementById('adminPanel'),
-  adminBtn: document.getElementById('adminBtn'),
+  searchInput: document.getElementById('searchInput'),
+  platformFilter: document.getElementById('platformFilter'),
+  genreFilter: document.getElementById('genreFilter'),
+  sortSelect: document.getElementById('sortSelect'),
+  
+  totalGamesEl: document.getElementById('totalGames'),
+  totalCommentsEl: document.getElementById('totalComments'),
+  totalUsersEl: document.getElementById('totalUsers'),
+  avgRatingEl: document.getElementById('avgRating'),
+  
+  currentPageEl: document.getElementById('currentPage'),
+  totalPagesEl: document.getElementById('totalPages'),
+  
+  userGreeting: document.getElementById('userGreeting'),
+  userAvatar: document.getElementById('userAvatar'),
   userRole: document.getElementById('userRole'),
-  totalGames: document.getElementById('totalGames'),
-  totalComments: document.getElementById('totalComments'),
-  activeUsers: document.getElementById('activeUsers'),
-  avgRating: document.getElementById('avgRating')
+  adminControls: document.getElementById('adminControls')
 };
 
-// ---------- Init ----------
+let games = [];
+let comments = [];
+let userCollections = {};
+let currentUser = null;
+let filteredGames = [];
+let currentPage = 1;
+const gamesPerPage = 12;
+let currentTheme = 'dark';
+let currentGameId = null;
+
+// Initialize
 document.addEventListener('DOMContentLoaded', initApp);
 
 async function initApp() {
-  // Telegram user setup
-  await setupTelegramUser();
-  
-  // Load data
-  await loadData();
-  
-  // Setup UI
-  setupEventListeners();
-  renderGames();
-  updateStats();
-}
-
-// ---------- Telegram user setup ----------
-async function setupTelegramUser() {
-  const tg = window.Telegram?.WebApp;
-  
-  if (tg?.initDataUnsafe?.user) {
-    const user = tg.initDataUnsafe.user;
-    currentUser = {
-      id: user.id,
-      name: user.first_name || 'Пользователь',
-      username: user.username,
-      photo: user.photo_url
-    };
-    
-    // Check if admin
-    isAdmin = user.id === ADMIN_USER_ID;
-    
-    // Update UI
-    document.getElementById('userGreeting').textContent = `Привет, ${user.first_name}!`;
-    document.getElementById('userRole').textContent = isAdmin ? 'Администратор' : 'Коллекционер';
-    
-    if (currentUser.photo) {
-      document.getElementById('userAvatar').src = currentUser.photo;
-    }
-    
-    // Show/hide admin features
-    elements.adminPanel.style.display = isAdmin ? 'block' : 'none';
-    elements.adminBtn.style.display = isAdmin ? 'block' : 'none';
-    
-    // Initialize Telegram app
+  // Telegram setup
+  if (window.Telegram && tg.initDataUnsafe) {
     try {
       tg.expand();
       tg.setHeaderColor('#8b0000');
       tg.setBackgroundColor('#121212');
     } catch (e) {}
-  } else {
-    // Demo mode (no Telegram)
-    currentUser = { id: 0, name: 'Гость', username: 'guest' };
-    elements.userRole.textContent = 'Гость (демо)';
+    setupTelegramUser();
+  }
+  
+  restoreTheme();
+  await loadData();
+  setupEventListeners();
+  renderAll();
+}
+
+function setupTelegramUser() {
+  try {
+    const user = tg.initDataUnsafe.user;
+    if (user) {
+      currentUser = {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        username: user.username,
+        photoUrl: user.photo_url
+      };
+      
+      elements.userGreeting.textContent = `Привет, ${user.first_name}!`;
+      elements.userAvatar.src = user.photo_url || 
+        'https://via.placeholder.com/45/8b0000/ffffff?text=👻';
+      
+      // Check if admin
+      if (user.id === ADMIN_USER_ID) {
+        elements.userRole.textContent = 'Администратор';
+        elements.adminControls.style.display = 'block';
+      }
+    }
+  } catch (e) {
+    console.error('Error setting up user:', e);
   }
 }
 
-// ---------- Data management ----------
 async function loadData() {
   try {
-    const saved = localStorage.getItem('horrorCollectionData');
-    if (saved) {
-      const data = JSON.parse(saved);
-      games = data.games || [];
-      comments = data.comments || {};
-      userRatings = data.ratings || {};
-      userCollections = data.collections || {};
+    const response = await fetch('games.json');
+    const data = await response.json();
+    
+    games = data.games || [];
+    comments = data.comments || [];
+    userCollections = data.userCollections || {};
+    
+    // Initialize user collection if not exists
+    if (currentUser && !userCollections[currentUser.id]) {
+      userCollections[currentUser.id] = [];
     }
-  } catch (e) {
-    console.error('Load error:', e);
+    
+    filteredGames = [...games];
+  } catch (error) {
+    console.error('Error loading data:', error);
     games = [];
-    comments = {};
-    userRatings = {};
+    comments = [];
     userCollections = {};
   }
 }
@@ -110,430 +116,610 @@ async function saveData() {
   const data = {
     games,
     comments,
-    ratings: userRatings,
-    collections: userCollections,
-    updatedAt: new Date().toISOString()
-  };
-  localStorage.setItem('horrorCollectionData', JSON.stringify(data));
-}
-
-// ---------- Game management (admin only) ----------
-async function addGame(gameData) {
-  const newGame = {
-    id: Date.now(),
-    title: gameData.title,
-    platform: gameData.platform,
-    platformName: PLATFORMS[gameData.platform] || gameData.platform,
-    coverImage: gameData.coverImage || '',
-    releaseYear: gameData.releaseYear || null,
-    genre: gameData.genre || '',
-    developer: gameData.developer || '',
-    description: gameData.description || '',
-    addedAt: new Date().toISOString(),
-    rating: 0,
-    ratingCount: 0,
-    commentCount: 0
+    userCollections,
+    lastUpdate: new Date().toISOString()
   };
   
-  games.unshift(newGame);
-  await saveData();
-  renderGames();
+  // In production, you would save to a backend API
+  console.log('Data would be saved:', data);
+  // For GitHub Pages demo, we'll use localStorage
+  localStorage.setItem('horrorGamesData', JSON.stringify(data));
+}
+
+function setupEventListeners() {
+  elements.searchInput?.addEventListener('input', applyFilters);
+  elements.platformFilter?.addEventListener('change', applyFilters);
+  elements.genreFilter?.addEventListener('change', applyFilters);
+  elements.sortSelect?.addEventListener('change', applyFilters);
+  
+  document.getElementById('addGameForm')?.addEventListener('submit', handleAddGame);
+  
+  // Star rating
+  document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', function() {
+      const value = parseInt(this.dataset.value);
+      document.getElementById('selectedRating').value = value;
+      
+      // Update stars display
+      document.querySelectorAll('.star').forEach((s, idx) => {
+        if (idx < value) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+    });
+  });
+}
+
+// Render functions
+function renderAll() {
+  populatePlatformFilter();
   updateStats();
-  return newGame;
+  renderGames();
 }
 
-async function deleteGame(gameId) {
-  if (!isAdmin) return;
-  if (!confirm('Удалить игру из каталога?')) return;
+function populatePlatformFilter() {
+  if (!elements.platformFilter) return;
   
-  games = games.filter(g => g.id !== gameId);
-  delete comments[gameId];
-  
-  // Remove from all user collections
-  Object.keys(userCollections).forEach(userId => {
-    if (userCollections[userId]) {
-      userCollections[userId] = userCollections[userId].filter(g => g.gameId !== gameId);
+  const platforms = {};
+  games.forEach(game => {
+    if (game.platform && !platforms[game.platform]) {
+      platforms[game.platform] = getPlatformName(game.platform);
     }
   });
   
-  await saveData();
-  renderGames();
-  updateStats();
+  elements.platformFilter.innerHTML = '<option value="">Все платформы</option>';
+  Object.entries(platforms).forEach(([key, name]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = name;
+    elements.platformFilter.appendChild(opt);
+  });
 }
 
-// ---------- User interactions ----------
-function submitComment() {
+function getPlatformName(platform) {
+  const names = {
+    'ps5': 'PlayStation 5',
+    'ps4': 'PlayStation 4',
+    'pc': 'PC',
+    'xbox': 'Xbox Series X/S',
+    'switch': 'Nintendo Switch'
+  };
+  return names[platform] || platform;
+}
+
+function applyFilters() {
+  const searchTerm = (elements.searchInput?.value || '').toLowerCase().trim();
+  const platform = elements.platformFilter?.value || '';
+  const genre = elements.genreFilter?.value || '';
+  const sortBy = elements.sortSelect?.value || 'title';
+  
+  filteredGames = games.filter(game => {
+    const matchesSearch = !searchTerm || 
+      (game.title || '').toLowerCase().includes(searchTerm) ||
+      (game.description || '').toLowerCase().includes(searchTerm);
+    
+    const matchesPlatform = !platform || game.platform === platform;
+    const matchesGenre = !genre || game.genre === genre;
+    
+    return matchesSearch && matchesPlatform && matchesGenre;
+  });
+  
+  // Sort
+  filteredGames.sort((a, b) => {
+    switch (sortBy) {
+      case 'rating':
+        const ratingA = getGameAverageRating(a.id);
+        const ratingB = getGameAverageRating(b.id);
+        return ratingB - ratingA;
+        
+      case 'year':
+        return (b.releaseYear || 0) - (a.releaseYear || 0);
+        
+      case 'comments':
+        const commentsA = getGameCommentsCount(a.id);
+        const commentsB = getGameCommentsCount(b.id);
+        return commentsB - commentsA;
+        
+      case 'title':
+      default:
+        return (a.title || '').localeCompare(b.title || '');
+    }
+  });
+  
+  currentPage = 1;
+  renderGames();
+}
+
+function renderGames() {
+  if (!elements.gameGrid) return;
+  
+  const totalPages = Math.max(1, Math.ceil(filteredGames.length / gamesPerPage));
+  currentPage = Math.min(currentPage, totalPages);
+  
+  const startIndex = (currentPage - 1) * gamesPerPage;
+  const pageGames = filteredGames.slice(startIndex, startIndex + gamesPerPage);
+  
+  elements.gameGrid.innerHTML = '';
+  
+  if (pageGames.length === 0) {
+    elements.gameGrid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+        <i class="fas fa-gamepad" style="font-size: 3rem; margin-bottom: 20px;"></i>
+        <p>Игры не найдены</p>
+      </div>
+    `;
+    return;
+  }
+  
+  pageGames.forEach(game => {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    
+    const avgRating = getGameAverageRating(game.id);
+    const commentsCount = getGameCommentsCount(game.id);
+    const inCollection = currentUser && 
+      userCollections[currentUser.id]?.includes(game.id);
+    
+    card.innerHTML = `
+      <img class="game-cover" src="${game.coverImage || 'https://via.placeholder.com/280x200/1a1a1a/ffffff?text=No+Cover'}" 
+           alt="${escapeHtml(game.title)}">
+      <div class="game-actions">
+        <button class="action-btn comment-btn" title="Комментировать" 
+                onclick="openCommentModal(${game.id}); event.stopPropagation();">
+          <i class="fas fa-comment"></i>
+        </button>
+        <button class="action-btn collection-btn" title="${inCollection ? 'В коллекции' : 'Добавить в коллекцию'}" 
+                onclick="toggleCollection(${game.id}); event.stopPropagation();">
+          <i class="fas fa-${inCollection ? 'heart' : 'heart-plus'}"></i>
+        </button>
+        ${currentUser?.id === ADMIN_USER_ID ? `
+          <button class="action-btn edit-btn" title="Редактировать" 
+                  onclick="editGame(${game.id}); event.stopPropagation();">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="action-btn delete-btn" title="Удалить" 
+                  onclick="deleteGame(${game.id}); event.stopPropagation();">
+            <i class="fas fa-trash"></i>
+          </button>
+        ` : ''}
+      </div>
+      <div class="game-info">
+        <div class="game-title">${escapeHtml(game.title)}</div>
+        <div class="game-meta">
+          <span>${escapeHtml(getPlatformName(game.platform) || '')}</span>
+          <span>${game.releaseYear || '—'}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 10px;">
+          <span class="game-rating">
+            ${avgRating > 0 ? `<i class="fas fa-star"></i>${avgRating.toFixed(1)}` : 'Без оценки'}
+          </span>
+          <span style="color: var(--text-secondary); font-size: 0.9rem;">
+            <i class="fas fa-comment"></i> ${commentsCount}
+          </span>
+        </div>
+        ${currentUser ? `
+          <div class="collection-status ${inCollection ? 'in-collection' : 'not-in-collection'}">
+            ${inCollection ? 'В вашей коллекции' : 'Не в коллекции'}
+          </div>
+        ` : ''}
+      </div>
+    `;
+    
+    card.onclick = () => openGameDetail(game.id);
+    elements.gameGrid.appendChild(card);
+  });
+  
+  updatePagination();
+}
+
+function updateStats() {
+  elements.totalGamesEl.textContent = games.length;
+  elements.totalCommentsEl.textContent = comments.length;
+  
+  // Count unique users
+  const uniqueUsers = new Set();
+  comments.forEach(c => uniqueUsers.add(c.userId));
+  Object.keys(userCollections).forEach(id => uniqueUsers.add(parseInt(id)));
+  elements.totalUsersEl.textContent = uniqueUsers.size;
+  
+  // Calculate average rating
+  const ratedComments = comments.filter(c => c.rating > 0);
+  const avgRating = ratedComments.length > 0
+    ? ratedComments.reduce((sum, c) => sum + c.rating, 0) / ratedComments.length
+    : 0;
+  elements.avgRatingEl.textContent = avgRating.toFixed(1);
+}
+
+function updatePagination() {
+  const totalPages = Math.max(1, Math.ceil(filteredGames.length / gamesPerPage));
+  elements.totalPagesEl.textContent = totalPages;
+  elements.currentPageEl.textContent = currentPage;
+}
+
+function getGameAverageRating(gameId) {
+  const gameComments = comments.filter(c => c.gameId === gameId && c.rating > 0);
+  if (gameComments.length === 0) return 0;
+  return gameComments.reduce((sum, c) => sum + c.rating, 0) / gameComments.length;
+}
+
+function getGameCommentsCount(gameId) {
+  return comments.filter(c => c.gameId === gameId).length;
+}
+
+// Game CRUD (Admin only)
+async function handleAddGame(e) {
+  e.preventDefault();
+  
+  const newGame = {
+    id: Date.now(),
+    title: document.getElementById('gameTitle').value.trim(),
+    platform: document.getElementById('gamePlatform').value,
+    coverImage: document.getElementById('gameCover').value.trim(),
+    releaseYear: parseInt(document.getElementById('gameYear').value),
+    genre: document.getElementById('gameGenre').value,
+    developer: document.getElementById('gameDeveloper').value.trim(),
+    publisher: document.getElementById('gamePublisher').value.trim(),
+    description: document.getElementById('gameDescription').value.trim(),
+    addedBy: currentUser?.id || 'admin',
+    addedDate: new Date().toISOString()
+  };
+  
+  games.unshift(newGame);
+  filteredGames = [...games];
+  
+  await saveData();
+  closeAddGameModal();
+  e.target.reset();
+  renderAll();
+}
+
+function editGame(id) {
+  const game = games.find(g => g.id === id);
+  if (!game) return;
+  
+  // Populate form
+  document.getElementById('gameTitle').value = game.title;
+  document.getElementById('gamePlatform').value = game.platform;
+  document.getElementById('gameCover').value = game.coverImage;
+  document.getElementById('gameYear').value = game.releaseYear;
+  document.getElementById('gameGenre').value = game.genre;
+  document.getElementById('gameDeveloper').value = game.developer || '';
+  document.getElementById('gamePublisher').value = game.publisher || '';
+  document.getElementById('gameDescription').value = game.description || '';
+  
+  // Change form to edit mode
+  const form = document.getElementById('addGameForm');
+  const submitBtn = form.querySelector('.btn-primary');
+  submitBtn.innerHTML = '<i class="fas fa-save"></i> Сохранить изменения';
+  submitBtn.onclick = async (e) => {
+    e.preventDefault();
+    
+    game.title = document.getElementById('gameTitle').value.trim();
+    game.platform = document.getElementById('gamePlatform').value;
+    game.coverImage = document.getElementById('gameCover').value.trim();
+    game.releaseYear = parseInt(document.getElementById('gameYear').value);
+    game.genre = document.getElementById('gameGenre').value;
+    game.developer = document.getElementById('gameDeveloper').value.trim();
+    game.publisher = document.getElementById('gamePublisher').value.trim();
+    game.description = document.getElementById('gameDescription').value.trim();
+    
+    await saveData();
+    closeAddGameModal();
+    renderAll();
+  };
+  
+  openAddGameModal();
+}
+
+async function deleteGame(id) {
+  if (!confirm('Удалить игру из каталога? Все комментарии также будут удалены.')) return;
+  
+  // Remove game
+  games = games.filter(g => g.id !== id);
+  filteredGames = filteredGames.filter(g => g.id !== id);
+  
+  // Remove comments
+  comments = comments.filter(c => c.gameId !== id);
+  
+  // Remove from all collections
+  Object.keys(userCollections).forEach(userId => {
+    userCollections[userId] = userCollections[userId].filter(gameId => gameId !== id);
+  });
+  
+  await saveData();
+  renderAll();
+}
+
+// Comments
+function openCommentModal(gameId) {
   if (!currentUser) {
     alert('Войдите через Telegram, чтобы оставлять комментарии');
     return;
   }
   
+  currentGameId = gameId;
+  
+  // Reset stars
+  document.querySelectorAll('.star').forEach(star => {
+    star.classList.remove('active');
+  });
+  document.getElementById('selectedRating').value = 0;
+  document.getElementById('commentText').value = '';
+  
+  document.getElementById('commentModal').style.display = 'block';
+}
+
+function closeCommentModal() {
+  document.getElementById('commentModal').style.display = 'none';
+}
+
+async function submitComment() {
+  const rating = parseInt(document.getElementById('selectedRating').value);
   const text = document.getElementById('commentText').value.trim();
+  
   if (!text) {
     alert('Введите текст комментария');
     return;
   }
   
-  if (!currentGameId) return;
-  
-  const game = games.find(g => g.id === currentGameId);
-  if (!game) return;
-  
-  const comment = {
+  const newComment = {
     id: Date.now(),
     gameId: currentGameId,
     userId: currentUser.id,
-    userName: currentUser.name,
-    userPhoto: currentUser.photo,
+    userName: currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : ''),
+    userAvatar: currentUser.photoUrl,
+    rating: rating,
     text: text,
-    date: new Date().toISOString(),
-    likes: 0
+    date: new Date().toISOString()
   };
   
-  if (!comments[currentGameId]) {
-    comments[currentGameId] = [];
-  }
-  
-  comments[currentGameId].unshift(comment);
-  game.commentCount = (game.commentCount || 0) + 1;
-  
-  document.getElementById('commentText').value = '';
-  renderComments(currentGameId);
-  updateStats();
-  saveData();
+  comments.unshift(newComment);
+  await saveData();
+  closeCommentModal();
+  renderAll();
 }
 
-function submitUserRating() {
-  if (!currentUser) {
-    alert('Войдите через Telegram, чтобы ставить оценки');
-    return;
-  }
-  
-  if (!currentGameId || currentUserRating === 0) return;
-  
-  const game = games.find(g => g.id === currentGameId);
-  if (!game) return;
-  
-  const userId = currentUser.id;
-  const key = `${userId}_${currentGameId}`;
-  
-  // Update game rating
-  const oldRating = userRatings[key] || 0;
-  userRatings[key] = currentUserRating;
-  
-  // Recalculate game average
-  const gameRatings = Object.keys(userRatings)
-    .filter(k => k.endsWith(`_${currentGameId}`))
-    .map(k => userRatings[k]);
-  
-  if (gameRatings.length > 0) {
-    game.rating = gameRatings.reduce((a, b) => a + b) / gameRatings.length;
-    game.ratingCount = gameRatings.length;
-  }
-  
-  renderGameDetail(currentGameId);
-  updateStats();
-  saveData();
-}
-
-function toggleUserCollection() {
+// User Collections
+async function toggleCollection(gameId) {
   if (!currentUser) {
     alert('Войдите через Telegram, чтобы добавлять игры в коллекцию');
     return;
   }
   
-  if (!currentGameId) return;
+  const userCollection = userCollections[currentUser.id] || [];
+  const index = userCollection.indexOf(gameId);
   
-  const userId = currentUser.id;
-  const status = document.getElementById('collectionStatus').value;
-  
-  if (!userCollections[userId]) {
-    userCollections[userId] = [];
-  }
-  
-  const existingIndex = userCollections[userId].findIndex(item => item.gameId === currentGameId);
-  
-  if (existingIndex > -1) {
-    // Update status
-    userCollections[userId][existingIndex].status = status;
-    userCollections[userId][existingIndex].updatedAt = new Date().toISOString();
+  if (index === -1) {
+    // Add to collection
+    userCollection.push(gameId);
   } else {
-    // Add new
-    const game = games.find(g => g.id === currentGameId);
-    if (game) {
-      userCollections[userId].push({
-        gameId: currentGameId,
-        gameTitle: game.title,
-        gameCover: game.coverImage,
-        platform: game.platform,
-        status: status,
-        addedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
-    }
+    // Remove from collection
+    userCollection.splice(index, 1);
   }
   
-  updateCollectionButton();
-  saveData();
+  userCollections[currentUser.id] = userCollection;
+  await saveData();
+  renderGames(); // Re-render to update button state
 }
 
-// ---------- Rendering ----------
-function renderGames() {
-  const grid = elements.gameGrid;
-  if (!grid) return;
-  
-  grid.innerHTML = '';
-  
-  if (games.length === 0) {
-    grid.innerHTML = '<div class="empty-state">Пока нет игр в каталоге</div>';
+function openMyCollection() {
+  if (!currentUser) {
+    alert('Войдите через Telegram, чтобы просмотреть коллекцию');
     return;
   }
   
-  games.forEach(game => {
-    const card = document.createElement('div');
-    card.className = 'game-card';
-    card.onclick = () => openGameDetail(game.id);
+  const userCollection = userCollections[currentUser.id] || [];
+  const collectionGrid = document.getElementById('collectionGrid');
+  const emptyCollection = document.getElementById('emptyCollection');
+  
+  if (userCollection.length === 0) {
+    collectionGrid.style.display = 'none';
+    emptyCollection.style.display = 'block';
+  } else {
+    collectionGrid.style.display = 'grid';
+    emptyCollection.style.display = 'none';
     
-    const rating = game.rating ? game.rating.toFixed(1) : '—';
+    collectionGrid.innerHTML = '';
     
-    card.innerHTML = `
-      <img class="game-cover" src="${game.coverImage || 'https://via.placeholder.com/280x200/1a1a1a/ffffff?text=No+Cover'}" alt="${game.title}">
-      <div class="game-info">
-        <div class="game-title">${escapeHtml(game.title)}</div>
-        <div class="game-meta">
-          <span>${escapeHtml(game.platformName)}</span>
-          <span>${game.releaseYear || '—'}</span>
-        </div>
-        <div class="game-stats">
-          <span class="game-rating"><i class="fas fa-star"></i> ${rating}</span>
-          <span class="game-comments"><i class="fas fa-comment"></i> ${game.commentCount || 0}</span>
-        </div>
-        <div class="game-genre">${escapeHtml(game.genre.split(',')[0] || '')}</div>
-        ${isAdmin ? `
-          <div class="game-actions">
-            <button class="action-btn delete-btn" onclick="deleteGame(${game.id}); event.stopPropagation();">
-              <i class="fas fa-trash"></i>
-            </button>
+    userCollection.forEach(gameId => {
+      const game = games.find(g => g.id === gameId);
+      if (!game) return;
+      
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.innerHTML = `
+        <img class="game-cover" src="${game.coverImage}" alt="${escapeHtml(game.title)}">
+        <div class="game-info">
+          <div class="game-title">${escapeHtml(game.title)}</div>
+          <div class="game-meta">
+            <span>${escapeHtml(getPlatformName(game.platform))}</span>
+            <span>${game.releaseYear}</span>
           </div>
-        ` : ''}
-      </div>
-    `;
-    grid.appendChild(card);
-  });
+          <button class="action-btn delete-btn" style="margin-top: 10px; width: 100%;" 
+                  onclick="toggleCollection(${game.id})">
+            <i class="fas fa-trash"></i> Удалить из коллекции
+          </button>
+        </div>
+      `;
+      card.onclick = () => openGameDetail(game.id);
+      collectionGrid.appendChild(card);
+    });
+  }
+  
+  document.getElementById('collectionModal').style.display = 'block';
 }
 
-function renderGameDetail(gameId) {
-  const game = games.find(g => g.id === gameId);
+function closeCollectionModal() {
+  document.getElementById('collectionModal').style.display = 'none';
+}
+
+// Game Detail Modal
+function openGameDetail(id) {
+  const game = games.find(g => g.id === id);
   if (!game) return;
   
-  currentGameId = gameId;
+  const gameComments = comments.filter(c => c.gameId === id);
+  const avgRating = getGameAverageRating(id);
   
-  // Update title
+  let commentsHtml = '';
+  if (gameComments.length > 0) {
+    gameComments.forEach(comment => {
+      commentsHtml += `
+        <div class="comment-item">
+          <div class="comment-header">
+            <div class="comment-user">
+              <img class="comment-user-avatar" src="${comment.userAvatar || 'https://via.placeholder.com/32/8b0000/ffffff?text=U'}" 
+                   alt="${escapeHtml(comment.userName)}">
+              <span class="comment-user-name">${escapeHtml(comment.userName)}</span>
+            </div>
+            <div class="comment-date">${formatDate(comment.date)}</div>
+          </div>
+          ${comment.rating > 0 ? `
+            <div style="color: #ffd700; margin: 5px 0;">
+              ${'★'.repeat(comment.rating)}${'☆'.repeat(10 - comment.rating)}
+              <span style="color: var(--text-secondary); margin-left: 5px;">${comment.rating}/10</span>
+            </div>
+          ` : ''}
+          <div class="comment-text">${escapeHtml(comment.text)}</div>
+        </div>
+      `;
+    });
+  } else {
+    commentsHtml = '<p style="color: var(--text-secondary); text-align: center;">Пока нет комментариев</p>';
+  }
+  
   document.getElementById('detailTitle').textContent = game.title;
-  
-  // Render game info
-  document.getElementById('gameDetailInfo').innerHTML = `
-    <div class="detail-cover-container">
-      <img class="detail-cover" src="${game.coverImage || 'https://via.placeholder.com/400x400/1a1a1a/ffffff?text=No+Cover'}" alt="${game.title}">
-    </div>
-    <div class="detail-content">
-      <h3>${escapeHtml(game.title)}</h3>
-      <div class="detail-meta">
-        <p><strong>Платформа:</strong> ${escapeHtml(game.platformName)}</p>
-        <p><strong>Год релиза:</strong> ${game.releaseYear || '—'}</p>
-        <p><strong>Разработчик:</strong> ${escapeHtml(game.developer) || '—'}</p>
-        <p><strong>Жанр:</strong> ${escapeHtml(game.genre) || '—'}</p>
-        <p><strong>Рейтинг:</strong> ${game.rating ? game.rating.toFixed(1) : '—'} (${game.ratingCount || 0} оценок)</p>
+  document.getElementById('gameDetailContent').innerHTML = `
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+      <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" 
+           style="width: 280px; border-radius: 15px; border: 1px solid var(--border-color);">
+      <div style="flex: 1; min-width: 250px;">
+        <p><b>Платформа:</b> ${escapeHtml(getPlatformName(game.platform))}</p>
+        <p><b>Год релиза:</b> ${game.releaseYear}</p>
+        <p><b>Жанр:</b> ${escapeHtml(game.genre)}</p>
+        ${game.developer ? `<p><b>Разработчик:</b> ${escapeHtml(game.developer)}</p>` : ''}
+        ${game.publisher ? `<p><b>Издатель:</b> ${escapeHtml(game.publisher)}</p>` : ''}
+        <p><b>Средняя оценка:</b> ${avgRating > 0 ? avgRating.toFixed(1) + '/10' : 'Нет оценок'}</p>
+        <p><b>Комментариев:</b> ${gameComments.length}</p>
       </div>
-      <div class="detail-description">
-        <h4>Описание:</h4>
-        <p>${escapeHtml(game.description) || 'Описание отсутствует'}</p>
+    </div>
+    
+    ${game.description ? `
+      <div style="margin-bottom: 30px;">
+        <h3 style="margin-bottom: 10px;">Описание</h3>
+        <p>${escapeHtml(game.description)}</p>
+      </div>
+    ` : ''}
+    
+    <div class="comments-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>Комментарии (${gameComments.length})</h3>
+        <button class="btn-primary" onclick="openCommentModal(${game.id})">
+          <i class="fas fa-comment"></i> Добавить комментарий
+        </button>
+      </div>
+      <div class="comments-list">
+        ${commentsHtml}
       </div>
     </div>
   `;
   
-  // Render rating stars
-  renderRatingStars();
-  
-  // Update collection button
-  updateCollectionButton();
-  
-  // Render comments
-  renderComments(gameId);
-}
-
-function renderRatingStars() {
-  const starsContainer = document.getElementById('userRatingStars');
-  starsContainer.innerHTML = '';
-  
-  currentUserRating = 0;
-  if (currentUser && currentGameId) {
-    const key = `${currentUser.id}_${currentGameId}`;
-    currentUserRating = userRatings[key] || 0;
-  }
-  
-  for (let i = 1; i <= 10; i++) {
-    const star = document.createElement('span');
-    star.className = `star ${i <= currentUserRating ? 'active' : ''}`;
-    star.innerHTML = '<i class="fas fa-star"></i>';
-    star.onclick = () => {
-      currentUserRating = i;
-      renderRatingStars();
-    };
-    starsContainer.appendChild(star);
-  }
-}
-
-function renderComments(gameId) {
-  const list = document.getElementById('commentsList');
-  const count = document.getElementById('commentsCount');
-  
-  if (!list) return;
-  
-  const gameComments = comments[gameId] || [];
-  count.textContent = gameComments.length;
-  
-  list.innerHTML = '';
-  
-  if (gameComments.length === 0) {
-    list.innerHTML = '<div class="empty-comments">Пока нет комментариев. Будьте первым!</div>';
-    return;
-  }
-  
-  gameComments.forEach(comment => {
-    const commentEl = document.createElement('div');
-    commentEl.className = 'comment-item';
-    commentEl.innerHTML = `
-      <div class="comment-header">
-        <img src="${comment.userPhoto || 'https://via.placeholder.com/30/8b0000/ffffff'}" class="comment-avatar">
-        <div class="comment-user">
-          <strong>${escapeHtml(comment.userName)}</strong>
-          <span class="comment-date">${formatDate(comment.date)}</span>
-        </div>
-      </div>
-      <div class="comment-text">${escapeHtml(comment.text)}</div>
-      <div class="comment-actions">
-        <button class="like-btn" onclick="likeComment(${comment.id}, ${gameId})">
-          <i class="far fa-heart"></i> ${comment.likes || 0}
-        </button>
-        ${isAdmin ? `
-          <button class="delete-comment-btn" onclick="deleteComment(${comment.id}, ${gameId})">
-            <i class="fas fa-trash"></i>
-          </button>
-        ` : ''}
-      </div>
-    `;
-    list.appendChild(commentEl);
-  });
-}
-
-// ---------- UI helpers ----------
-function updateCollectionButton() {
-  if (!currentUser || !currentGameId) return;
-  
-  const btn = document.getElementById('collectionBtn');
-  const select = document.getElementById('collectionStatus');
-  
-  const userId = currentUser.id;
-  const collection = userCollections[userId] || [];
-  const item = collection.find(item => item.gameId === currentGameId);
-  
-  if (item) {
-    btn.innerHTML = `<i class="fas fa-heart"></i> В коллекции (${getStatusText(item.status)})`;
-    btn.className = 'btn-primary';
-    select.value = item.status;
-  } else {
-    btn.innerHTML = '<i class="far fa-heart"></i> Добавить в коллекцию';
-    btn.className = 'btn-secondary';
-  }
-}
-
-function updateStats() {
-  elements.totalGames.textContent = games.length;
-  
-  const totalComments = Object.values(comments).reduce((sum, arr) => sum + arr.length, 0);
-  elements.totalComments.textContent = totalComments;
-  
-  // Count unique users from collections
-  const userCount = Object.keys(userCollections).length;
-  elements.activeUsers.textContent = userCount;
-  
-  // Calculate average rating
-  const ratedGames = games.filter(g => g.rating > 0);
-  const avg = ratedGames.length > 0 
-    ? (ratedGames.reduce((sum, g) => sum + g.rating, 0) / ratedGames.length).toFixed(1)
-    : '0.0';
-  elements.avgRating.textContent = avg;
-}
-
-// ---------- Modal controls ----------
-function openAddGameModal() {
-  if (!isAdmin) return;
-  document.getElementById('addGameModal').style.display = 'block';
-  lockBodyScroll();
-}
-
-function closeAddGameModal() {
-  document.getElementById('addGameModal').style.display = 'none';
-  unlockBodyScroll();
-}
-
-function openGameDetail(gameId) {
-  renderGameDetail(gameId);
   document.getElementById('gameDetailModal').style.display = 'block';
-  lockBodyScroll();
 }
 
 function closeGameDetailModal() {
   document.getElementById('gameDetailModal').style.display = 'none';
-  unlockBodyScroll();
-  currentGameId = null;
 }
 
-function openManageModal() {
-  if (!isAdmin) return;
-  updateManageInfo();
-  document.getElementById('manageModal').style.display = 'block';
-  lockBodyScroll();
+// Tab switching
+function switchTab(tabName) {
+  // Update active tab
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Apply filters based on tab
+  switch (tabName) {
+    case 'top-rated':
+      filteredGames = [...games].sort((a, b) => {
+        const ratingA = getGameAverageRating(a.id);
+        const ratingB = getGameAverageRating(b.id);
+        return ratingB - ratingA;
+      }).filter(g => getGameAverageRating(g.id) > 0);
+      break;
+      
+    case 'recent-comments':
+      filteredGames = [...games].filter(g => getGameCommentsCount(g.id) > 0)
+        .sort((a, b) => getGameCommentsCount(b.id) - getGameCommentsCount(a.id));
+      break;
+      
+    case 'all-games':
+    default:
+      filteredGames = [...games];
+      break;
+  }
+  
+  currentPage = 1;
+  renderGames();
 }
 
-function closeManageModal() {
-  document.getElementById('manageModal').style.display = 'none';
-  unlockBodyScroll();
+// Theme
+function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  const icon = document.getElementById('themeIcon');
+  if (icon) icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+  localStorage.setItem('horrorTheme', currentTheme);
 }
 
-function openUserCollectionModal() {
-  renderUserCollection();
-  document.getElementById('userCollectionModal').style.display = 'block';
-  lockBodyScroll();
+function restoreTheme() {
+  const t = localStorage.getItem('horrorTheme');
+  if (t) currentTheme = t;
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  const icon = document.getElementById('themeIcon');
+  if (icon) icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
 }
 
-function closeUserCollectionModal() {
-  document.getElementById('userCollectionModal').style.display = 'none';
-  unlockBodyScroll();
+// Modal functions
+function openAddGameModal() {
+  document.getElementById('addGameModal').style.display = 'block';
+}
+function closeAddGameModal() {
+  document.getElementById('addGameModal').style.display = 'none';
+  // Reset form
+  const form = document.getElementById('addGameForm');
+  form.reset();
+  const submitBtn = form.querySelector('.btn-primary');
+  submitBtn.innerHTML = '<i class="fas fa-save"></i> Добавить игру';
+  submitBtn.onclick = handleAddGame;
 }
 
-function openAllCommentsModal() {
-  if (!isAdmin) return;
-  renderAllComments();
-  document.getElementById('allCommentsModal').style.display = 'block';
-  lockBodyScroll();
+// Pagination
+function nextPage() {
+  const totalPages = Math.ceil(filteredGames.length / gamesPerPage);
+  if (currentPage < totalPages) {
+    currentPage++;
+    renderGames();
+  }
 }
 
-function closeAllCommentsModal() {
-  document.getElementById('allCommentsModal').style.display = 'none';
-  unlockBodyScroll();
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    renderGames();
+  }
 }
 
-// ---------- Utility functions ----------
+// Utility functions
 function escapeHtml(str) {
   if (typeof str !== 'string') return '';
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
 function formatDate(dateString) {
@@ -545,193 +731,4 @@ function formatDate(dateString) {
     hour: '2-digit',
     minute: '2-digit'
   });
-}
-
-function getStatusText(status) {
-  const statuses = {
-    planned: 'В планах',
-    playing: 'Играю',
-    completed: 'Пройдена',
-    abandoned: 'Брошена'
-  };
-  return statuses[status] || status;
-}
-
-// iOS scroll lock/unlock
-let scrollY = 0;
-function lockBodyScroll() {
-  scrollY = window.scrollY;
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.left = '0';
-  document.body.style.right = '0';
-  document.body.style.width = '100%';
-}
-
-function unlockBodyScroll() {
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.right = '';
-  document.body.style.width = '';
-  window.scrollTo(0, scrollY);
-}
-
-// ---------- Event listeners ----------
-function setupEventListeners() {
-  // Add game form
-  document.getElementById('addGameForm')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const gameData = {
-      title: document.getElementById('gameTitle').value.trim(),
-      platform: document.getElementById('gamePlatform').value,
-      coverImage: document.getElementById('gameCover').value.trim(),
-      releaseYear: document.getElementById('gameYear').value ? parseInt(document.getElementById('gameYear').value) : null,
-      genre: document.getElementById('gameGenre').value.trim(),
-      developer: document.getElementById('gameDeveloper').value.trim(),
-      description: document.getElementById('gameDescription').value.trim()
-    };
-    
-    await addGame(gameData);
-    closeAddGameModal();
-    this.reset();
-  });
-  
-  // Search and filters
-  const searchInput = document.getElementById('searchInput');
-  const platformFilter = document.getElementById('platformFilter');
-  const sortSelect = document.getElementById('sortSelect');
-  
-  if (searchInput) searchInput.addEventListener('input', applyFilters);
-  if (platformFilter) platformFilter.addEventListener('change', applyFilters);
-  if (sortSelect) sortSelect.addEventListener('change', applyFilters);
-}
-
-function applyFilters() {
-  // Filter logic here (simplified)
-  renderGames();
-}
-
-// ---------- Admin functions ----------
-async function clearComments() {
-  if (!isAdmin) return;
-  if (!confirm('Удалить все комментарии?')) return;
-  
-  comments = {};
-  games.forEach(g => g.commentCount = 0);
-  await saveData();
-  updateStats();
-  alert('Комментарии очищены');
-}
-
-async function exportCollection() {
-  const data = {
-    games,
-    comments,
-    ratings: userRatings,
-    collections: userCollections
-  };
-  
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'horror-collection-data.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-async function importCollection() {
-  if (!isAdmin) return;
-  
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'application/json';
-  
-  input.onchange = async () => {
-    const file = input.files[0];
-    if (!file) return;
-    
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      
-      games = data.games || [];
-      comments = data.comments || {};
-      userRatings = data.ratings || {};
-      userCollections = data.collections || {};
-      
-      await saveData();
-      renderGames();
-      updateStats();
-      alert('Данные импортированы!');
-    } catch (e) {
-      alert('Ошибка импорта JSON');
-      console.error(e);
-    }
-  };
-  
-  input.click();
-}
-
-async function resetToDefault() {
-  if (!isAdmin) return;
-  if (!confirm('Сбросить все данные к начальному состоянию?')) return;
-  
-  games = [];
-  comments = {};
-  userRatings = {};
-  userCollections = {};
-  
-  await saveData();
-  renderGames();
-  updateStats();
-}
-
-// ---------- User collection functions ----------
-function renderUserCollection() {
-  if (!currentUser) return;
-  
-  const collection = userCollections[currentUser.id] || [];
-  const grid = document.getElementById('userCollectionGrid');
-  
-  if (!grid) return;
-  
-  grid.innerHTML = '';
-  
-  if (collection.length === 0) {
-    grid.innerHTML = '<div class="empty-state">Ваша коллекция пуста</div>';
-    return;
-  }
-  
-  collection.forEach(item => {
-    const game = games.find(g => g.id === item.gameId);
-    if (!game) return;
-    
-    const card = document.createElement('div');
-    card.className = 'game-card';
-    card.onclick = () => openGameDetail(item.gameId);
-    
-    card.innerHTML = `
-      <img class="game-cover" src="${item.gameCover || game.coverImage || 'https://via.placeholder.com/280x200/1a1a1a/ffffff?text=No+Cover'}" alt="${game.title}">
-      <div class="game-info">
-        <div class="game-title">${escapeHtml(game.title)}</div>
-        <div class="game-meta">
-          <span>${escapeHtml(game.platformName)}</span>
-          <span class="collection-status ${item.status}">${getStatusText(item.status)}</span>
-        </div>
-        <div class="game-stats">
-          <span class="game-rating"><i class="fas fa-star"></i> ${game.rating ? game.rating.toFixed(1) : '—'}</span>
-          <span class="game-comments"><i class="fas fa-comment"></i> ${game.commentCount || 0}</span>
-        </div>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-function switchCollectionTab(tab) {
-  // Tab switching logic
-  renderUserCollection();
 }
