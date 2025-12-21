@@ -184,6 +184,23 @@ async function saveData() {
 }
 
 function setupEventListeners() {
+
+// Валидация поля жанров
+document.getElementById('gameGenres')?.addEventListener('input', function(e) {
+  const value = e.target.value;
+  const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag);
+  
+  // Можно добавить предпросмотр тегов
+  const preview = document.getElementById('tagsPreview');
+  if (preview) {
+    preview.innerHTML = tags.map(tag => `
+      <span class="genre-tag">
+        <i class="fas fa-tag"></i> ${formatGenreName(tag)}
+      </span>
+    `).join('');
+  }
+});
+
   // Search
   elements.searchInput?.addEventListener('input', applyFilters);
   elements.searchButton?.addEventListener('click', applyFilters);
@@ -389,47 +406,45 @@ function renderGames() {
     const inCollection = currentUser && userCollections[currentUser.id]?.games.includes(game.id);
     const userStatus = currentUser ? userCollections[currentUser.id]?.status[game.id] : null;
     
-    card.innerHTML = `
-      ${game.isPhysical ? '<div class="physical-badge"><i class="fas fa-compact-disc"></i> Диск</div>' : ''}
-      
-      <div class="game-actions">
-        <button class="action-btn" onclick="toggleCollection(${game.id}); event.stopPropagation()" 
-                title="${inCollection ? 'Удалить из коллекции' : 'Добавить в коллекцию'}">
-          <i class="fas fa-${inCollection ? 'heart' : 'heart-plus'}"></i>
-        </button>
-        <button class="action-btn" onclick="shareGame(${game.id}); event.stopPropagation()" title="Поделиться">
-          <i class="fas fa-share-alt"></i>
-        </button>
-        ${currentUser?.id === ADMIN_USER_ID ? `
-          <button class="action-btn" onclick="editGame(${game.id}); event.stopPropagation()" title="Редактировать">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="action-btn" onclick="deleteGame(${game.id}); event.stopPropagation()" title="Удалить">
-            <i class="fas fa-trash"></i>
-          </button>
-        ` : ''}
+card.innerHTML = `
+  ${game.isPhysical ? '<div class="physical-badge"><i class="fas fa-compact-disc"></i> Диск</div>' : ''}
+  
+  <div class="game-actions">
+    <!-- Кнопки без изменений -->
+  </div>
+  
+  <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover">
+  
+  <div class="game-info">
+    <div class="game-title">${escapeHtml(game.title)}</div>
+    <div class="game-platform platform-${game.platform}">
+      ${game.platform.toUpperCase()}
+    </div>
+    
+    <!-- ДОБАВЛЯЕМ ТЕГИ ЖАНРОВ -->
+    ${game.genres && game.genres.length > 0 ? `
+      <div class="genre-tags">
+        ${game.genres.slice(0, 3).map(genre => `
+          <span class="genre-tag">${formatGenreName(genre)}</span>
+        `).join('')}
+        ${game.genres.length > 3 ? `<span class="genre-tag">+${game.genres.length - 3}</span>` : ''}
       </div>
-      
-      <img src="${game.coverImage}" alt="${escapeHtml(game.title)}" class="game-cover">
-      
-      <div class="game-info">
-        <div class="game-title">${escapeHtml(game.title)}</div>
-        <div class="game-platform platform-${game.platform}">
-          ${game.platform.toUpperCase()}
-        </div>
-        <div class="game-meta">
-          <span class="game-year">${game.releaseYear}</span>
-          <span class="game-status status-${game.status}">
-            ${getStatusText(game.status)}
-          </span>
-        </div>
-        ${currentUser && userStatus ? `
-          <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
-            Ваш статус: <strong>${getStatusText(userStatus)}</strong>
-          </div>
-        ` : ''}
+    ` : ''}
+    
+    <div class="game-meta">
+      <span class="game-year">${game.releaseYear}</span>
+      <span class="game-status status-${game.status}">
+        ${getStatusText(game.status)}
+      </span>
+    </div>
+    
+    ${currentUser && userStatus ? `
+      <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+        Ваш статус: <strong>${getStatusText(userStatus)}</strong>
       </div>
-    `;
+    ` : ''}
+  </div>
+`;
     
     elements.gameGrid.appendChild(card);
   });
@@ -487,6 +502,14 @@ function getStatusText(status) {
 async function handleAddGame(e) {
   e.preventDefault();
   
+  // Получаем жанры и преобразуем в массив
+  const genresInput = document.getElementById('gameGenres').value.trim();
+  const genresArray = genresInput
+    .split(',')
+    .map(genre => genre.trim())
+    .filter(genre => genre.length > 0)
+    .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
+  
   const newGame = {
     id: Date.now(),
     title: document.getElementById('gameTitle').value.trim(),
@@ -494,7 +517,7 @@ async function handleAddGame(e) {
     coverImage: document.getElementById('gameCover').value.trim(),
     releaseYear: parseInt(document.getElementById('gameYear').value),
     developer: document.getElementById('gameDeveloper').value.trim(),
-    genre: document.getElementById('gameGenre').value,
+    genres: genresArray, // Теперь это массив!
     status: document.getElementById('gameStatus').value,
     isPhysical: document.getElementById('isPhysical').checked,
     description: document.getElementById('gameDescription').value.trim(),
@@ -541,13 +564,15 @@ function editGame(id) {
   const game = games.find(g => g.id === id);
   if (!game) return;
   
-  // Populate form
+  // Преобразуем массив жанров в строку через запятую
+  const genresString = game.genres ? game.genres.join(', ') : '';
+  
   document.getElementById('gameTitle').value = game.title;
   document.getElementById('gamePlatform').value = game.platform;
   document.getElementById('gameCover').value = game.coverImage;
   document.getElementById('gameYear').value = game.releaseYear;
   document.getElementById('gameDeveloper').value = game.developer || '';
-  document.getElementById('gameGenre').value = game.genre || 'survival-horror';
+  document.getElementById('gameGenres').value = genresString; // Теперь строкой
   document.getElementById('gameStatus').value = game.status || 'not-started';
   document.getElementById('isPhysical').checked = game.isPhysical || false;
   document.getElementById('gameDescription').value = game.description || '';
@@ -564,7 +589,11 @@ function editGame(id) {
     game.coverImage = document.getElementById('gameCover').value.trim();
     game.releaseYear = parseInt(document.getElementById('gameYear').value);
     game.developer = document.getElementById('gameDeveloper').value.trim();
-    game.genre = document.getElementById('gameGenre').value;
+    game.genres = document.getElementById('gameGenres').value
+  .split(',')
+  .map(genre => genre.trim())
+  .filter(genre => genre.length > 0)
+  .map(genre => genre.toLowerCase().replace(/\s+/g, '-'));
     game.status = document.getElementById('gameStatus').value;
     game.isPhysical = document.getElementById('isPhysical').checked;
     game.description = document.getElementById('gameDescription').value.trim();
@@ -613,10 +642,17 @@ function openGameDetail(id) {
         <h4>Разработчик</h4>
         <p>${escapeHtml(game.developer || 'Не указан')}</p>
       </div>
-      <div class="info-item">
-        <h4>Жанр</h4>
-        <p>${escapeHtml(game.genre || 'Horror')}</p>
-      </div>
+`<div class="info-item">
+  <h4>Жанры</h4>
+  <div class="genre-tags">
+    ${game.genres && game.genres.length > 0 
+      ? game.genres.map(genre => `
+          <span class="genre-tag">${formatGenreName(genre)}</span>
+        `).join('')
+      : '<p style="color: var(--text-muted);">Не указаны</p>'
+    }
+  </div>
+</div>`
       <div class="info-item">
         <h4>Статус</h4>
         <p>${getStatusText(game.status)}</p>
@@ -844,4 +880,28 @@ function getGameAverageRating(gameId) {
   return sum / gameComments.length;
 }
 
+function formatGenreName(genre) {
+  const genreMap = {
+    'survival-horror': 'Survival Horror',
+    'psychological-horror': 'Psychological',
+    'action-horror': 'Action Horror',
+    'sci-fi-horror': 'Sci-Fi Horror',
+    'psychological': 'Psychological',
+    'survival': 'Survival',
+    'action': 'Action',
+    'horror': 'Horror',
+    'sci-fi': 'Sci-Fi'
+  };
+  
+  // Если есть в мапе - возвращаем красивое название
+  if (genreMap[genre]) {
+    return genreMap[genre];
+  }
+  
+  // Иначе форматируем: "some-genre" -> "Some Genre"
+  return genre
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
