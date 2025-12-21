@@ -1,7 +1,7 @@
 // Game Collection Hub - Community Edition
 
 // ========== CONFIGURATION ==========
-const ADMIN_TELEGRAM_ID = 123456789; // ЗАМЕНИТЕ на ваш Telegram ID
+const ADMIN_TELEGRAM_ID = 321407568; // ЗАМЕНИТЕ на ваш Telegram ID
 const APP_VERSION = '1.0.0';
 
 // ========== TELEGRAM INIT ==========
@@ -1024,3 +1024,4 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
