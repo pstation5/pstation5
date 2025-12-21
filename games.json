@@ -1,26 +1,6 @@
 {
-  "games": [
-    {
-      "id": 1766277090277,
-      "title": "The Last of Us Part I",
-      "platform": "ps5",
-      "platformName": "PlayStation 5",
-      "coverImage": "https://i.imgur.com/gRqjrYY.jpeg",
-      "releaseYear": 2022,
-      "status": "completed",
-      "rating": 10,
-      "developer": "Naughty Dog",
-      "genre": "Action, Adventure, Survival Horror",
-      "description": "Действие игры происходит в постапокалиптическом будущем на территории бывших Соединённых Штатов Америки спустя двадцать лет после глобальной пандемии, вызванной опасно мутировавшим грибком кордицепс. Сюжет посвящён путешествию главных героев — контрабандиста Джоэла и девочки-подростка Элли. Джоэл получает задание вывести Элли из милитаризованной карантинной зоны, и миссия становится трудным путешествием по опустошённым Соединённым Штатам.",
-      "notes": ""
-    }
-  ],
-  "upcoming": [],
-  "settings": {
-    "collectionName": "Horror | PS4 | PS5",
-    "adminMode": false
-  },
-  "version": "1.0",
-  "lastUpdated": "2025-12-20T22:55:53.717Z",
-  "lastUpdate": "2025-12-21T00:31:30.277Z"
+  "gamesCatalog": [],
+  "allUsers": [],
+  "allComments": [],
+  "lastUpdate": null
 }
