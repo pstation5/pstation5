@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Game Collection Hub</title>
+  <title>Horror Collection</title>
 
-  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%8E%AE%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%91%BB%3C/text%3E%3C/svg%3E">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <link rel="stylesheet" href="style.css"/>
@@ -13,38 +13,37 @@
 
 <body>
   <div class="app-container">
-    <!-- Header -->
     <header class="header">
       <div class="header-left">
         <div class="logo">
-          <i class="fas fa-gamepad"></i>
-          <h1>Game Collection Hub</h1>
+          <i class="fas fa-ghost"></i>
+          <h1>Horror Collection</h1>
         </div>
-        <p class="subtitle">Сообщество коллекционеров игр</p>
+        <p class="subtitle">Коллекция хоррор игр с рейтингами и отзывами</p>
       </div>
 
       <div class="header-right">
-        <div class="user-profile" onclick="openProfileModal()">
+        <div class="user-profile">
           <img id="userAvatar" class="user-avatar" alt="Avatar" src=""/>
           <div class="user-info">
-            <span id="userGreeting" class="user-name">Гость</span>
-            <span class="user-status" id="userType">Пользователь</span>
+            <span id="userGreeting" class="user-name">Привет!</span>
+            <span id="userRole" class="user-status">Гость</span>
           </div>
         </div>
 
         <div class="header-actions">
-          <button class="manage-btn" onclick="openMyCollection()" title="Моя коллекция">
-            <i class="fas fa-heart"></i>
-          </button>
-          
           <button class="manage-btn" onclick="openStatsModal()" title="Статистика">
             <i class="fas fa-chart-bar"></i>
           </button>
-          
-          <button class="manage-btn" onclick="toggleAdminMode()" title="Режим администратора" id="adminToggleBtn">
-            <i class="fas fa-crown"></i>
+
+          <button class="manage-btn" onclick="openUserCollectionModal()" title="Моя коллекция">
+            <i class="fas fa-heart"></i>
           </button>
-          
+
+          <button class="manage-btn" id="adminBtn" onclick="openManageModal()" title="Управление (админ)" style="display:none;">
+            <i class="fas fa-cog"></i>
+          </button>
+
           <button class="theme-toggle" onclick="toggleTheme()" title="Смена темы">
             <i class="fas fa-moon" id="themeIcon"></i>
           </button>
@@ -52,61 +51,79 @@
       </div>
     </header>
 
-    <!-- Admin Panel (Visible only for admin) -->
-    <div class="admin-panel" id="adminPanel">
-      <h3><i class="fas fa-crown"></i> Панель администратора</h3>
-      <div class="admin-actions">
-        <button class="btn-primary" onclick="openAddGameModal()">
-          <i class="fas fa-plus"></i> Добавить игру в каталог
-        </button>
-        <button class="btn-secondary" onclick="manageGames()">
-          <i class="fas fa-edit"></i> Управление играми
-        </button>
-      </div>
-    </div>
-
     <main class="main-content">
-      <!-- Search and Filters -->
-      <section class="filters-section">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input id="searchInput" type="text" placeholder="Поиск игр..."/>
-          <button class="search-btn" onclick="applyFilters()">
-            <i class="fas fa-search"></i>
+      <!-- Админская панель (только для меня) -->
+      <div id="adminPanel" style="display:none; margin-bottom: 30px;">
+        <div class="section-header">
+          <h2><i class="fas fa-user-shield"></i> Админ-панель</h2>
+          <button class="add-game-btn" onclick="openAddGameModal()">
+            <i class="fas fa-plus"></i> Добавить игру
           </button>
         </div>
+        <div class="admin-actions">
+          <button class="admin-btn" onclick="openManageModal()">
+            <i class="fas fa-cog"></i> Управление
+          </button>
+          <button class="admin-btn" onclick="openAllCommentsModal()">
+            <i class="fas fa-comments"></i> Все комментарии
+          </button>
+        </div>
+      </div>
 
-        <div class="filter-controls">
-          <select id="platformFilter">
-            <option value="">Все платформы</option>
-          </select>
+      <!-- Статистика -->
+      <section class="stats-section">
+        <div class="stats">
+          <div class="stat-item">
+            <i class="fas fa-gamepad"></i>
+            <div class="stat-number" id="totalGames">0</div>
+            <div class="stat-label">Игр в каталоге</div>
+          </div>
 
-          <select id="genreFilter">
-            <option value="">Все жанры</option>
-          </select>
+          <div class="stat-item">
+            <i class="fas fa-comment"></i>
+            <div class="stat-number" id="totalComments">0</div>
+            <div class="stat-label">Комментариев</div>
+          </div>
 
-          <select id="sortSelect">
-            <option value="rating">По рейтингу</option>
-            <option value="popular">По популярности</option>
-            <option value="newest">Сначала новые</option>
-            <option value="title">По названию</option>
-          </select>
+          <div class="stat-item">
+            <i class="fas fa-users"></i>
+            <div class="stat-number" id="activeUsers">0</div>
+            <div class="stat-label">Активных пользователей</div>
+          </div>
+
+          <div class="stat-item">
+            <i class="fas fa-star"></i>
+            <div class="stat-number" id="avgRating">0.0</div>
+            <div class="stat-label">Средний рейтинг</div>
+          </div>
         </div>
       </section>
 
-      <!-- Game Catalog -->
+      <!-- Каталог игр -->
       <section class="collection-section">
         <div class="section-header">
-          <h2><i class="fas fa-th-large"></i> Каталог игр</h2>
-          <div class="header-stats">
-            <span class="stat-badge" id="totalCatalogGames">0 игр</span>
-            <span class="stat-badge"><i class="fas fa-users"></i> <span id="activeUsers">0</span> пользователей</span>
+          <h2><i class="fas fa-archive"></i> Каталог игр</h2>
+          <div class="collection-filters">
+            <select id="platformFilter">
+              <option value="">Все платформы</option>
+              <option value="ps5">PlayStation 5</option>
+              <option value="ps4">PlayStation 4</option>
+            </select>
+            <select id="sortSelect">
+              <option value="rating">По рейтингу</option>
+              <option value="comments">По комментариям</option>
+              <option value="title">По названию</option>
+              <option value="year">По году</option>
+            </select>
           </div>
         </div>
 
-        <div class="game-grid" id="gameGrid">
-          <!-- Games will be loaded here -->
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input id="searchInput" type="text" placeholder="Поиск по названию или жанру..."/>
         </div>
+
+        <div class="game-grid" id="gameGrid"></div>
 
         <div class="pagination">
           <button class="page-btn" onclick="prevPage()">
@@ -122,11 +139,11 @@
       </section>
     </main>
 
-    <!-- Add Game Modal (Admin only) -->
+    <!-- Модалка добавления игры (только админ) -->
     <div class="modal" id="addGameModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2><i class="fas fa-plus-circle"></i> Добавить игру в каталог</h2>
+          <h2><i class="fas fa-plus"></i> Добавить игру в каталог</h2>
           <button class="close-modal" onclick="closeAddGameModal()"><i class="fas fa-times"></i></button>
         </div>
 
@@ -134,7 +151,7 @@
           <form id="addGameForm">
             <div class="form-group">
               <label>Название игры *</label>
-              <input id="gameTitle" type="text" required placeholder="Введите название игры"/>
+              <input id="gameTitle" type="text" required placeholder="Введите название"/>
             </div>
 
             <div class="form-row">
@@ -144,44 +161,28 @@
                   <option value="">Выберите платформу</option>
                   <option value="ps5">PlayStation 5</option>
                   <option value="ps4">PlayStation 4</option>
-                  <option value="pc">PC</option>
-                  <option value="xbox">Xbox Series X/S</option>
-                  <option value="switch">Nintendo Switch</option>
-                  <option value="mobile">Mobile</option>
-                  <option value="multi">Multiplatform</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label>Год релиза *</label>
-                <input id="gameYear" type="number" min="1980" max="2030" required/>
+                <label>Год релиза</label>
+                <input id="gameYear" type="number" min="1990" max="2026"/>
               </div>
             </div>
 
             <div class="form-group">
-              <label>Жанр *</label>
-              <select id="gameGenre" required>
-                <option value="">Выберите жанр</option>
-                <option value="action">Экшн</option>
-                <option value="rpg">RPG</option>
-                <option value="horror">Хоррор</option>
-                <option value="adventure">Приключение</option>
-                <option value="strategy">Стратегия</option>
-                <option value="sports">Спорт</option>
-                <option value="racing">Гонки</option>
-                <option value="simulator">Симулятор</option>
-              </select>
+              <label>Обложка (URL)</label>
+              <input id="gameCover" type="url" placeholder="https://..."/>
             </div>
 
             <div class="form-group">
-              <label>Обложка (URL) *</label>
-              <input id="gameCover" type="url" required placeholder="https://example.com/image.jpg"/>
-              <small>Можно использовать изображения с IMGDB или аналогичных ресурсов</small>
+              <label>Жанр (через запятую)</label>
+              <input id="gameGenre" type="text" placeholder="survival-horror, психологический хоррор, экшен"/>
             </div>
 
             <div class="form-group">
               <label>Разработчик</label>
-              <input id="gameDeveloper" type="text" placeholder="Название студии разработки"/>
+              <input id="gameDeveloper" type="text" placeholder="Например: Capcom"/>
             </div>
 
             <div class="form-group">
@@ -191,170 +192,159 @@
 
             <div class="modal-actions">
               <button type="button" class="btn-secondary" onclick="closeAddGameModal()">Отмена</button>
-              <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Добавить в каталог</button>
+              <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Сохранить</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Game Detail Modal -->
+    <!-- Модалка деталей игры с комментариями -->
     <div class="modal" id="gameDetailModal">
       <div class="modal-content modal-large">
         <div class="modal-header">
           <h2 id="detailTitle">Детали игры</h2>
           <button class="close-modal" onclick="closeGameDetailModal()"><i class="fas fa-times"></i></button>
         </div>
-        <div class="modal-body" id="gameDetailContent"></div>
+        <div class="modal-body" id="gameDetailContent">
+          <div class="game-detail-layout">
+            <!-- Левая колонка - информация об игре -->
+            <div class="game-detail-info" id="gameDetailInfo"></div>
+            
+            <!-- Правая колонка - комментарии и действия -->
+            <div class="game-detail-sidebar">
+              <!-- Рейтинг пользователя -->
+              <div class="user-rating-section">
+                <h3><i class="fas fa-star"></i> Ваша оценка</h3>
+                <div class="rating-stars">
+                  <div class="stars" id="userRatingStars">
+                    <!-- Звезды будут добавлены через JS -->
+                  </div>
+                  <button class="btn-primary" onclick="submitUserRating()" id="submitRatingBtn">
+                    <i class="fas fa-check"></i> Оценить
+                  </button>
+                </div>
+              </div>
+
+              <!-- Добавить в коллекцию -->
+              <div class="collection-section-sidebar">
+                <h3><i class="fas fa-heart"></i> Моя коллекция</h3>
+                <button class="btn-secondary" onclick="toggleUserCollection()" id="collectionBtn">
+                  <i class="far fa-heart"></i> Добавить в коллекцию
+                </button>
+                <select id="collectionStatus" class="status-select">
+                  <option value="planned">В планах</option>
+                  <option value="playing">Играю</option>
+                  <option value="completed">Пройдена</option>
+                  <option value="abandoned">Брошена</option>
+                </select>
+              </div>
+
+              <!-- Комментарии -->
+              <div class="comments-section">
+                <h3><i class="fas fa-comments"></i> Комментарии (<span id="commentsCount">0</span>)</h3>
+                <div class="add-comment">
+                  <textarea id="commentText" placeholder="Ваш комментарий..." rows="3"></textarea>
+                  <button class="btn-primary" onclick="submitComment()">
+                    <i class="fas fa-paper-plane"></i> Отправить
+                  </button>
+                </div>
+                <div class="comments-list" id="commentsList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- My Collection Modal -->
-    <div class="modal" id="myCollectionModal">
+    <!-- Модалка управления (админ) -->
+    <div class="modal" id="manageModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-cog"></i> Управление каталогом</h2>
+          <button class="close-modal" onclick="closeManageModal()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="manage-options">
+            <button class="manage-option" onclick="exportCollection()">
+              <i class="fas fa-file-export"></i>
+              <span>Экспорт данных</span>
+              <small>JSON файл</small>
+            </button>
+
+            <button class="manage-option" onclick="importCollection()">
+              <i class="fas fa-file-import"></i>
+              <span>Импорт данных</span>
+              <small>Загрузить JSON</small>
+            </button>
+
+            <button class="manage-option" onclick="clearComments()">
+              <i class="fas fa-trash"></i>
+              <span>Очистить комментарии</span>
+              <small>Удалить все отзывы</small>
+            </button>
+
+            <button class="manage-option" onclick="resetToDefault()">
+              <i class="fas fa-undo"></i>
+              <span>Сбросить каталог</span>
+              <small>Восстановить пустой</small>
+            </button>
+          </div>
+
+          <div class="collection-info">
+            <h3><i class="fas fa-info-circle"></i> Статистика</h3>
+            <div class="info-item"><span>Игр в каталоге:</span> <strong id="collectionCount">0</strong></div>
+            <div class="info-item"><span>Всего комментариев:</span> <strong id="totalCommentsCount">0</strong></div>
+            <div class="info-item"><span>Пользователей:</span> <strong id="usersCount">0</strong></div>
+            <div class="info-item"><span>Обновлено:</span> <strong id="lastUpdateTime">Сегодня</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модалка коллекции пользователя -->
+    <div class="modal" id="userCollectionModal">
       <div class="modal-content modal-large">
         <div class="modal-header">
           <h2><i class="fas fa-heart"></i> Моя коллекция</h2>
-          <button class="close-modal" onclick="closeMyCollectionModal()"><i class="fas fa-times"></i></button>
+          <button class="close-modal" onclick="closeUserCollectionModal()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-          <div class="collection-stats">
-            <div class="stat-item">
-              <i class="fas fa-gamepad"></i>
-              <div class="stat-number" id="myGamesCount">0</div>
-              <div class="stat-label">Всего игр</div>
-            </div>
-            <div class="stat-item">
-              <i class="fas fa-star"></i>
-              <div class="stat-number" id="myAvgRating">0.0</div>
-              <div class="stat-label">Мой средний рейтинг</div>
-            </div>
-            <div class="stat-item">
-              <i class="fas fa-comments"></i>
-              <div class="stat-number" id="myCommentsCount">0</div>
-              <div class="stat-label">Мои комментарии</div>
-            </div>
+          <div class="collection-tabs">
+            <button class="tab-btn active" onclick="switchCollectionTab('playing')">Играю</button>
+            <button class="tab-btn" onclick="switchCollectionTab('planned')">В планах</button>
+            <button class="tab-btn" onclick="switchCollectionTab('completed')">Пройдены</button>
+            <button class="tab-btn" onclick="switchCollectionTab('abandoned')">Брошены</button>
           </div>
-          
-          <div class="game-grid" id="myCollectionGrid"></div>
+          <div class="collection-grid" id="userCollectionGrid"></div>
         </div>
       </div>
     </div>
 
-    <!-- Comments Modal -->
-    <div class="modal" id="commentsModal">
-      <div class="modal-content">
+    <!-- Модалка всех комментариев (админ) -->
+    <div class="modal" id="allCommentsModal">
+      <div class="modal-content modal-large">
         <div class="modal-header">
-          <h2><i class="fas fa-comments"></i> Комментарии</h2>
-          <button class="close-modal" onclick="closeCommentsModal()"><i class="fas fa-times"></i></button>
+          <h2><i class="fas fa-comments"></i> Все комментарии</h2>
+          <button class="close-modal" onclick="closeAllCommentsModal()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-          <div class="comments-list" id="commentsList"></div>
-          <div class="add-comment">
-            <textarea id="newComment" placeholder="Оставьте ваш комментарий..." rows="2"></textarea>
-            <div class="comment-rating">
-              <span>Оценка:</span>
-              <div class="star-rating" id="starRating">
-                <i class="fas fa-star" data-value="1"></i>
-                <i class="fas fa-star" data-value="2"></i>
-                <i class="fas fa-star" data-value="3"></i>
-                <i class="fas fa-star" data-value="4"></i>
-                <i class="fas fa-star" data-value="5"></i>
-              </div>
-            </div>
-            <button class="btn-primary" onclick="submitComment()">
-              <i class="fas fa-paper-plane"></i> Отправить
-            </button>
-          </div>
+          <div class="comments-admin-list" id="allCommentsList"></div>
         </div>
       </div>
     </div>
 
-    <!-- Profile Modal -->
-    <div class="modal" id="profileModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2><i class="fas fa-user"></i> Мой профиль</h2>
-          <button class="close-modal" onclick="closeProfileModal()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-          <div class="profile-info">
-            <img id="profileAvatar" class="user-avatar large" src="" alt="Avatar">
-            <h3 id="profileName">Пользователь</h3>
-            <p class="profile-id">ID: <span id="profileId">-</span></p>
-          </div>
-          
-          <div class="profile-stats">
-            <h4><i class="fas fa-chart-bar"></i> Статистика</h4>
-            <div class="stats-grid">
-              <div class="stat-card">
-                <i class="fas fa-gamepad"></i>
-                <span>В коллекции</span>
-                <strong id="profileGamesCount">0</strong>
-              </div>
-              <div class="stat-card">
-                <i class="fas fa-comment"></i>
-                <span>Комментарии</span>
-                <strong id="profileCommentsCount">0</strong>
-              </div>
-              <div class="stat-card">
-                <i class="fas fa-star"></i>
-                <span>Оценки</span>
-                <strong id="profileRatingsCount">0</strong>
-              </div>
-              <div class="stat-card">
-                <i class="fas fa-calendar"></i>
-                <span>С нами с</span>
-                <strong id="profileJoinDate">-</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats Modal -->
+    <!-- Статистика -->
     <div class="modal" id="statsModal">
       <div class="modal-content modal-large">
         <div class="modal-header">
-          <h2><i class="fas fa-chart-bar"></i> Статистика сообщества</h2>
-          <button class="close-modal" onclick="closeStatsModal()"><i class="fas fa-times"></i></button>
+          <h2><i class="fas fa-chart-bar"></i> Статистика</h2>
+          <button class="close-btn" onclick="closeStatsModal()"><i class="fas fa-times"></i></button>
         </div>
+
         <div class="modal-body">
-          <div class="community-stats">
-            <div class="stat-card large">
-              <i class="fas fa-gamepad"></i>
-              <div>
-                <div class="stat-number" id="communityGames">0</div>
-                <div class="stat-label">Игр в каталоге</div>
-              </div>
-            </div>
-            <div class="stat-card large">
-              <i class="fas fa-users"></i>
-              <div>
-                <div class="stat-number" id="communityUsers">0</div>
-                <div class="stat-label">Пользователей</div>
-              </div>
-            </div>
-            <div class="stat-card large">
-              <i class="fas fa-comments"></i>
-              <div>
-                <div class="stat-number" id="communityComments">0</div>
-                <div class="stat-label">Комментариев</div>
-              </div>
-            </div>
-            <div class="stat-card large">
-              <i class="fas fa-star"></i>
-              <div>
-                <div class="stat-number" id="communityAvgRating">0.0</div>
-                <div class="stat-label">Средний рейтинг</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="charts-section">
-            <h3><i class="fas fa-chart-pie"></i> Популярные жанры</h3>
-            <div class="chart-container" id="genreChart"></div>
-          </div>
+          <!-- ... существующая статистика ... -->
         </div>
       </div>
     </div>
