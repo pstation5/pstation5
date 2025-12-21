@@ -1,7 +1,8 @@
 // Game Collection Hub - Community Edition
 
 // ========== CONFIGURATION ==========
-const ADMIN_TELEGRAM_ID = 321407568; // ЗАМЕНИТЕ на ваш Telegram ID
+// ЗАМЕНИТЕ на ваш Telegram ID (может быть как числом, так и строкой)
+const ADMIN_TELEGRAM_ID = "123456789"; // Измените на ваш реальный ID
 const APP_VERSION = '1.0.0';
 
 // ========== TELEGRAM INIT ==========
@@ -163,16 +164,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initApp() {
   // Telegram setup
-  if (window.Telegram && tg.initDataUnsafe) {
+  if (window.Telegram && tg.initDataUnsafe && tg.initDataUnsafe.user) {
     try {
       tg.expand();
       tg.setHeaderColor('#8b0000');
       tg.setBackgroundColor('#121212');
       setupTelegramUser();
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Telegram setup error:', e);
+      setupMockUser(true); // Force admin in browser for testing
+    }
   } else {
-    // Mock user for browser testing
-    setupMockUser();
+    // Mock user for browser testing - АДМИН ПО УМОЛЧАНИЮ ДЛЯ ТЕСТИРОВАНИЯ
+    setupMockUser(true);
   }
 
   // Load data
@@ -206,10 +210,16 @@ function setupTelegramUser() {
   try {
     const user = tg.initDataUnsafe.user;
     if (user) {
-      currentUser.id = user.id;
+      // Преобразуем ID в строку для надежного сравнения
+      const userId = String(user.id);
+      const adminId = String(ADMIN_TELEGRAM_ID);
+      
+      currentUser.id = userId;
       currentUser.name = `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}`;
       currentUser.avatar = user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=8b0000&color=fff`;
-      currentUser.isAdmin = user.id === ADMIN_TELEGRAM_ID;
+      currentUser.isAdmin = userId === adminId;
+      
+      console.log('User ID:', userId, 'Admin ID:', adminId, 'Is Admin:', currentUser.isAdmin);
       
       elements.userGreeting.textContent = `Привет, ${user.first_name}!`;
       elements.userAvatar.src = currentUser.avatar;
@@ -220,22 +230,28 @@ function setupTelegramUser() {
     }
   } catch (e) {
     console.warn('Telegram user setup failed:', e);
-    setupMockUser();
+    setupMockUser(true);
   }
 }
 
-function setupMockUser() {
-  const mockId = Math.floor(Math.random() * 1000000);
+function setupMockUser(forceAdmin = false) {
+  // Для тестирования в браузере используем фиксированный ID
+  const mockId = "999999999"; // Фиксированный ID для тестирования
+  const isAdmin = forceAdmin || mockId === String(ADMIN_TELEGRAM_ID);
+  
   currentUser = {
     id: mockId,
-    name: `Игрок${mockId}`,
-    avatar: `https://ui-avatars.com/api/?name=Player${mockId}&background=8b0000&color=fff`,
-    isAdmin: mockId === ADMIN_TELEGRAM_ID,
+    name: isAdmin ? 'Администратор' : `Игрок${mockId}`,
+    avatar: `https://ui-avatars.com/api/?name=${isAdmin ? 'Admin' : 'Player'}&background=8b0000&color=fff`,
+    isAdmin: isAdmin,
     joinDate: new Date().toISOString()
   };
   
   elements.userGreeting.textContent = `Привет, ${currentUser.name}!`;
   elements.userAvatar.src = currentUser.avatar;
+  elements.userType.textContent = currentUser.isAdmin ? 'Администратор' : 'Пользователь';
+  
+  console.log('Mock user created:', currentUser);
   registerUser(currentUser);
 }
 
@@ -257,9 +273,15 @@ function registerUser(user) {
 
 // ========== ADMIN FUNCTIONS ==========
 function checkAdminStatus() {
+  console.log('Checking admin status:', currentUser);
+  
   if (currentUser.isAdmin) {
     elements.adminPanel.style.display = 'block';
     elements.adminToggleBtn.classList.add('admin-active');
+    showNotification('Режим администратора активен', 'success');
+  } else {
+    elements.adminPanel.style.display = 'none';
+    elements.adminToggleBtn.classList.remove('admin-active');
   }
 }
 
@@ -393,6 +415,13 @@ function setupEventListeners() {
   
   // Form submissions
   document.getElementById('addGameForm')?.addEventListener('submit', handleAddGame);
+  
+  // Also trigger search on Enter key
+  elements.searchInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      applyFilters();
+    }
+  });
 }
 
 // ========== RENDER FUNCTIONS ==========
@@ -805,8 +834,10 @@ function openAddGameModal() {
 function handleAddGame(e) {
   e.preventDefault();
   
+  console.log('Trying to add game as admin:', currentUser);
+  
   if (!currentUser.isAdmin) {
-    showNotification('Доступ запрещен', 'error');
+    showNotification('Доступ запрещен. Вы не администратор.', 'error');
     return;
   }
   
@@ -1046,3 +1077,20 @@ function createBarChart(data) {
   return html;
 }
 
+// ========== DEBUG FUNCTION ==========
+// Функция для отладки - показывает текущий статус пользователя
+function debugUserStatus() {
+  console.log('=== DEBUG USER STATUS ===');
+  console.log('Current User:', currentUser);
+  console.log('Admin ID:', ADMIN_TELEGRAM_ID);
+  console.log('Is Admin:', currentUser.isAdmin);
+  console.log('User ID type:', typeof currentUser.id);
+  console.log('Admin ID type:', typeof ADMIN_TELEGRAM_ID);
+  console.log('Comparison:', String(currentUser.id) === String(ADMIN_TELEGRAM_ID));
+  console.log('=== END DEBUG ===');
+  
+  alert(`Текущий пользователь: ${currentUser.name}\nID: ${currentUser.id}\nАдмин: ${currentUser.isAdmin ? 'Да' : 'Нет'}`);
+}
+
+// Экспортируем для отладки в консоли
+window.debugUserStatus = debugUserStatus;
