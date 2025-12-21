@@ -1,6 +1,8 @@
 {
-  "gamesCatalog": [],
-  "allUsers": [],
-  "allComments": [],
-  "lastUpdate": null
+  "games": [],
+  "comments": {},
+  "ratings": {},
+  "collections": {},
+  "updatedAt": ""
 }
+
