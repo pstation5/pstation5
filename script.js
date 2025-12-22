@@ -387,10 +387,11 @@ function initSwiper() {
 
 // Render all components
 function renderAll() {
-  renderUpcomingGames();
-  updateStats();
-  applyFilters();
+  enableAdminControls();   // ← ВАЖНО: ДО рендера кнопок
+  renderGames();
+  setupEventListeners();
 }
+
 
 // Render upcoming games slider
 function renderUpcomingGames() {
@@ -436,6 +437,15 @@ function renderUpcomingGames() {
     swiper.update();
   }
 }
+
+function enableAdminControls() {
+  const c1 = document.getElementById('adminControls');
+  const c2 = document.getElementById('adminControls2');
+
+  if (c1) c1.style.display = 'block';
+  if (c2) c2.style.display = 'block';
+}
+
 
 // Update statistics
 function updateStats() {
@@ -1223,6 +1233,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
