@@ -267,7 +267,8 @@ fetch(API_URL + '?action=get_all')
         SafeStorage.set('psHorrorGamesData', JSON.stringify(dataToSave));
         console.log('Data saved to localStorage');
 
-    
+          }
+    }
     // Initialize user collection if not exists
     if (currentUser && currentUser.id) {
       if (!userCollections[currentUser.id]) {
@@ -1243,6 +1244,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
