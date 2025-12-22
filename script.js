@@ -1,3 +1,10 @@
+// Добавьте эту константу в начало файла
+const API_URL = 'https://script.google.com/macros/s/AKfycbyjJ9fgjihBVfRtdQhzGS0SFNDJfMrblKe8M5UGJoJ6GQ2IwRJVvR10oSTDiw-BhJ-_cQ/exec'; // Замените на ваш URL
+
+// Добавьте эту переменную в состояние приложения
+let lastSyncTime = null;
+let isSyncing = false;
+
 // Horror Games Collection App - PS4/PS5 Edition
 const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
 
@@ -882,5 +889,6 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
+
 
 
