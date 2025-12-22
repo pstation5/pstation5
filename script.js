@@ -267,13 +267,7 @@ fetch(API_URL + '?action=get_all')
         SafeStorage.set('psHorrorGamesData', JSON.stringify(dataToSave));
         console.log('Data saved to localStorage');
         
-      } else {
-        console.log('Server returned error status:', result.data);
-      }
-    } catch (serverError) {
-      console.log('Server unavailable:', serverError.message);
       
-    }
     
     // Initialize user collection if not exists
     if (currentUser && currentUser.id) {
@@ -1233,6 +1227,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
