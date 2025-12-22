@@ -281,7 +281,7 @@ async function loadData() {
     
 filteredGames = [...games];
 console.log('Data load complete. Total games:', games.length);
-}
+
 
 // ОБНОВЛЕННАЯ функция saveData
 function saveData() {
@@ -1216,6 +1216,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
