@@ -223,33 +223,37 @@ function loadData() {
 
     // Try to sync with server (always try to get fresh data)
     console.log('Attempting to sync with server...');
-    try {
-      const response = fetch(`${API_URL}?action=get_all`);
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-      
-      const result = response.json();
-      console.log('Server response:', result);
-      
-      if (result.status === 'success') {
-        const serverData = result.data;
-        
-        // Merge strategy: server data has priority
-        if (serverData.games && serverData.games.length > 0) {
-          games = serverData.games;
-        }
-        if (serverData.upcomingGames && serverData.upcomingGames.length > 0) {
-          upcomingGames = serverData.upcomingGames;
-        }
-        if (serverData.comments && serverData.comments.length > 0) {
-          comments = serverData.comments;
-        }
-        if (serverData.userCollections && Object.keys(serverData.userCollections).length > 0) {
-          userCollections = serverData.userCollections;
-        }
-        
-        console.log('Data synced from server:', games.length, 'games');
+    console.log('Attempting to sync with server...');
+
+fetch(API_URL + '?action=get_all')
+  .then(res => res.json())
+  .then(result => {
+    console.log('Server response:', result);
+
+    if (result.status !== 'success') return;
+
+    const serverData = result.data || {};
+
+    games = serverData.games || [];
+    upcomingGames = serverData.upcomingGames || [];
+    comments = serverData.comments || [];
+    userCollections = serverData.userCollections || {};
+
+    filteredGames = [...games];
+
+    // кешируем после успешного ответа
+    SafeStorage.set(
+      'psHorrorGamesData',
+      JSON.stringify(serverData)
+    );
+
+    console.log('Synced with server:', games.length);
+    renderAll();
+  })
+  .catch(err => {
+    console.warn('Sync failed:', err.message);
+  });
+
         
         // Save merged data locally
         const dataToSave = {
@@ -1219,5 +1223,6 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
