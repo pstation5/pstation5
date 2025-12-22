@@ -268,7 +268,7 @@ fetch(API_URL + '?action=get_all')
         console.log('Data saved to localStorage');
 
           }
-    }
+
     // Initialize user collection if not exists
     if (currentUser && currentUser.id) {
       if (!userCollections[currentUser.id]) {
@@ -1244,6 +1244,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
