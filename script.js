@@ -287,45 +287,43 @@ async function saveData() {
     userCollections,
     lastUpdate: new Date().toISOString()
   };
-  
+
   try {
-    // 1. Сохраняем локально
-    localStorage.setItem('psHorrorGamesData', JSON.stringify(data));
-    console.log('Data saved to localStorage successfully');
-    
-    // 2. Отправляем на сервер
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'save_data',
-          ...data
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
-      }
-      
-      const result = await response.json();
-      if (result.status === 'success') {
-        console.log('Data saved to server successfully:', result.data.message);
-      } else {
-        console.log('Server returned error:', result.data);
-      }
-    } catch (serverError) {
-      console.log('Failed to save to server:', serverError.message);
-      // Don't show error to user - data is saved locally
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'save_data',
+        ...data
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error ${response.status}`);
     }
-    
-  } catch (e) {
-    console.error('Error saving data:', e);
-    alert('Ошибка при сохранении данных');
+
+    const result = await response.json();
+
+    if (result.status !== 'success') {
+      throw new Error('Server save failed');
+    }
+
+    // Кешируем ТОЛЬКО после подтверждения сервера
+    localStorage.setItem(
+      'psHorrorGamesData',
+      JSON.stringify(data)
+    );
+
+    console.log('Data saved to server and cache');
+
+  } catch (error) {
+    console.error('Save error:', error);
+    alert('Ошибка сохранения. Сервер недоступен.');
   }
 }
+
 
 function setupEventListeners() {
   // Search
