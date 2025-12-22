@@ -1109,7 +1109,7 @@ function syncWithServer() {
       
       // Обновляем интерфейс
       renderAll();
-    }
+
   } catch (error) {
     console.error('Ошибка синхронизации:', error);
   } finally {
@@ -1244,6 +1244,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
