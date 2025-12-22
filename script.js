@@ -235,11 +235,17 @@ function initSwiper() {
       el: '.swiper-pagination',
       clickable: true,
     },
-    breakpoints: {
-      640: { slidesPerView: 2 },
-      1024: { slidesPerView: 3 }
-    }
-  });
+const isMobile = tg.platform === 'android' || tg.platform === 'ios';
+
+swiper = new Swiper('.upcoming-swiper', {
+  slidesPerView: isMobile ? 1.2 : 3,
+  spaceBetween: 16,
+  pagination: { el: '.swiper-pagination', clickable: true },
+  navigation: !isMobile ? {
+    nextEl: '.swiper-button-next',
+    prevEl: '.swiper-button-prev',
+  } : false
+});
 }
 
 // Render all components
@@ -876,4 +882,5 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
+
 
