@@ -1492,3 +1492,87 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 auto;
   line-height: 1.6;
 }
+
+/* Sync Button */
+.sync-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--border-radius);
+  border: 2px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sync-btn:hover {
+  background: var(--accent-red);
+  border-color: var(--accent-red);
+  color: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Sync Progress */
+.sync-progress {
+  margin-top: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: var(--border-color);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-red), var(--accent-dark));
+  border-radius: 5px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+/* Telegram Mobile specific */
+.telegram-mobile .app-container {
+  padding: 15px;
+}
+
+.telegram-mobile .game-grid {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.telegram-mobile .game-cover {
+  height: 320px;
+}
+
+.telegram-mobile .header-top {
+  flex-direction: column;
+  gap: 15px;
+  text-align: center;
+}
+
+.telegram-mobile .main-title {
+  font-size: 1.8rem;
+}
+
+/* Additional styles */
+#syncStatusText {
+  text-align: center;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.sync-progress {
+  margin: 30px 0;
+}
