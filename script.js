@@ -1,6 +1,6 @@
 // Horror Games Collection App - PS4/PS5 Edition
 const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjJ9fgjihBVfRtdQhzGS0SFNDJfMrblKe8M5UGJoJ6GQ2IwRJVvR10oSTDiw-BhJ-_cQ/exec'; // Замените на ваш URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbycfWFRedsCI3v72wxRhnEyCOUmL1yTjQh_-jlcwPBJtpBEEMb7USI2av4ffowUcsm2cg/exec'; // Замените на ваш URL
 
 // Telegram WebApp
 const tg = window.Telegram?.WebApp || {
@@ -1114,3 +1114,4 @@ function initApp() {
   
   // ... остальной код ...
 }
+
