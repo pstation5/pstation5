@@ -313,20 +313,7 @@ function saveData() {
   });
 }
 
-    // Кешируем ТОЛЬКО после подтверждения сервера
-    SafeStorage.set(
-      'psHorrorGamesData',
-      JSON.stringify(data)
-    );
-
-    console.log('Data saved to server and cache');
-
-  } catch (error) {
-    console.error('Save error:', error);
-    alert('Ошибка сохранения. Сервер недоступен.');
-  }
-}
-
+   
 
 function setupEventListeners() {
   // Search
@@ -1229,6 +1216,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
