@@ -1020,66 +1020,83 @@ function formatDate(dateString) {
 // ==== ФУНКЦИИ СИНХРОНИЗАЦИИ ====
 
 // Синхронизация данных с сервером
-async function syncWithServer() {
+function syncWithServer() {
   if (isSyncing) return;
   isSyncing = true;
-  
-  try {
-    console.log('Начало синхронизации...');
-    
-    // 1. Получаем данные с сервера
-    const serverData = fetch(`${API_URL}?action=get_all`).then(r => r.json());
-    
-    // 2. Объединяем данные (сервер имеет приоритет)
-    if (serverData && serverData.games) {
-      // Объединяем игры
-      const localGamesMap = new Map(games.map(g => [g.id, g]));
-      const serverGamesMap = new Map(serverData.games.map(g => [g.id, g]));
-      
-      games = Array.from(new Map([...localGamesMap, ...serverGamesMap]).values());
-      
-      // Upcoming games
-      if (serverData.upcomingGames) {
+
+  console.log('Начало синхронизации...');
+
+  fetch(API_URL + '?action=get_all')
+    .then(res => res.json())
+    .then(result => {
+      if (result.status !== 'success') {
+        throw new Error('Server returned error');
+      }
+
+      const serverData = result.data || {};
+
+      // 1. Игры
+      if (Array.isArray(serverData.games)) {
+        const localGamesMap = new Map(games.map(g => [g.id, g]));
+        const serverGamesMap = new Map(serverData.games.map(g => [g.id, g]));
+        games = Array.from(new Map([...localGamesMap, ...serverGamesMap]).values());
+      }
+
+      // 2. Upcoming games
+      if (Array.isArray(serverData.upcomingGames)) {
         const localUpcomingMap = new Map(upcomingGames.map(g => [g.id, g]));
         const serverUpcomingMap = new Map(serverData.upcomingGames.map(g => [g.id, g]));
-        upcomingGames = Array.from(new Map([...localUpcomingMap, ...serverUpcomingMap]).values());
+        upcomingGames = Array.from(
+          new Map([...localUpcomingMap, ...serverUpcomingMap]).values()
+        );
       }
-      
-      // Комментарии
-      if (serverData.comments) {
-        const localCommentsMap = new Map(comments.map(c => [c.id || `${c.gameId}_${c.userId}`, c]));
-        const serverCommentsMap = new Map(serverData.comments.map(c => [c.id || `${c.gameId}_${c.userId}`, c]));
-        comments = Array.from(new Map([...localCommentsMap, ...serverCommentsMap]).values());
+
+      // 3. Комментарии
+      if (Array.isArray(serverData.comments)) {
+        const localCommentsMap = new Map(
+          comments.map(c => [c.id || `${c.gameId}_${c.userId}`, c])
+        );
+        const serverCommentsMap = new Map(
+          serverData.comments.map(c => [c.id || `${c.gameId}_${c.userId}`, c])
+        );
+        comments = Array.from(
+          new Map([...localCommentsMap, ...serverCommentsMap]).values()
+        );
       }
-      
-      // Коллекции пользователей
+
+      // 4. Коллекции пользователей
       if (serverData.userCollections) {
         for (const [userId, serverCollection] of Object.entries(serverData.userCollections)) {
           if (!userCollections[userId]) {
             userCollections[userId] = serverCollection;
           } else {
-            // Объединяем игры
-            const mergedGames = [...new Set([
-              ...userCollections[userId].games,
-              ...serverCollection.games
-            ])];
-            
-            // Объединяем статусы
-            const mergedStatus = {
-              ...userCollections[userId].status,
-              ...serverCollection.status
-            };
-            
             userCollections[userId] = {
-              games: mergedGames,
-              status: mergedStatus
+              games: Array.from(new Set([
+                ...userCollections[userId].games,
+                ...serverCollection.games
+              ])),
+              status: {
+                ...userCollections[userId].status,
+                ...serverCollection.status
+              }
             };
           }
         }
       }
-      
+
       lastSyncTime = serverData.lastUpdate || new Date().toISOString();
       console.log('Синхронизация завершена');
+
+      renderAll();
+    })
+    .catch(err => {
+      console.error('Ошибка синхронизации:', err.message);
+    })
+    .finally(() => {
+      isSyncing = false;
+    });
+}
+
       
       // Сохраняем объединенные данные локально
       SafeStorage.set('psHorrorGamesData', JSON.stringify({
@@ -1227,6 +1244,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
