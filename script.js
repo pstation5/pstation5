@@ -1041,3 +1041,76 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
+
+// Добавьте в конец файла script.js:
+
+// Sync status functions
+function closeSyncStatusModal() {
+  document.getElementById('syncStatusModal').style.display = 'none';
+}
+
+function showSyncStatus(message) {
+  document.getElementById('syncStatusText').textContent = message;
+  document.getElementById('syncStatusModal').style.display = 'block';
+}
+
+function updateSyncProgress(percent) {
+  const progressFill = document.getElementById('syncProgress');
+  if (progressFill) {
+    progressFill.style.width = `${percent}%`;
+  }
+}
+
+// Modified syncWithServer function
+async function syncWithServer() {
+  if (isSyncing) return;
+  isSyncing = true;
+  
+  showSyncStatus('Начало синхронизации...');
+  updateSyncProgress(10);
+  
+  try {
+    console.log('Начало синхронизации...');
+    updateSyncProgress(30);
+    
+    const serverData = await fetch(`${API_URL}?action=get_all`).then(r => r.json());
+    updateSyncProgress(60);
+    
+    if (serverData && serverData.games) {
+      // ... существующий код синхронизации ...
+      updateSyncProgress(80);
+      
+      // Обновляем интерфейс
+      renderAll();
+      updateSyncProgress(95);
+      
+      showSyncStatus('Синхронизация завершена!');
+      updateSyncProgress(100);
+      
+      // Автоматически закрываем через 2 секунды
+      setTimeout(() => {
+        closeSyncStatusModal();
+      }, 2000);
+    }
+  } catch (error) {
+    console.error('Ошибка синхронизации:', error);
+    showSyncStatus('Ошибка синхронизации: ' + error.message);
+    updateSyncProgress(0);
+  } finally {
+    isSyncing = false;
+  }
+}
+
+// Добавьте в initApp() инициализацию кнопки синхронизации
+// В функции initApp() после setupEventListeners() добавьте:
+function initApp() {
+  // ... существующий код ...
+  setupEventListeners();
+  initSwiper();
+  renderAll();
+  
+  // Добавьте обработчик кнопки синхронизации
+  document.querySelector('.sync-btn')?.addEventListener('click', syncWithServer);
+  
+  // ... остальной код ...
+}
