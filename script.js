@@ -59,10 +59,13 @@ async function initApp() {
       tg.setBackgroundColor('#0a0a0a');
       
       // Detect Telegram Desktop
-      if (window.Telegram.WebApp.platform === 'tdesktop') {
-        document.documentElement.classList.add('telegram-desktop');
-        console.log('Telegram Desktop detected');
-      }
+const platform = tg.platform;
+
+if (platform === 'tdesktop' || platform === 'web') {
+  document.documentElement.classList.add('telegram-desktop');
+} else {
+  document.documentElement.classList.add('telegram-mobile');
+}
     } catch (e) {
       console.error('Telegram WebApp error:', e);
     }
@@ -70,9 +73,6 @@ async function initApp() {
   }
   
   // Detect Telegram Desktop from user agent
-  if (navigator.userAgent.includes('TelegramDesktop')) {
-    document.documentElement.classList.add('telegram-desktop');
-  }
   
   restoreTheme();
   await loadData();
@@ -876,3 +876,4 @@ function getGameAverageRating(gameId) {
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
+
