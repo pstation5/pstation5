@@ -257,15 +257,16 @@ fetch(API_URL + '?action=get_all')
         
         // Save merged data locally
         const dataToSave = {
-          games,
-          upcomingGames,
-          comments,
-          userCollections,
-          lastUpdate: serverData.lastUpdate || new Date().toISOString()
-        };
-        
-        SafeStorage.set('psHorrorGamesData', JSON.stringify(dataToSave));
-        console.log('Data saved to localStorage');
+    games,
+    upcomingGames,
+    comments,
+    userCollections,
+    lastUpdate: serverData.lastUpdate || new Date().toISOString()
+  };
+
+  SafeStorage.set('psHorrorGamesData', JSON.stringify(dataToSave));
+  console.log('Data saved to localStorage');
+});
 
 
     // Initialize user collection if not exists
@@ -1243,6 +1244,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
