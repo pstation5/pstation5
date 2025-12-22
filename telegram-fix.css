@@ -1,3 +1,41 @@
+/* Только Telegram Desktop */
+.telegram-desktop .app-container {
+  padding: 40px;
+  max-width: 1400px;
+}
+
+.telegram-desktop .game-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.telegram-desktop .game-cover {
+  height: 400px;
+}
+
+.telegram-desktop .upcoming-cover {
+  height: 300px;
+}
+
+.telegram-desktop .modal-content {
+  max-width: 700px;
+  margin: 80px auto;
+}
+
+/* Только Mobile */
+.telegram-mobile .app-container {
+  padding: 15px;
+}
+
+.telegram-mobile .game-cover {
+  height: 300px;
+}
+
+.telegram-mobile .upcoming-cover {
+  height: 200px;
+}
+
+
 /* Improve text readability */
   body {
     font-size: 16px;
@@ -56,4 +94,5 @@
   display: inline-block !important;
   opacity: 1 !important;
 }
+
 
