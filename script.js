@@ -284,5 +284,11 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
 });
 
+// === expose functions for inline HTML ===
+window.syncWithServer = syncWithServer;
+window.toggleTheme = toggleTheme;
+window.openAddGameModal = openAddGameModal;
+window.editGame = editGame;
+
 
 
