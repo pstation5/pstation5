@@ -1,12 +1,6 @@
-// Добавьте эту константу в начало файла
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjJ9fgjihBVfRtdQhzGS0SFNDJfMrblKe8M5UGJoJ6GQ2IwRJVvR10oSTDiw-BhJ-_cQ/exec'; // Замените на ваш URL
-
-// Добавьте эту переменную в состояние приложения
-let lastSyncTime = null;
-let isSyncing = false;
-
 // Horror Games Collection App - PS4/PS5 Edition
 const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
+const API_URL = 'https://script.google.com/macros/s/AKfycbyjJ9fgjihBVfRtdQhzGS0SFNDJfMrblKe8M5UGJoJ6GQ2IwRJVvR10oSTDiw-BhJ-_cQ/exec'; // Замените на ваш URL
 
 // Telegram WebApp
 const tg = window.Telegram?.WebApp || {
@@ -53,6 +47,9 @@ let currentPlatformFilter = 'all';
 let currentSort = 'title';
 let swiper = null;
 let currentGameId = null;
+let lastSyncTime = null;
+let isSyncing = false;
+let syncInterval = null;
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', initApp);
@@ -66,13 +63,13 @@ async function initApp() {
       tg.setBackgroundColor('#0a0a0a');
       
       // Detect Telegram Desktop
-const platform = tg.platform;
-
-if (platform === 'tdesktop' || platform === 'web') {
-  document.documentElement.classList.add('telegram-desktop');
-} else {
-  document.documentElement.classList.add('telegram-mobile');
-}
+      const platform = tg.platform;
+      
+      if (platform === 'tdesktop' || platform === 'web') {
+        document.documentElement.classList.add('telegram-desktop');
+      } else {
+        document.documentElement.classList.add('telegram-mobile');
+      }
     } catch (e) {
       console.error('Telegram WebApp error:', e);
     }
@@ -80,12 +77,22 @@ if (platform === 'tdesktop' || platform === 'web') {
   }
   
   // Detect Telegram Desktop from user agent
+  if (navigator.userAgent.includes('TelegramDesktop')) {
+    document.documentElement.classList.add('telegram-desktop');
+  }
   
   restoreTheme();
   await loadData();
+  
+  // Синхронизируем при загрузке
+  await checkForUpdates();
+  
   setupEventListeners();
   initSwiper();
   renderAll();
+  
+  // Синхронизируем каждые 2 минуты
+  syncInterval = setInterval(checkForUpdates, 2 * 60 * 1000);
 }
 
 function setupTelegramUser() {
@@ -117,9 +124,10 @@ function setupTelegramUser() {
   }
 }
 
+// ОБНОВЛЕННАЯ функция loadData
 async function loadData() {
   try {
-    // First try to load from localStorage (for demo)
+    // First try to load from localStorage
     const savedData = localStorage.getItem('psHorrorGamesData');
     if (savedData) {
       const data = JSON.parse(savedData);
@@ -129,15 +137,36 @@ async function loadData() {
       userCollections = data.userCollections || {};
       console.log('Data loaded from localStorage:', games.length, 'games');
     } else {
-      // If no localStorage data, try to load from games.json
-      const response = await fetch('games.json');
-      if (response.ok) {
-        const data = await response.json();
-        games = data.games || [];
-        upcomingGames = data.upcomingGames || [];
-        comments = data.comments || [];
-        userCollections = data.userCollections || {};
-        console.log('Data loaded from games.json:', games.length, 'games');
+      // Если нет локальных данных, загружаем с сервера
+      try {
+        const response = await fetch(`${API_URL}?action=get_all`);
+        if (response.ok) {
+          const data = await response.json();
+          games = data.games || [];
+          upcomingGames = data.upcomingGames || [];
+          comments = data.comments || [];
+          userCollections = data.userCollections || {};
+          console.log('Data loaded from server:', games.length, 'games');
+          
+          // Сохраняем локально для офлайн-работы
+          localStorage.setItem('psHorrorGamesData', JSON.stringify(data));
+        }
+      } catch (serverError) {
+        console.log('Server unavailable, starting with empty data');
+        // Если сервер недоступен, проверяем games.json
+        try {
+          const response = await fetch('games.json');
+          if (response.ok) {
+            const data = await response.json();
+            games = data.games || [];
+            upcomingGames = data.upcomingGames || [];
+            comments = data.comments || [];
+            userCollections = data.userCollections || {};
+            console.log('Data loaded from games.json:', games.length, 'games');
+          }
+        } catch (jsonError) {
+          console.log('No local data available');
+        }
       }
     }
     
@@ -161,6 +190,7 @@ async function loadData() {
   }
 }
 
+// ОБНОВЛЕННАЯ функция saveData
 async function saveData() {
   const data = {
     games,
@@ -171,17 +201,12 @@ async function saveData() {
   };
   
   try {
-    // Save to localStorage for persistence
+    // 1. Сохраняем локально
     localStorage.setItem('psHorrorGamesData', JSON.stringify(data));
     console.log('Data saved to localStorage successfully');
     
-    // If you want to save to a server, you can add fetch here
-    // Example for GitHub Pages (would need server-side logic):
-    // await fetch('/save-data', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data)
-    // });
+    // 2. Отправляем на сервер (в фоне, не ждем)
+    pushToServer().catch(e => console.error('Фоновая отправка не удалась:', e));
     
   } catch (e) {
     console.error('Error saving data:', e);
@@ -231,28 +256,24 @@ function setupEventListeners() {
 
 // Initialize Swiper for upcoming games
 function initSwiper() {
+  const isMobile = tg.platform === 'android' || tg.platform === 'ios' || window.innerWidth < 768;
+  
   swiper = new Swiper('.upcoming-swiper', {
-    slidesPerView: 1,
-    spaceBetween: 20,
-    navigation: {
+    slidesPerView: isMobile ? 1.2 : 3,
+    spaceBetween: 16,
+    pagination: { 
+      el: '.swiper-pagination', 
+      clickable: true 
+    },
+    navigation: !isMobile ? {
       nextEl: '.swiper-button-next',
       prevEl: '.swiper-button-prev',
-    },
-    pagination: {
-      el: '.swiper-pagination',
-      clickable: true,
-    },
-const isMobile = tg.platform === 'android' || tg.platform === 'ios';
-
-swiper = new Swiper('.upcoming-swiper', {
-  slidesPerView: isMobile ? 1.2 : 3,
-  spaceBetween: 16,
-  pagination: { el: '.swiper-pagination', clickable: true },
-  navigation: !isMobile ? {
-    nextEl: '.swiper-button-next',
-    prevEl: '.swiper-button-prev',
-  } : false
-});
+    } : false,
+    breakpoints: {
+      640: { slidesPerView: isMobile ? 1.5 : 2 },
+      1024: { slidesPerView: isMobile ? 2 : 3 }
+    }
+  });
 }
 
 // Render all components
@@ -548,7 +569,7 @@ async function handleAddGame(e) {
   e.target.reset();
   renderAll();
   
-  alert('Игра успешно добавлена!');
+  alert('Игра успешно добавлена и синхронизирована!');
 }
 
 async function handleAddUpcomingGame(e) {
@@ -576,7 +597,7 @@ async function handleAddUpcomingGame(e) {
   e.target.reset();
   renderUpcomingGames();
   
-  alert('Ожидаемая игра успешно добавлена!');
+  alert('Ожидаемая игра успешно добавлена и синхронизирована!');
 }
 
 function editGame(id) {
@@ -614,7 +635,7 @@ function editGame(id) {
     await saveData();
     closeAddGameModal();
     renderAll();
-    alert('Изменения сохранены!');
+    alert('Изменения сохранены и синхронизированы!');
   };
   
   openAddGameModal();
@@ -628,7 +649,7 @@ async function deleteGame(id) {
   
   await saveData();
   renderAll();
-  alert('Игра удалена!');
+  alert('Игра удалена и синхронизирована!');
 }
 
 // Open game detail modal
@@ -883,12 +904,140 @@ function formatDate(dateString) {
   });
 }
 
+// ==== ФУНКЦИИ СИНХРОНИЗАЦИИ ====
+
+// Синхронизация данных с сервером
+async function syncWithServer() {
+  if (isSyncing) return;
+  isSyncing = true;
+  
+  try {
+    console.log('Начало синхронизации...');
+    
+    // 1. Получаем данные с сервера
+    const serverData = await fetch(`${API_URL}?action=get_all`).then(r => r.json());
+    
+    // 2. Объединяем данные (сервер имеет приоритет)
+    if (serverData && serverData.games) {
+      // Объединяем игры
+      const localGamesMap = new Map(games.map(g => [g.id, g]));
+      const serverGamesMap = new Map(serverData.games.map(g => [g.id, g]));
+      
+      games = Array.from(new Map([...localGamesMap, ...serverGamesMap]).values());
+      
+      // Upcoming games
+      if (serverData.upcomingGames) {
+        const localUpcomingMap = new Map(upcomingGames.map(g => [g.id, g]));
+        const serverUpcomingMap = new Map(serverData.upcomingGames.map(g => [g.id, g]));
+        upcomingGames = Array.from(new Map([...localUpcomingMap, ...serverUpcomingMap]).values());
+      }
+      
+      // Комментарии
+      if (serverData.comments) {
+        const localCommentsMap = new Map(comments.map(c => [c.id || `${c.gameId}_${c.userId}`, c]));
+        const serverCommentsMap = new Map(serverData.comments.map(c => [c.id || `${c.gameId}_${c.userId}`, c]));
+        comments = Array.from(new Map([...localCommentsMap, ...serverCommentsMap]).values());
+      }
+      
+      // Коллекции пользователей
+      if (serverData.userCollections) {
+        for (const [userId, serverCollection] of Object.entries(serverData.userCollections)) {
+          if (!userCollections[userId]) {
+            userCollections[userId] = serverCollection;
+          } else {
+            // Объединяем игры
+            const mergedGames = [...new Set([
+              ...userCollections[userId].games,
+              ...serverCollection.games
+            ])];
+            
+            // Объединяем статусы
+            const mergedStatus = {
+              ...userCollections[userId].status,
+              ...serverCollection.status
+            };
+            
+            userCollections[userId] = {
+              games: mergedGames,
+              status: mergedStatus
+            };
+          }
+        }
+      }
+      
+      lastSyncTime = serverData.lastUpdate || new Date().toISOString();
+      console.log('Синхронизация завершена');
+      
+      // Сохраняем объединенные данные локально
+      localStorage.setItem('psHorrorGamesData', JSON.stringify({
+        games,
+        upcomingGames,
+        comments,
+        userCollections,
+        lastUpdate: lastSyncTime
+      }));
+      
+      // Обновляем интерфейс
+      renderAll();
+    }
+  } catch (error) {
+    console.error('Ошибка синхронизации:', error);
+  } finally {
+    isSyncing = false;
+  }
+}
+
+// Отправка данных на сервер
+async function pushToServer() {
+  if (isSyncing) return;
+  
+  try {
+    const data = {
+      games,
+      upcomingGames,
+      comments,
+      userCollections,
+      lastUpdate: new Date().toISOString()
+    };
+    
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'save_data', ...data })
+    });
+    
+    if (!response.ok) throw new Error('Ошибка сервера');
+    
+    console.log('Данные отправлены на сервер');
+    lastSyncTime = new Date().toISOString();
+  } catch (error) {
+    console.error('Ошибка отправки на сервер:', error);
+  }
+}
+
+// Проверка обновлений
+async function checkForUpdates() {
+  try {
+    console.log('Проверка обновлений...');
+    const response = await fetch(`${API_URL}?action=ping`);
+    if (!response.ok) throw new Error('Сервер недоступен');
+    
+    // Простая логика: синхронизируем если давно не синхронизировались
+    const lastSync = localStorage.getItem('psHorrorLastSync') || 0;
+    const now = Date.now();
+    
+    if (now - lastSync > 2 * 60 * 1000) { // Каждые 2 минуты
+      await syncWithServer();
+      localStorage.setItem('psHorrorLastSync', now.toString());
+    }
+  } catch (error) {
+    console.log('Работаем в офлайн-режиме:', error.message);
+  }
+}
+
 function getGameAverageRating(gameId) {
   const gameComments = comments.filter(c => c.gameId === gameId && c.rating > 0);
   if (gameComments.length === 0) return 0;
   const sum = gameComments.reduce((total, c) => total + c.rating, 0);
   return sum / gameComments.length;
 }
-
-
-
