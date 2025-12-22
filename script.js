@@ -46,12 +46,14 @@ function initTelegram() {
   if (!window.Telegram || !Telegram.WebApp) return;
 
   Telegram.WebApp.ready();
-  currentUser = Telegram.WebApp.initDataUnsafe?.user || null;
+
+  const initData = Telegram.WebApp.initDataUnsafe;
+  currentUser = initData && initData.user ? initData.user : null;
 
   if (currentUser) {
     const greetingEl = document.getElementById('userGreeting');
     if (greetingEl) {
-      greetingEl.textContent = `Привет, ${currentUser.first_name}`;
+      greetingEl.textContent = 'Привет, ' + currentUser.first_name;
     }
 
     const roleEl = document.getElementById('userRole');
@@ -64,14 +66,19 @@ function initTelegram() {
 }
 
 
+
 /* ================== ADMIN CONTROLS ================== */
 
 function enableAdminControls() {
   if (!isAdminUser()) return;
 
-  document.getElementById('adminControls')?.style.setProperty('display', 'block');
-  document.getElementById('adminControls2')?.style.setProperty('display', 'block');
+  const c1 = document.getElementById('adminControls');
+  if (c1) c1.style.display = 'block';
+
+  const c2 = document.getElementById('adminControls2');
+  if (c2) c2.style.display = 'block';
 }
+
 
 /* ================== LOAD DATA ================== */
 
@@ -271,4 +278,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initTelegram();
   loadData();
 });
+
 
