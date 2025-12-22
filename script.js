@@ -1,3 +1,6 @@
+let isSaving = false;
+let isLoading = false;
+
 // Horror Games Collection App - PS4/PS5 Edition
 const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
 const API_URL = 'https://ps5-api.gnomhell1.workers.dev'; // Замените на ваш URL
@@ -154,37 +157,45 @@ function setupTelegramUser() {
   }
 }
 
-async function loadData() {
-  try {
-    console.log('Loading data from server...');
+function loadData() {
+  isLoading = true;
+  console.log('Loading data from server...');
 
-    const response = fetch(`${API_URL}?action=get_all`);
-    if (!response.ok) {
-      throw new Error(`Server error ${response.status}`);
-    }
+  fetch(API_URL + '?action=get_all')
+    .then(res => res.json())
+    .then(result => {
+      if (result.status !== 'success') {
+        throw new Error('Server returned error');
+      }
 
-    const result = response.json();
+      const serverData = result.data || {};
 
-    if (result.status !== 'success') {
-      throw new Error('Server returned error');
-    }
+      games = serverData.games || [];
+      upcomingGames = serverData.upcomingGames || [];
+      comments = serverData.comments || [];
+      userCollections = serverData.userCollections || {};
 
-    const serverData = result.data;
+      // Инициализация коллекции текущего пользователя
+      if (currentUser?.id && !userCollections[currentUser.id]) {
+        userCollections[currentUser.id] = {
+          games: [],
+          status: {}
+        };
+      }
 
-    games = serverData.games || [];
-    upcomingGames = serverData.upcomingGames || [];
-    comments = serverData.comments || [];
-    userCollections = serverData.userCollections || {};
+      filteredGames = [...games];
+      console.log('Data load complete. Total games:', games.length);
 
-    // Инициализация коллекции текущего пользователя
-    if (currentUser?.id && !userCollections[currentUser.id]) {
-      userCollections[currentUser.id] = {
-        games: [],
-        status: {}
-      };
-    }
+      renderAll();
+    })
+    .catch(err => {
+      console.error('Load error:', err);
+    })
+    .finally(() => {
+      isLoading = false;
+    });
+}
 
-    filteredGames = [...games];
 
     // Кешируем ТОЛЬКО после успешной загрузки
     SafeStorage.set(
@@ -285,31 +296,32 @@ console.log('Data load complete. Total games:', games.length);
 
 // ОБНОВЛЕННАЯ функция saveData
 function saveData() {
-  const data = {
+  // ❌ не сохраняем во время загрузки
+  if (isLoading) return;
+
+  // ❌ не допускаем повторного вызова
+  if (isSaving) return;
+
+  isSaving = true;
+
+  const payload = {
+    action: 'save_data',
     games,
     upcomingGames,
     comments,
-    userCollections,
-    lastUpdate: new Date().toISOString()
+    userCollections
   };
 
   fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      action: 'save_data',
-      ...data
-    })
-  })
-  .then(res => res.json())
-  .then(result => {
-    console.log('Saved to server', result);
-    SafeStorage.set('psHorrorGamesData', JSON.stringify(data));
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   })
   .catch(err => {
     console.error('Save error:', err);
+  })
+  .finally(() => {
+    isSaving = false;
   });
 }
 
@@ -1216,23 +1228,3 @@ function initApp() {
   
   // ... остальной код ...
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
