@@ -124,36 +124,77 @@ function setupTelegramUser() {
   }
 }
 
-// ОБНОВЛЕННАЯ функция loadData
 async function loadData() {
   try {
+    console.log('Starting data load...');
+    
     // First try to load from localStorage
     const savedData = localStorage.getItem('psHorrorGamesData');
     if (savedData) {
-      const data = JSON.parse(savedData);
-      games = data.games || [];
-      upcomingGames = data.upcomingGames || [];
-      comments = data.comments || [];
-      userCollections = data.userCollections || {};
-      console.log('Data loaded from localStorage:', games.length, 'games');
-    } else {
-      // Если нет локальных данных, загружаем с сервера
       try {
-        const response = await fetch(`${API_URL}?action=get_all`);
-        if (response.ok) {
-          const data = await response.json();
-          games = data.games || [];
-          upcomingGames = data.upcomingGames || [];
-          comments = data.comments || [];
-          userCollections = data.userCollections || {};
-          console.log('Data loaded from server:', games.length, 'games');
-          
-          // Сохраняем локально для офлайн-работы
-          localStorage.setItem('psHorrorGamesData', JSON.stringify(data));
+        const data = JSON.parse(savedData);
+        games = data.games || [];
+        upcomingGames = data.upcomingGames || [];
+        comments = data.comments || [];
+        userCollections = data.userCollections || {};
+        console.log('Data loaded from localStorage:', games.length, 'games');
+      } catch (localError) {
+        console.log('Error parsing localStorage data:', localError);
+        // Clear corrupted data
+        localStorage.removeItem('psHorrorGamesData');
+      }
+    }
+    
+    // Try to sync with server (always try to get fresh data)
+    console.log('Attempting to sync with server...');
+    try {
+      const response = await fetch(`${API_URL}?action=get_all`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('Server response:', result);
+      
+      if (result.status === 'success') {
+        const serverData = result.data;
+        
+        // Merge strategy: server data has priority
+        if (serverData.games && serverData.games.length > 0) {
+          games = serverData.games;
         }
-      } catch (serverError) {
-        console.log('Server unavailable, starting with empty data');
-        // Если сервер недоступен, проверяем games.json
+        if (serverData.upcomingGames && serverData.upcomingGames.length > 0) {
+          upcomingGames = serverData.upcomingGames;
+        }
+        if (serverData.comments && serverData.comments.length > 0) {
+          comments = serverData.comments;
+        }
+        if (serverData.userCollections && Object.keys(serverData.userCollections).length > 0) {
+          userCollections = serverData.userCollections;
+        }
+        
+        console.log('Data synced from server:', games.length, 'games');
+        
+        // Save merged data locally
+        const dataToSave = {
+          games,
+          upcomingGames,
+          comments,
+          userCollections,
+          lastUpdate: serverData.lastUpdate || new Date().toISOString()
+        };
+        
+        localStorage.setItem('psHorrorGamesData', JSON.stringify(dataToSave));
+        console.log('Data saved to localStorage');
+        
+      } else {
+        console.log('Server returned error status:', result.data);
+      }
+    } catch (serverError) {
+      console.log('Server unavailable:', serverError.message);
+      
+      // If no data at all, try games.json fallback
+      if (games.length === 0) {
         try {
           const response = await fetch('games.json');
           if (response.ok) {
@@ -165,22 +206,26 @@ async function loadData() {
             console.log('Data loaded from games.json:', games.length, 'games');
           }
         } catch (jsonError) {
-          console.log('No local data available');
+          console.log('games.json also unavailable');
         }
       }
     }
     
     // Initialize user collection if not exists
-    if (currentUser && !userCollections[currentUser.id]) {
-      userCollections[currentUser.id] = {
-        games: [],
-        status: {}
-      };
+    if (currentUser && currentUser.id) {
+      if (!userCollections[currentUser.id]) {
+        userCollections[currentUser.id] = {
+          games: [],
+          status: {}
+        };
+      }
     }
     
     filteredGames = [...games];
+    console.log('Data load complete. Total games:', games.length);
+    
   } catch (error) {
-    console.error('Error loading data:', error);
+    console.error('Critical error in loadData:', error);
     // Fallback to empty data
     games = [];
     upcomingGames = [];
@@ -189,7 +234,6 @@ async function loadData() {
     filteredGames = [];
   }
 }
-
 // ОБНОВЛЕННАЯ функция saveData
 async function saveData() {
   const data = {
@@ -205,11 +249,37 @@ async function saveData() {
     localStorage.setItem('psHorrorGamesData', JSON.stringify(data));
     console.log('Data saved to localStorage successfully');
     
-    // 2. Отправляем на сервер (в фоне, не ждем)
-    pushToServer().catch(e => console.error('Фоновая отправка не удалась:', e));
+    // 2. Отправляем на сервер
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'save_data',
+          ...data
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      
+      const result = await response.json();
+      if (result.status === 'success') {
+        console.log('Data saved to server successfully:', result.data.message);
+      } else {
+        console.log('Server returned error:', result.data);
+      }
+    } catch (serverError) {
+      console.log('Failed to save to server:', serverError.message);
+      // Don't show error to user - data is saved locally
+    }
     
   } catch (e) {
     console.error('Error saving data:', e);
+    alert('Ошибка при сохранении данных');
   }
 }
 
@@ -1114,5 +1184,6 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
