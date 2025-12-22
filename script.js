@@ -207,8 +207,6 @@ function loadData() {
 
     console.log('Data loaded from server:', games.length);
 
-  } catch (error) {
-    console.error('Server unavailable, trying cache:', error.message);
 
     // fallback ТОЛЬКО если сервер недоступен
     const cached = SafeStorage.get('psHorrorGamesData');
@@ -1230,3 +1228,4 @@ function initApp() {
   
   // ... остальной код ...
 }
+
