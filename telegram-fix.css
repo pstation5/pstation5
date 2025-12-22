@@ -1,12 +1,4 @@
-/* Telegram Desktop Fixes */
-@media (min-width: 768px) {
-  /* Better spacing for desktop */
-  .app-container {
-    padding: 40px !important;
-    max-width: 1400px !important;
-  }
-  
-  /* Improve text readability */
+/* Improve text readability */
   body {
     font-size: 16px;
     line-height: 1.6;
@@ -64,3 +56,4 @@
   display: inline-block !important;
   opacity: 1 !important;
 }
+
