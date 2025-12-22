@@ -1,6 +1,6 @@
 // Horror Games Collection App - PS4/PS5 Edition
 const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
-const API_URL = 'https://pstation5.gnomhell1.workers.dev'; // Замените на ваш URL
+const API_URL = 'https://ps5-api.gnomhell1.workers.dev'; // Замените на ваш URL
 
 // Safe storage wrapper (Telegram Desktop compatible)
 const SafeStorage = {
@@ -1216,6 +1216,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
