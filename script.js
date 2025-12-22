@@ -267,22 +267,6 @@ async function loadData() {
     } catch (serverError) {
       console.log('Server unavailable:', serverError.message);
       
-      // If no data at all, try games.json fallback
-      if (games.length === 0) {
-        try {
-          const response = fetch('games.json');
-          if (response.ok) {
-            const data = response.json();
-            games = data.games || [];
-            upcomingGames = data.upcomingGames || [];
-            comments = data.comments || [];
-            userCollections = data.userCollections || {};
-            console.log('Data loaded from games.json:', games.length, 'games');
-          }
-        } catch (jsonError) {
-          console.log('games.json also unavailable');
-        }
-      }
     }
     
     // Initialize user collection if not exists
@@ -1256,6 +1240,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
