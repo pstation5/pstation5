@@ -291,9 +291,9 @@ async function loadData() {
     userCollections = {};
     filteredGames = [];
   }
-}
+
 // ОБНОВЛЕННАЯ функция saveData
-async function saveData() {
+function saveData() {
   const data = {
     games,
     upcomingGames,
@@ -302,27 +302,25 @@ async function saveData() {
     lastUpdate: new Date().toISOString()
   };
 
-  try {
-    const response = fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        action: 'save_data',
-        ...data
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server error ${response.status}`);
-    }
-
-    const result = response.json();
-
-    if (result.status !== 'success') {
-      throw new Error('Server save failed');
-    }
+  fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: 'save_data',
+      ...data
+    })
+  })
+  .then(res => res.json())
+  .then(result => {
+    console.log('Saved to server', result);
+    SafeStorage.set('psHorrorGamesData', JSON.stringify(data));
+  })
+  .catch(err => {
+    console.error('Save error:', err);
+  });
+}
 
     // Кешируем ТОЛЬКО после подтверждения сервера
     SafeStorage.set(
@@ -1240,6 +1238,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
