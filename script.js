@@ -83,7 +83,7 @@ async function initApp() {
   }
   
   restoreTheme();
-  await loadData();
+  loadData();
   
   // Синхронизируем при загрузке
 // await checkForUpdates();
@@ -129,12 +129,12 @@ async function loadData() {
   try {
     console.log('Loading data from server...');
 
-    const response = await fetch(`${API_URL}?action=get_all`);
+    const response = fetch(`${API_URL}?action=get_all`);
     if (!response.ok) {
       throw new Error(`Server error ${response.status}`);
     }
 
-    const result = await response.json();
+    const result = response.json();
 
     if (result.status !== 'success') {
       throw new Error('Server returned error');
@@ -193,12 +193,12 @@ async function loadData() {
     // Try to sync with server (always try to get fresh data)
     console.log('Attempting to sync with server...');
     try {
-      const response = await fetch(`${API_URL}?action=get_all`);
+      const response = fetch(`${API_URL}?action=get_all`);
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
       }
       
-      const result = await response.json();
+      const result = response.json();
       console.log('Server response:', result);
       
       if (result.status === 'success') {
@@ -241,9 +241,9 @@ async function loadData() {
       // If no data at all, try games.json fallback
       if (games.length === 0) {
         try {
-          const response = await fetch('games.json');
+          const response = fetch('games.json');
           if (response.ok) {
-            const data = await response.json();
+            const data = response.json();
             games = data.games || [];
             upcomingGames = data.upcomingGames || [];
             comments = data.comments || [];
@@ -290,7 +290,7 @@ async function saveData() {
   };
 
   try {
-    const response = await fetch(API_URL, {
+    const response = fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -305,7 +305,7 @@ async function saveData() {
       throw new Error(`Server error ${response.status}`);
     }
 
-    const result = await response.json();
+    const result = response.json();
 
     if (result.status !== 'success') {
       throw new Error('Server save failed');
@@ -677,7 +677,7 @@ async function handleAddGame(e) {
   games.unshift(newGame);
   filteredGames.unshift(newGame);
   
-  await saveData();
+  saveData();
   closeAddGameModal();
   e.target.reset();
   renderAll();
@@ -705,7 +705,7 @@ async function handleAddUpcomingGame(e) {
   
   upcomingGames.unshift(newUpcoming);
   
-  await saveData();
+  saveData();
   closeAddUpcomingModal();
   e.target.reset();
   renderUpcomingGames();
@@ -745,7 +745,7 @@ function editGame(id) {
     game.isPhysical = document.getElementById('isPhysical').checked;
     game.description = document.getElementById('gameDescription').value.trim();
     
-    await saveData();
+    saveData();
     closeAddGameModal();
     renderAll();
     alert('Изменения сохранены и синхронизированы!');
@@ -760,7 +760,7 @@ async function deleteGame(id) {
   games = games.filter(g => g.id !== id);
   filteredGames = filteredGames.filter(g => g.id !== id);
   
-  await saveData();
+  saveData();
   renderAll();
   alert('Игра удалена и синхронизирована!');
 }
@@ -879,7 +879,7 @@ async function toggleCollection(gameId) {
     alert('Игра удалена из вашей коллекции');
   }
   
-  await saveData();
+  saveData();
   renderGames();
 }
 
@@ -1028,7 +1028,7 @@ async function syncWithServer() {
     console.log('Начало синхронизации...');
     
     // 1. Получаем данные с сервера
-    const serverData = await fetch(`${API_URL}?action=get_all`).then(r => r.json());
+    const serverData = fetch(`${API_URL}?action=get_all`).then(r => r.json());
     
     // 2. Объединяем данные (сервер имеет приоритет)
     if (serverData && serverData.games) {
@@ -1113,7 +1113,7 @@ async function pushToServer() {
       lastUpdate: new Date().toISOString()
     };
     
-    const response = await fetch(API_URL, {
+    const response = fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'save_data', ...data })
@@ -1132,7 +1132,7 @@ async function pushToServer() {
 async function checkForUpdates() {
   try {
     console.log('Проверка обновлений...');
-    const response = await fetch(`${API_URL}?action=ping`);
+    const response = fetch(`${API_URL}?action=ping`);
     if (!response.ok) throw new Error('Сервер недоступен');
     
     // Простая логика: синхронизируем если давно не синхронизировались
@@ -1140,7 +1140,7 @@ async function checkForUpdates() {
     const now = Date.now();
     
     if (now - lastSync > 2 * 60 * 1000) { // Каждые 2 минуты
-      await syncWithServer();
+      syncWithServer();
       localStorage.setItem('psHorrorLastSync', now.toString());
     }
   } catch (error) {
@@ -1186,7 +1186,7 @@ async function syncWithServer() {
     console.log('Начало синхронизации...');
     updateSyncProgress(30);
     
-    const serverData = await fetch(`${API_URL}?action=get_all`).then(r => r.json());
+    const serverData = fetch(`${API_URL}?action=get_all`).then(r => r.json());
     updateSyncProgress(60);
     
     if (serverData && serverData.games) {
@@ -1227,6 +1227,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
