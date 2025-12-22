@@ -126,25 +126,69 @@ function setupTelegramUser() {
 
 async function loadData() {
   try {
-    console.log('Starting data load...');
-    
-    // First try to load from localStorage
-    const savedData = localStorage.getItem('psHorrorGamesData');
-    if (savedData) {
-      try {
-        const data = JSON.parse(savedData);
-        games = data.games || [];
-        upcomingGames = data.upcomingGames || [];
-        comments = data.comments || [];
-        userCollections = data.userCollections || {};
-        console.log('Data loaded from localStorage:', games.length, 'games');
-      } catch (localError) {
-        console.log('Error parsing localStorage data:', localError);
-        // Clear corrupted data
-        localStorage.removeItem('psHorrorGamesData');
-      }
+    console.log('Loading data from server...');
+
+    const response = await fetch(`${API_URL}?action=get_all`);
+    if (!response.ok) {
+      throw new Error(`Server error ${response.status}`);
     }
+
+    const result = await response.json();
+
+    if (result.status !== 'success') {
+      throw new Error('Server returned error');
+    }
+
+    const serverData = result.data;
+
+    games = serverData.games || [];
+    upcomingGames = serverData.upcomingGames || [];
+    comments = serverData.comments || [];
+    userCollections = serverData.userCollections || {};
+
+    // Инициализация коллекции текущего пользователя
+    if (currentUser?.id && !userCollections[currentUser.id]) {
+      userCollections[currentUser.id] = {
+        games: [],
+        status: {}
+      };
+    }
+
+    filteredGames = [...games];
+
+    // Кешируем ТОЛЬКО после успешной загрузки
+    localStorage.setItem(
+      'psHorrorGamesData',
+      JSON.stringify(serverData)
+    );
+
+    console.log('Data loaded from server:', games.length);
+
+  } catch (error) {
+    console.error('Server unavailable, trying cache:', error.message);
+
+    // fallback ТОЛЬКО если сервер недоступен
+    const cached = localStorage.getItem('psHorrorGamesData');
+    if (cached) {
+      const data = JSON.parse(cached);
+      games = data.games || [];
+      upcomingGames = data.upcomingGames || [];
+      comments = data.comments || [];
+      userCollections = data.userCollections || {};
+      filteredGames = [...games];
+      console.log('Loaded from cache');
+    } else {
+      games = [];
+      upcomingGames = [];
+      comments = [];
+      userCollections = {};
+      filteredGames = [];
+    }
+  }
+}
+
     
+
     // Try to sync with server (always try to get fresh data)
     console.log('Attempting to sync with server...');
     try {
@@ -1184,6 +1228,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
