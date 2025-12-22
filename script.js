@@ -40,6 +40,11 @@ const SafeStorage = {
   }
 };
 
+function isAdminUser() {
+  return currentUser && String(currentUser.id) === ADMIN_ID;
+}
+
+
 /* ================== TELEGRAM ================== */
 
 function initTelegram() {
@@ -278,5 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initTelegram();
   loadData();
 });
+
 
 
