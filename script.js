@@ -186,46 +186,37 @@ function loadData() {
       }
 
       filteredGames = [...games];
-      console.log('Data load complete. Total games:', games.length);
 
+      // ✅ Кешируем ТОЛЬКО после успешной загрузки
+      SafeStorage.set(
+        'psHorrorGamesData',
+        JSON.stringify(serverData)
+      );
+
+      console.log('Data loaded from server:', games.length);
       renderAll();
     })
     .catch(err => {
-      console.error('Load error:', err);
+      console.error('Server unavailable, trying cache:', err.message);
+
+      // ✅ fallback ТОЛЬКО если сервер недоступен
+      const cached = SafeStorage.get('psHorrorGamesData');
+      if (cached) {
+        const data = JSON.parse(cached);
+
+        games = data.games || [];
+        upcomingGames = data.upcomingGames || [];
+        comments = data.comments || [];
+        userCollections = data.userCollections || {};
+        filteredGames = [...games];
+
+        console.log('Loaded from cache');
+        renderAll();
+      }
     })
     .finally(() => {
       isLoading = false;
     });
-}
-
-
-    // Кешируем ТОЛЬКО после успешной загрузки
-    SafeStorage.set(
-      'psHorrorGamesData',
-      JSON.stringify(serverData)
-    );
-
-    console.log('Data loaded from server:', games.length);
-
-
-    // fallback ТОЛЬКО если сервер недоступен
-    const cached = SafeStorage.get('psHorrorGamesData');
-    if (cached) {
-      const data = JSON.parse(cached);
-      games = data.games || [];
-      upcomingGames = data.upcomingGames || [];
-      comments = data.comments || [];
-      userCollections = data.userCollections || {};
-      filteredGames = [...games];
-      console.log('Loaded from cache');
-    } else {
-      games = [];
-      upcomingGames = [];
-      comments = [];
-      userCollections = {};
-      filteredGames = [];
-    }
-  }
 }
 
     
@@ -1228,4 +1219,5 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
