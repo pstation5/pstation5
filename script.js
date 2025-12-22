@@ -282,15 +282,7 @@ async function loadData() {
     filteredGames = [...games];
     console.log('Data load complete. Total games:', games.length);
     
-  } catch (error) {
-    console.error('Critical error in loadData:', error);
-    // Fallback to empty data
-    games = [];
-    upcomingGames = [];
-    comments = [];
-    userCollections = {};
-    filteredGames = [];
-  }
+  } 
 
 // ОБНОВЛЕННАЯ функция saveData
 function saveData() {
@@ -1238,6 +1230,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
