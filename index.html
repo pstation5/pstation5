@@ -29,6 +29,9 @@
               <span id="userRole" class="user-status">Войдите через Telegram</span>
             </div>
           </div>
+          <button class="sync-btn" onclick="syncWithServer()" title="Синхронизировать">
+            <i class="fas fa-sync-alt"></i>
+          </button>
           <button class="theme-toggle" onclick="toggleTheme()" title="Смена темы">
             <i class="fas fa-moon" id="themeIcon"></i>
           </button>
@@ -325,10 +328,28 @@
     </div>
   </div>
 
+  <!-- Sync Status Modal -->
+  <div class="modal" id="syncStatusModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2><i class="fas fa-sync-alt"></i> Синхронизация</h2>
+        <button class="close-modal" onclick="closeSyncStatusModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="syncStatusContent">
+          <p id="syncStatusText">Синхронизация...</p>
+          <div class="sync-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="syncProgress"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
-
