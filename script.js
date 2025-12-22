@@ -49,16 +49,20 @@ function initTelegram() {
   currentUser = Telegram.WebApp.initDataUnsafe?.user || null;
 
   if (currentUser) {
-    document.getElementById('userGreeting')?.textContent =
-      `Привет, ${currentUser.first_name}`;
-    document.getElementById('userRole')?.textContent =
-      isAdminUser() ? 'Администратор' : 'Пользователь';
+    const greetingEl = document.getElementById('userGreeting');
+    if (greetingEl) {
+      greetingEl.textContent = `Привет, ${currentUser.first_name}`;
+    }
+
+    const roleEl = document.getElementById('userRole');
+    if (roleEl) {
+      roleEl.textContent = isAdminUser()
+        ? 'Администратор'
+        : 'Пользователь';
+    }
   }
 }
 
-function isAdminUser() {
-  return currentUser && String(currentUser.id) === ADMIN_ID;
-}
 
 /* ================== ADMIN CONTROLS ================== */
 
@@ -267,3 +271,4 @@ document.addEventListener('DOMContentLoaded', () => {
   initTelegram();
   loadData();
 });
+
