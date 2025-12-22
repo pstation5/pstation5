@@ -2,6 +2,35 @@
 const ADMIN_USER_ID = 321407568; // Замените на ваш Telegram ID
 const API_URL = 'https://script.google.com/macros/s/AKfycbyPQOt-je06MoTANBXUPRAPk6s4p_H-N_axJLrUNS6O53sJbZ28gBa-m9ektBRmoVkm/exec'; // Замените на ваш URL
 
+// Safe storage wrapper (Telegram Desktop compatible)
+const SafeStorage = {
+  get(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn('Storage blocked (get):', e.message);
+      return null;
+    }
+  },
+  set(key, value) {
+    try {
+      SafeStorage.set(key, value);
+      return true;
+    } catch (e) {
+      console.warn('Storage blocked (set):', e.message);
+      return false;
+    }
+  },
+  remove(key) {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.warn('Storage blocked (remove):', e.message);
+    }
+  }
+};
+
+
 // Telegram WebApp
 const tg = window.Telegram?.WebApp || {
   initDataUnsafe: { user: null },
@@ -158,7 +187,7 @@ async function loadData() {
     filteredGames = [...games];
 
     // Кешируем ТОЛЬКО после успешной загрузки
-    localStorage.setItem(
+    SafeStorage.set(
       'psHorrorGamesData',
       JSON.stringify(serverData)
     );
@@ -169,7 +198,7 @@ async function loadData() {
     console.error('Server unavailable, trying cache:', error.message);
 
     // fallback ТОЛЬКО если сервер недоступен
-    const cached = localStorage.getItem('psHorrorGamesData');
+    const cached = SafeStorage.get('psHorrorGamesData');
     if (cached) {
       const data = JSON.parse(cached);
       games = data.games || [];
@@ -229,7 +258,7 @@ async function loadData() {
           lastUpdate: serverData.lastUpdate || new Date().toISOString()
         };
         
-        localStorage.setItem('psHorrorGamesData', JSON.stringify(dataToSave));
+        SafeStorage.set('psHorrorGamesData', JSON.stringify(dataToSave));
         console.log('Data saved to localStorage');
         
       } else {
@@ -312,7 +341,7 @@ async function saveData() {
     }
 
     // Кешируем ТОЛЬКО после подтверждения сервера
-    localStorage.setItem(
+    SafeStorage.set(
       'psHorrorGamesData',
       JSON.stringify(data)
     );
@@ -952,11 +981,11 @@ function toggleTheme() {
   if (icon) {
     icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
   }
-  localStorage.setItem('psHorrorTheme', currentTheme);
+  SafeStorage.set('psHorrorTheme', currentTheme);
 }
 
 function restoreTheme() {
-  const savedTheme = localStorage.getItem('psHorrorTheme');
+  const savedTheme = SafeStorage.get('psHorrorTheme');
   if (savedTheme) {
     currentTheme = savedTheme;
   }
@@ -1082,7 +1111,7 @@ async function syncWithServer() {
       console.log('Синхронизация завершена');
       
       // Сохраняем объединенные данные локально
-      localStorage.setItem('psHorrorGamesData', JSON.stringify({
+      SafeStorage.set('psHorrorGamesData', JSON.stringify({
         games,
         upcomingGames,
         comments,
@@ -1136,12 +1165,12 @@ async function checkForUpdates() {
     if (!response.ok) throw new Error('Сервер недоступен');
     
     // Простая логика: синхронизируем если давно не синхронизировались
-    const lastSync = localStorage.getItem('psHorrorLastSync') || 0;
+    const lastSync = SafeStorage.get('psHorrorLastSync') || 0;
     const now = Date.now();
     
     if (now - lastSync > 2 * 60 * 1000) { // Каждые 2 минуты
       syncWithServer();
-      localStorage.setItem('psHorrorLastSync', now.toString());
+      SafeStorage.set('psHorrorLastSync', now.toString());
     }
   } catch (error) {
     console.log('Работаем в офлайн-режиме:', error.message);
