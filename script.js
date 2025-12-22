@@ -63,7 +63,8 @@ async function initApp() {
       tg.setBackgroundColor('#0a0a0a');
       
       // Detect Telegram Desktop
-      const platform = tg.platform;
+      const platform = tg?.platform || 'web';
+
       
       if (platform === 'tdesktop' || platform === 'web') {
         document.documentElement.classList.add('telegram-desktop');
@@ -85,14 +86,14 @@ async function initApp() {
   await loadData();
   
   // Синхронизируем при загрузке
-  await checkForUpdates();
+// await checkForUpdates();
   
   setupEventListeners();
   initSwiper();
   renderAll();
   
   // Синхронизируем каждые 2 минуты
-  syncInterval = setInterval(checkForUpdates, 2 * 60 * 1000);
+// syncInterval = setInterval(checkForUpdates, 2 * 60 * 1000);
 }
 
 function setupTelegramUser() {
@@ -1226,6 +1227,7 @@ function initApp() {
   
   // ... остальной код ...
 }
+
 
 
 
