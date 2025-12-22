@@ -15,15 +15,17 @@ const SafeStorage = {
       return null;
     }
   },
+
   set(key, value) {
     try {
-      SafeStorage.set(key, value);
+      localStorage.setItem(key, value); // ✅ ПРАВИЛЬНО
       return true;
     } catch (e) {
       console.warn('Storage blocked (set):', e.message);
       return false;
     }
   },
+
   remove(key) {
     try {
       localStorage.removeItem(key);
