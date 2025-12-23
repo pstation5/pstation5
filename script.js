@@ -53,3 +53,24 @@ async function loadMe() {
 
 loadMe();
 
+// Временно
+
+async function testCreateCollection() {
+  const res = await fetch(`${API_URL}/collections`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Telegram-Init-Data": tg.initData
+    },
+    body: JSON.stringify({
+      title: "Моя первая коллекция PS5",
+      description: "Тестовая админ-коллекция"
+    })
+  });
+
+  const data = await res.json();
+  console.log("Create collection:", data);
+}
+
+testCreateCollection();
+
