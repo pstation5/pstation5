@@ -18,7 +18,7 @@ if (user) {
 
 // Подключаем Worker к Mini App
 
-const API_URL = "https://tg-ps-collections-api.<твое-имя>.workers.dev";
+const API_URL = "https://tg-ps-collections-api.gnomhell1.workers.dev";
 
 async function pingServer() {
   try {
@@ -35,3 +35,4 @@ async function pingServer() {
 }
 
 pingServer();
+
