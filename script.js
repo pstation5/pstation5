@@ -142,5 +142,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
+async function loadGames() {
+  const res = await fetch(`${API_URL}/games`);
+  const data = await res.json();
+
+  console.log("Games:", data);
+
+  if (!data.ok) {
+    console.error("Ошибка загрузки игр");
+    return;
+  }
+
+  // сохраняем игры глобально для детального экрана
+  window._games = data.games;
+
+  const container = document.getElementById("games");
+  container.innerHTML = "";
+
+  if (data.games.length === 0) {
+    container.textContent = "Игр пока нет";
+    return;
+  }
+
+  data.games.forEach(game => {
+    const card = document.createElement("div");
+    card.className = "game-card";
+    card.style.cursor = "pointer";
+
+    card.innerHTML = `
+      <img src="${game.cover_url}" alt="${game.title}">
+      <div class="content">
+        <h3>${game.title}</h3>
+        <div class="meta">
+          ${game.year || ""} · ${(game.genres || []).slice(0, 2).join(", ")}
+        </div>
+      </div>
+    `;
+
+    card.onclick = () => openGame(game.id);
+
+    container.appendChild(card);
+  });
+}
+
 
 
