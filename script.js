@@ -202,6 +202,11 @@ function openGame(id) {
 
     <div>
       <h2 style="margin-top:0;">${game.title}</h2>
+      <div id="like-block" style="margin:8px 0;">
+  <button id="like-btn">❤️</button>
+  <span id="like-count">0</span>
+</div>
+
       <p><b>Год:</b> ${game.year || "-"}</p>
       <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
       <p><b>Разработчик:</b> ${game.developer || "-"}</p>
@@ -226,6 +231,7 @@ function closeGame() {
 }
 
 loadGames();
+
 
 
 
