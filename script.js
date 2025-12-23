@@ -227,8 +227,6 @@ window._currentGameId = game.id;
   <p style="margin-top:16px;">
     ${game.description || ""}
   </p>
-`;
-
 
     <h3>Скриншоты</h3>
     <div style="display:flex; gap:8px; overflow-x:auto;">
@@ -369,6 +367,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
