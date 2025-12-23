@@ -226,7 +226,12 @@ function openGame(id) {
       <img src="${s}" style="height:140px; border-radius:6px;" />
     `).join("")}
   </div>
-`;
+loadFavorite(game.id);
+
+document.getElementById("fav-btn").onclick = () => {
+  toggleFavorite(game.id);
+};
+
 loadLikes(game.id);
 
 document.getElementById("like-btn").onclick = () => {
@@ -266,6 +271,29 @@ function closeGame() {
 }
 
 loadGames();
+
+async function loadFavorite(gameId) {
+  const res = await fetch(`${API_URL}/games/${gameId}/favorite`, {
+    headers: {
+      "X-Telegram-Init-Data": tg.initData
+    }
+  });
+  const data = await res.json();
+
+  document.getElementById("fav-btn").textContent =
+    data.favorited ? "⭐" : "☆";
+}
+
+async function toggleFavorite(gameId) {
+  await fetch(`${API_URL}/games/${gameId}/favorite`, {
+    method: "POST",
+    headers: {
+      "X-Telegram-Init-Data": tg.initData
+    }
+  });
+
+  await loadFavorite(gameId);
+}
 
 
 
