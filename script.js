@@ -365,6 +365,17 @@ async function loadFavorites() {
   });
 }
 
+document.getElementById("show-favorites").onclick = () => {
+  document.getElementById("game-view").style.display = "none";
+  document.getElementById("games").style.display = "grid";
+  loadFavorites();
+};
+
+document.getElementById("show-all").onclick = () => {
+  document.getElementById("game-view").style.display = "none";
+  document.getElementById("games").style.display = "grid";
+  loadGames();
+};
 
 
 
