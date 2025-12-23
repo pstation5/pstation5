@@ -326,6 +326,45 @@ document.getElementById("game-view").addEventListener("click", (e) => {
   }
 });
 
+async function loadFavorites() {
+  const res = await fetch(`${API_URL}/favorites`, {
+    headers: {
+      "X-Telegram-Init-Data": tg.initData
+    }
+  });
+
+  const data = await res.json();
+
+  const container = document.getElementById("games");
+  container.innerHTML = "";
+
+  if (!data.ok || data.games.length === 0) {
+    container.textContent = "У вас пока нет избранных игр ⭐";
+    return;
+  }
+
+  window._games = data.games;
+
+  data.games.forEach(game => {
+    const card = document.createElement("div");
+    card.className = "game-card";
+    card.style.cursor = "pointer";
+
+    card.innerHTML = `
+      <img src="${game.cover_url}" />
+      <div class="content">
+        <h3>${game.title}</h3>
+        <div class="meta">
+          ${game.year || ""} · ${(game.genres || []).slice(0, 2).join(", ")}
+        </div>
+      </div>
+    `;
+
+    card.onclick = () => openGame(game.id);
+    container.appendChild(card);
+  });
+}
+
 
 
 
