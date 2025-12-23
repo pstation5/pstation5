@@ -189,10 +189,9 @@ function openGame(id) {
   const game = window._games.find(g => g.id === id);
   if (!game) return;
 
-window._currentGameId = game.id;
+  window._currentGameId = game.id;
 
   document.getElementById("games").style.display = "none";
-
   const view = document.getElementById("game-view");
   view.style.display = "block";
 
@@ -200,33 +199,33 @@ window._currentGameId = game.id;
     .map(s => `<img src="${s}" style="height:140px; border-radius:6px;" />`)
     .join("");
 
- view.innerHTML = `
-  <button onclick="closeGame()">← Назад</button>
+  view.innerHTML = `
+    <button onclick="closeGame()">← Назад</button>
 
-  <div style="display:flex; gap:16px;">
-    <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
+    <div style="display:flex; gap:16px;">
+      <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
 
-    <div>
-      <h2 style="margin-top:0;">${game.title}</h2>
+      <div>
+        <h2 style="margin-top:0;">${game.title}</h2>
 
-      <div id="like-block" style="margin:8px 0;">
-        <button id="like-btn">🤍</button>
-        <span id="like-count">0</span>
+        <div id="like-block" style="margin:8px 0;">
+          <button id="like-btn">🤍</button>
+          <span id="like-count">0</span>
+        </div>
+
+        <div id="favorite-block" style="margin:8px 0;">
+          <button id="fav-btn">☆</button>
+        </div>
+
+        <p><b>Год:</b> ${game.year || "-"}</p>
+        <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
+        <p><b>Разработчик:</b> ${game.developer || "-"}</p>
       </div>
-
-      <div id="favorite-block" style="margin:8px 0;">
-        <button id="fav-btn">☆</button>
-      </div>
-
-      <p><b>Год:</b> ${game.year || "-"}</p>
-      <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
-      <p><b>Разработчик:</b> ${game.developer || "-"}</p>
     </div>
-  </div>
 
-  <p style="margin-top:16px;">
-    ${game.description || ""}
-  </p>
+    <p style="margin-top:16px;">
+      ${game.description || ""}
+    </p>
 
     <h3>Скриншоты</h3>
     <div style="display:flex; gap:8px; overflow-x:auto;">
@@ -234,20 +233,17 @@ window._currentGameId = game.id;
     </div>
   `;
 
-  // ❤️ лайки
   loadLikes(game.id);
   document.getElementById("like-btn").onclick = () => {
     toggleLike(game.id);
   };
 
-  // ⭐ избранное
-loadFavorite(game.id);
-
-document.getElementById("fav-btn").onclick = () => {
-  toggleFavorite(game.id);
-};
-  
+  loadFavorite(game.id);
+  document.getElementById("fav-btn").onclick = () => {
+    toggleFavorite(game.id);
+  };
 }
+
 async function loadLikes(gameId) {
   const res = await fetch(`${API_URL}/games/${gameId}/likes`, {
     headers: {
@@ -363,6 +359,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
