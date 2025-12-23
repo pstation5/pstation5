@@ -36,3 +36,20 @@ async function pingServer() {
 
 pingServer();
 
+async function loadMe() {
+  try {
+    const res = await fetch(`${API_URL}/me`, {
+      headers: {
+        "X-Telegram-Init-Data": tg.initData
+      }
+    });
+
+    const data = await res.json();
+    console.log("Me:", data);
+  } catch (e) {
+    console.error("Me error:", e);
+  }
+}
+
+loadMe();
+
