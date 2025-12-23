@@ -246,8 +246,6 @@ loadFavorite(game.id);
 document.getElementById("fav-btn").onclick = () => {
   toggleFavorite(game.id);
 };
-}, 0);
-
   
 }
 async function loadLikes(gameId) {
@@ -365,6 +363,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
