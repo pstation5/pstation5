@@ -194,51 +194,55 @@ function openGame(id) {
   const view = document.getElementById("game-view");
   view.style.display = "block";
 
+  const screenshotsHtml = (game.screenshots || [])
+    .map(s => `<img src="${s}" style="height:140px; border-radius:6px;" />`)
+    .join("");
+
   view.innerHTML = `
-  <button onclick="closeGame()" style="margin-bottom:12px;">← Назад</button>
+    <button onclick="closeGame()" style="margin-bottom:12px;">← Назад</button>
 
-  <div style="display:flex; gap:16px;">
-    <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
+    <div style="display:flex; gap:16px;">
+      <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
 
-    <div>
-      <h2 style="margin-top:0;">${game.title}</h2>
-      <div id="like-block" style="margin:8px 0;">
-  <button id="like-btn">❤️</button>
-  <span id="like-count">0</span>
-</div>
+      <div>
+        <h2 style="margin-top:0;">${game.title}</h2>
 
-<div id="favorite-block" style="margin:8px 0;">
-  <button id="fav-btn">☆</button>
-</div>
+        <div id="like-block" style="margin:8px 0;">
+          <button id="like-btn">🤍</button>
+          <span id="like-count">0</span>
+        </div>
 
+        <div id="favorite-block" style="margin:8px 0;">
+          <button id="fav-btn">☆</button>
+        </div>
 
-      <p><b>Год:</b> ${game.year || "-"}</p>
-      <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
-      <p><b>Разработчик:</b> ${game.developer || "-"}</p>
+        <p><b>Год:</b> ${game.year || "-"}</p>
+        <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
+        <p><b>Разработчик:</b> ${game.developer || "-"}</p>
+      </div>
     </div>
-  </div>
 
-  <p style="margin-top:16px;">${game.description || ""}</p>
+    <p style="margin-top:16px;">${game.description || ""}</p>
 
-  <h3>Скриншоты</h3>
-  <div style="display:flex; gap:8px; overflow-x:auto;">
-    ${(game.screenshots || []).map(s => `
-      <img src="${s}" style="height:140px; border-radius:6px;" />
-    `).join("")}
-  </div>
+    <h3>Скриншоты</h3>
+    <div style="display:flex; gap:8px; overflow-x:auto;">
+      ${screenshotsHtml}
+    </div>
+  `;
 
-loadLikes(game.id);
+  // ❤️ лайки
+  loadLikes(game.id);
+  document.getElementById("like-btn").onclick = () => {
+    toggleLike(game.id);
+  };
 
-document.getElementById("like-btn").onclick = () => {
-  toggleLike(game.id);
-};
-loadFavorite(game.id);
-
-document.getElementById("fav-btn").onclick = () => {
-  toggleFavorite(game.id);
-};
-
+  // ⭐ избранное
+  loadFavorite(game.id);
+  document.getElementById("fav-btn").onclick = () => {
+    toggleFavorite(game.id);
+  };
 }
+
 
 async function loadLikes(gameId) {
   const res = await fetch(`${API_URL}/games/${gameId}/likes`, {
@@ -294,6 +298,7 @@ async function toggleFavorite(gameId) {
 
   await loadFavorite(gameId);
 }
+
 
 
 
