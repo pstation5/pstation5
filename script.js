@@ -195,22 +195,29 @@ function openGame(id) {
   view.style.display = "block";
 
   view.innerHTML = `
-    <button onclick="closeGame()">← Назад</button>
+  <button onclick="closeGame()" style="margin-bottom:12px;">← Назад</button>
 
-    <h2>${game.title}</h2>
-    <img src="${game.cover_url}" style="width:200px; border-radius:8px;" />
+  <div style="display:flex; gap:16px;">
+    <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
 
-    <p><b>Год:</b> ${game.year || "-"}</p>
-    <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
-    <p><b>Разработчик:</b> ${game.developer || "-"}</p>
+    <div>
+      <h2 style="margin-top:0;">${game.title}</h2>
+      <p><b>Год:</b> ${game.year || "-"}</p>
+      <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
+      <p><b>Разработчик:</b> ${game.developer || "-"}</p>
+    </div>
+  </div>
 
-    <p>${game.description || ""}</p>
+  <p style="margin-top:16px;">${game.description || ""}</p>
 
-    <h3>Скриншоты</h3>
+  <h3>Скриншоты</h3>
+  <div style="display:flex; gap:8px; overflow-x:auto;">
     ${(game.screenshots || []).map(s => `
-      <img src="${s}" style="width:100%; margin-bottom:8px;" />
+      <img src="${s}" style="height:140px; border-radius:6px;" />
     `).join("")}
-  `;
+  </div>
+`;
+
 }
 
 function closeGame() {
@@ -219,6 +226,7 @@ function closeGame() {
 }
 
 loadGames();
+
 
 
 
