@@ -200,42 +200,35 @@ window._currentGameId = game.id;
     .map(s => `<img src="${s}" style="height:140px; border-radius:6px;" />`)
     .join("");
 
-  view.innerHTML = `
+ view.innerHTML = `
   <button onclick="closeGame()">← Назад</button>
 
-  <h2>${game.title}</h2>
+  <div style="display:flex; gap:16px;">
+    <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
 
-  <!-- ⭐ ИЗБРАННОЕ -->
-  <div id="favorite-block" style="margin:8px 0;">
-    <button id="fav-btn">☆</button>
+    <div>
+      <h2 style="margin-top:0;">${game.title}</h2>
+
+      <div id="like-block" style="margin:8px 0;">
+        <button id="like-btn">🤍</button>
+        <span id="like-count">0</span>
+      </div>
+
+      <div id="favorite-block" style="margin:8px 0;">
+        <button id="fav-btn">☆</button>
+      </div>
+
+      <p><b>Год:</b> ${game.year || "-"}</p>
+      <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
+      <p><b>Разработчик:</b> ${game.developer || "-"}</p>
+    </div>
   </div>
 
-  <p>${game.description}</p>
+  <p style="margin-top:16px;">
+    ${game.description || ""}
+  </p>
 `;
 
-
-    <div style="display:flex; gap:16px;">
-      <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
-
-      <div>
-        <h2 style="margin-top:0;">${game.title}</h2>
-
-        <div id="like-block" style="margin:8px 0;">
-          <button id="like-btn">🤍</button>
-          <span id="like-count">0</span>
-        </div>
-
-        <div id="favorite-block" style="margin:8px 0;">
-          <button id="fav-btn">☆</button>
-        </div>
-
-        <p><b>Год:</b> ${game.year || "-"}</p>
-        <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
-        <p><b>Разработчик:</b> ${game.developer || "-"}</p>
-      </div>
-    </div>
-
-    <p style="margin-top:16px;">${game.description || ""}</p>
 
     <h3>Скриншоты</h3>
     <div style="display:flex; gap:8px; overflow-x:auto;">
@@ -376,6 +369,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
