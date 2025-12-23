@@ -232,6 +232,11 @@ loadLikes(game.id);
 document.getElementById("like-btn").onclick = () => {
   toggleLike(game.id);
 };
+loadFavorite(game.id);
+
+document.getElementById("fav-btn").onclick = () => {
+  toggleFavorite(game.id);
+};
 
 }
 
@@ -289,6 +294,7 @@ async function toggleFavorite(gameId) {
 
   await loadFavorite(gameId);
 }
+
 
 
 
