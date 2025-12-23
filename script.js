@@ -189,6 +189,8 @@ function openGame(id) {
   const game = window._games.find(g => g.id === id);
   if (!game) return;
 
+window._currentGameId = game.id;
+
   document.getElementById("games").style.display = "none";
 
   const view = document.getElementById("game-view");
@@ -199,7 +201,18 @@ function openGame(id) {
     .join("");
 
   view.innerHTML = `
-    <button onclick="closeGame()" style="margin-bottom:12px;">← Назад</button>
+  <button onclick="closeGame()">← Назад</button>
+
+  <h2>${game.title}</h2>
+
+  <!-- ⭐ ИЗБРАННОЕ -->
+  <div id="favorite-block" style="margin:8px 0;">
+    <button id="fav-btn">☆</button>
+  </div>
+
+  <p>${game.description}</p>
+`;
+
 
     <div style="display:flex; gap:16px;">
       <img src="${game.cover_url}" style="width:160px; border-radius:8px;" />
@@ -237,16 +250,12 @@ function openGame(id) {
   };
 
   // ⭐ избранное
-  window._currentGameId = game.id;
 loadFavorite(game.id);
 
-setTimeout(() => {
-  const favBtn = document.getElementById("fav-btn");
-  if (!favBtn) return;
+document.getElementById("fav-btn").onclick = () => {
+  toggleFavorite(game.id);
+};
 
-  favBtn.addEventListener("click", () => {
-    toggleFavorite(game.id);
-  });
 }, 0);
 
 }
@@ -316,6 +325,7 @@ document.getElementById("game-view").addEventListener("click", (e) => {
     toggleFavorite(window._currentGameId);
   }
 });
+
 
 
 
