@@ -237,6 +237,7 @@ function openGame(id) {
   };
 
   // ⭐ избранное
+  window._currentGameId = game.id;
 loadFavorite(game.id);
 
 setTimeout(() => {
@@ -309,6 +310,13 @@ async function toggleFavorite(gameId) {
   document.getElementById("fav-btn").textContent =
     data.favorited ? "⭐" : "☆";
 }
+
+document.getElementById("game-view").addEventListener("click", (e) => {
+  if (e.target && e.target.id === "fav-btn") {
+    toggleFavorite(window._currentGameId);
+  }
+});
+
 
 
 
