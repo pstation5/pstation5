@@ -222,8 +222,38 @@ function openGame(id) {
     `).join("")}
   </div>
 `;
+loadLikes(game.id);
+
+document.getElementById("like-btn").onclick = () => {
+  toggleLike(game.id);
+};
 
 }
+
+async function loadLikes(gameId) {
+  const res = await fetch(`${API_URL}/games/${gameId}/likes`, {
+    headers: {
+      "X-Telegram-Init-Data": tg.initData
+    }
+  });
+  const data = await res.json();
+
+  document.getElementById("like-count").textContent = data.count;
+  document.getElementById("like-btn").textContent = data.liked ? "❤️" : "🤍";
+}
+
+async function toggleLike(gameId) {
+  const res = await fetch(`${API_URL}/games/${gameId}/like`, {
+    method: "POST",
+    headers: {
+      "X-Telegram-Init-Data": tg.initData
+    }
+  });
+  const data = await res.json();
+
+  await loadLikes(gameId);
+}
+
 
 function closeGame() {
   document.getElementById("game-view").style.display = "none";
@@ -231,6 +261,7 @@ function closeGame() {
 }
 
 loadGames();
+
 
 
 
