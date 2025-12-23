@@ -226,11 +226,6 @@ function openGame(id) {
       <img src="${s}" style="height:140px; border-radius:6px;" />
     `).join("")}
   </div>
-loadFavorite(game.id);
-
-document.getElementById("fav-btn").onclick = () => {
-  toggleFavorite(game.id);
-};
 
 loadLikes(game.id);
 
@@ -294,6 +289,7 @@ async function toggleFavorite(gameId) {
 
   await loadFavorite(gameId);
 }
+
 
 
 
