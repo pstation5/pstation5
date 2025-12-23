@@ -185,5 +185,40 @@ async function loadGames() {
   });
 }
 
+function openGame(id) {
+  const game = window._games.find(g => g.id === id);
+  if (!game) return;
+
+  document.getElementById("games").style.display = "none";
+
+  const view = document.getElementById("game-view");
+  view.style.display = "block";
+
+  view.innerHTML = `
+    <button onclick="closeGame()">← Назад</button>
+
+    <h2>${game.title}</h2>
+    <img src="${game.cover_url}" style="width:200px; border-radius:8px;" />
+
+    <p><b>Год:</b> ${game.year || "-"}</p>
+    <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
+    <p><b>Разработчик:</b> ${game.developer || "-"}</p>
+
+    <p>${game.description || ""}</p>
+
+    <h3>Скриншоты</h3>
+    ${(game.screenshots || []).map(s => `
+      <img src="${s}" style="width:100%; margin-bottom:8px;" />
+    `).join("")}
+  `;
+}
+
+function closeGame() {
+  document.getElementById("game-view").style.display = "none";
+  document.getElementById("games").style.display = "grid";
+}
+
+loadGames();
+
 
 
