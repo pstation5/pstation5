@@ -9,4 +9,23 @@ h1 {
   font-size: 20px;
 }
 
+input, textarea {
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+}
+
+button {
+  padding: 10px 14px;
+  background: #1e88e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1565c0;
+}
+
 
