@@ -37,17 +37,19 @@ async function pingServer() {
 pingServer();
 
 async function loadMe() {
-  try {
-    const res = await fetch(`${API_URL}/me`, {
-      headers: {
-        "X-Telegram-Init-Data": tg.initData
-      }
-    });
+  const res = await fetch(`${API_URL}/me`, {
+    headers: {
+      "X-Telegram-Init-Data": tg.initData
+    }
+  });
 
-    const data = await res.json();
-    console.log("Me:", data);
-  } catch (e) {
-    console.error("Me error:", e);
+  const data = await res.json();
+  console.log("Me:", data);
+
+  if (data.is_admin) {
+    document.getElementById("admin-panel").style.display = "block";
+  } else {
+    document.getElementById("status").textContent = "Вы не администратор";
   }
 }
 
@@ -73,4 +75,5 @@ async function testCreateCollection() {
 }
 
 testCreateCollection();
+
 
