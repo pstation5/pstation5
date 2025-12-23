@@ -56,59 +56,6 @@ async function loadMe() {
 
 loadMe();
 
-// Временно
-
-async function testCreateCollection() {
-  const res = await fetch(`${API_URL}/collections`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Telegram-Init-Data": tg.initData
-    },
-    body: JSON.stringify({
-      title: "Моя первая коллекция PS5",
-      description: "Тестовая админ-коллекция"
-    })
-  });
-
-  const data = await res.json();
-  console.log("Create collection:", data);
-}
-
-testCreateCollection();
-
-document.getElementById("createBtn").onclick = async () => {
-  const title = document.getElementById("title").value.trim();
-  const description = document.getElementById("description").value.trim();
-
-  if (!title) {
-    alert("Введите название");
-    return;
-  }
-
-  const res = await fetch(`${API_URL}/collections`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Telegram-Init-Data": tg.initData
-    },
-    body: JSON.stringify({ title, description })
-  });
-
-  const data = await res.json();
-  console.log("Create:", data);
-
-  const msg = document.getElementById("admin-message");
-
-  if (data.ok) {
-    msg.textContent = "Коллекция создана ✅";
-    document.getElementById("title").value = "";
-    document.getElementById("description").value = "";
-  } else {
-    msg.textContent = "Ошибка: " + data.error;
-  }
-};
-
 document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("createGameBtn").onclick = async () => {
@@ -359,6 +306,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
