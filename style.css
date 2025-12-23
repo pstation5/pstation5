@@ -28,4 +28,36 @@ button:hover {
   background: #1565c0;
 }
 
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.game-card {
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.game-card img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+.game-card .content {
+  padding: 8px;
+}
+
+.game-card h3 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.game-card .meta {
+  font-size: 11px;
+  color: #aaa;
+}
+
 
