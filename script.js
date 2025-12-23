@@ -109,5 +109,38 @@ document.getElementById("createBtn").onclick = async () => {
   }
 };
 
+document.addEventListener("DOMContentLoaded", () => {
+
+  document.getElementById("createGameBtn").onclick = async () => {
+    const body = {
+      title: g("g-title"),
+      year: Number(g("g-year")),
+      genres: g("g-genres").split(",").map(x => x.trim()),
+      developer: g("g-developer"),
+      description: g("g-desc"),
+      cover_url: g("g-cover"),
+      screenshots: g("g-screens").split(",").map(x => x.trim())
+    };
+
+    const res = await fetch(`${API_URL}/games`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Telegram-Init-Data": tg.initData
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    document.getElementById("game-msg").textContent =
+      data.ok ? "Игра добавлена 🎮" : "Ошибка";
+  };
+
+  function g(id) {
+    return document.getElementById(id).value;
+  }
+
+});
+
 
 
