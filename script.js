@@ -48,6 +48,7 @@ async function loadMe() {
 
   if (data.is_admin) {
     document.getElementById("admin-panel").style.display = "block";
+    document.getElementById("game-admin").style.display = "block";
   } else {
     document.getElementById("status").textContent = "Вы не администратор";
   }
@@ -107,5 +108,6 @@ document.getElementById("createBtn").onclick = async () => {
     msg.textContent = "Ошибка: " + data.error;
   }
 };
+
 
 
