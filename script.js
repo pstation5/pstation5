@@ -15,3 +15,23 @@ if (user) {
 } else {
   statusEl.textContent = "Пользователь не определён";
 }
+
+// Подключаем Worker к Mini App
+
+const API_URL = "https://tg-ps-collections-api.<твое-имя>.workers.dev";
+
+async function pingServer() {
+  try {
+    const res = await fetch(`${API_URL}/ping`);
+    const data = await res.json();
+
+    console.log("Ping response:", data);
+
+    const statusEl = document.getElementById("status");
+    statusEl.textContent = data.message;
+  } catch (e) {
+    console.error("Ping error:", e);
+  }
+}
+
+pingServer();
