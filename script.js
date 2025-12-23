@@ -247,7 +247,7 @@ document.getElementById("fav-btn").onclick = () => {
   toggleFavorite(game.id);
 };
 
-}, 0);
+} 0);
 
 }
 
@@ -367,6 +367,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
