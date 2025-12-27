@@ -223,62 +223,6 @@ function closeGame() {
 
 loadGames();
 
-async function loadFavorite(gameId) {
-  const res = await fetch(`${API_URL}/games/${gameId}/favorite`, {
-    headers: {
-      "X-Telegram-Init-Data": tg.initData
-    }
-  });
-  const data = await res.json();
-
-  document.getElementById("fav-btn").textContent = "☆";
-    data.favorited ? "⭐" : "☆";
-}
-
-async function toggleFavorite(gameId) {
-  const res = await fetch(`${API_URL}/games/${gameId}/favorite`, {
-    method: "POST",
-    headers: {
-      "X-Telegram-Init-Data": tg.initData
-    }
-  });
-
-  const data = await res.json();
-
-  // ✅ ОБНОВЛЯЕМ UI НАПРЯМУЮ
-  document.getElementById("fav-btn").textContent =
-    data.favorited ? "⭐" : "☆";
-}
-
-document.getElementById("game-view").addEventListener("click", (e) => {
-  if (e.target && e.target.id === "fav-btn") {
-    toggleFavorite(window._currentGameId);
-  }
-});
-
-async function loadFavorite(gameId) {
-  try {
-    if (!gameId) return;
-
-    const res = await fetch(`${API_URL}/games/${gameId}/favorite`, {
-      headers: {
-        "X-Telegram-Init-Data": tg.initData
-      }
-    });
-
-    if (!res.ok) return;
-
-    const data = await res.json();
-
-    const favBtn = document.getElementById("fav-btn");
-    if (!favBtn) return;
-
-    favBtn.textContent = data.favorited ? "⭐" : "☆";
-  } catch (e) {
-    console.warn("loadFavorite error", e);
-  }
-}
-
 
 
   window._games = data.games;
@@ -303,17 +247,12 @@ async function loadFavorite(gameId) {
   });
 }
 
-document.getElementById("show-favorites").onclick = () => {
-  document.getElementById("game-view").style.display = "none";
-  document.getElementById("games").style.display = "grid";
-  loadFavorites();
-};
-
 document.getElementById("show-all").onclick = () => {
   document.getElementById("game-view").style.display = "none";
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
