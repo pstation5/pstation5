@@ -153,42 +153,7 @@
       }
     ];
 
-<script>
-const featuredGames = [
-  {
-    title: "GTA VI",
-    cover: "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_VI_cover.jpg",
-    platforms: "PS5"
-  },
-  {
-    title: "Death Stranding 2",
-    cover: "https://upload.wikimedia.org/wikipedia/en/6/6e/Death_Stranding_2_Poster.jpg",
-    platforms: "PS5"
-  },
-  {
-    title: "Wolverine",
-    cover: "https://upload.wikimedia.org/wikipedia/en/3/3b/Marvel%27s_Wolverine_key_art.jpg",
-    platforms: "PS5"
-  }
-];
 
-const track = document.getElementById("featuredTrack");
-
-featuredGames.forEach(game => {
-  const card = document.createElement("div");
-  card.className = "featured-card";
-
-  card.innerHTML = `
-    <img src="${game.cover}" alt="">
-    <div class="featured-info">
-      <div class="featured-title">${game.title}</div>
-      <div class="featured-meta">${game.platforms}</div>
-    </div>
-  `;
-
-  track.appendChild(card);
-});
-</script>
 
     
     // ====== РЕНДЕР ======
@@ -217,6 +182,7 @@ featuredGames.forEach(game => {
 
 </body>
 </html>
+
 
 
 
