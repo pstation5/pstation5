@@ -231,7 +231,7 @@ async function loadFavorite(gameId) {
   });
   const data = await res.json();
 
-  document.getElementById("fav-btn").textContent =
+  document.getElementById("fav-btn").textContent = "☆";
     data.favorited ? "⭐" : "☆";
 }
 
@@ -306,6 +306,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
