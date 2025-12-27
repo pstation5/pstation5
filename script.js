@@ -56,7 +56,52 @@ async function loadMe() {
 
 loadMe();
 
+<script>
 document.addEventListener("DOMContentLoaded", () => {
+
+  const featuredGames = [
+    {
+      title: "GTA VI",
+      cover: "https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_VI_cover.jpg",
+      platforms: "PS5"
+    },
+    {
+      title: "Death Stranding 2",
+      cover: "https://upload.wikimedia.org/wikipedia/en/6/6e/Death_Stranding_2_Poster.jpg",
+      platforms: "PS5"
+    },
+    {
+      title: "Wolverine",
+      cover: "https://upload.wikimedia.org/wikipedia/en/3/3b/Marvel%27s_Wolverine_key_art.jpg",
+      platforms: "PS5"
+    }
+  ];
+
+  const track = document.getElementById("featuredTrack");
+
+  if (!track) {
+    console.error("featuredTrack не найден");
+    return;
+  }
+
+  featuredGames.forEach(game => {
+    const card = document.createElement("div");
+    card.className = "featured-card";
+
+    card.innerHTML = `
+      <img src="${game.cover}" alt="">
+      <div class="featured-info">
+        <div class="featured-title">${game.title}</div>
+        <div class="featured-meta">${game.platforms}</div>
+      </div>
+    `;
+
+    track.appendChild(card);
+  });
+
+});
+</script>
+
 
   document.getElementById("createGameBtn").onclick = async () => {
     const body = {
@@ -242,3 +287,4 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
