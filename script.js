@@ -256,8 +256,8 @@ document.getElementById("game-view").addEventListener("click", (e) => {
   }
 });
 
-async function loadFavorites() {
-  const res = await fetch(`${API_URL}/favorites`, {
+async function loadFavorite(gameId) {
+  const res = await fetch(`${API_URL}/games/${gameId}/favorite`, {
     headers: {
       "X-Telegram-Init-Data": tg.initData
     }
@@ -265,13 +265,12 @@ async function loadFavorites() {
 
   const data = await res.json();
 
-  const container = document.getElementById("games");
-  container.innerHTML = "";
+  const favBtn = document.getElementById("fav-btn");
+  if (!favBtn) return;
 
-  if (!data.ok || data.games.length === 0) {
-    container.textContent = "У вас пока нет избранных игр ⭐";
-    return;
-  }
+  // 🔥 ЯВНО выставляем состояние
+  favBtn.textContent = data.favorited ? "⭐" : "☆";
+}
 
   window._games = data.games;
 
@@ -306,6 +305,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
