@@ -120,3 +120,12 @@ html, body {
 .featured-track::-webkit-scrollbar {
   display: none;
 }
+
+.featured-card {
+  flex: 0 0 78%;
+  aspect-ratio: 2 / 3;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  scroll-snap-align: center;
+}
