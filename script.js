@@ -257,20 +257,24 @@ document.getElementById("game-view").addEventListener("click", (e) => {
 });
 
 async function loadFavorite(gameId) {
+  if (!gameId) return; // 🔒 КРИТИЧНО
+
   const res = await fetch(`${API_URL}/games/${gameId}/favorite`, {
     headers: {
       "X-Telegram-Init-Data": tg.initData
     }
   });
 
+  if (!res.ok) return; // 🔒 защита от 404/401
+
   const data = await res.json();
 
   const favBtn = document.getElementById("fav-btn");
   if (!favBtn) return;
 
-  // 🔥 ЯВНО выставляем состояние
   favBtn.textContent = data.favorited ? "⭐" : "☆";
 }
+
 
   window._games = data.games;
 
@@ -305,6 +309,7 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
+
 
 
 
