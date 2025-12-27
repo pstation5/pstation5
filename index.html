@@ -2,73 +2,176 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>PS Collections</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PS Game Collection</title>
 
-  <!-- Telegram WebApp SDK -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --text-main: #ffffff;
+      --text-muted: #9aa1ad;
+      --radius-card: 16px;
+      --gap-grid: 12px;
+      --padding-screen: 16px;
+    }
 
-  <link rel="stylesheet" href="style.css" />
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    }
+
+    .page {
+      padding: 20px var(--padding-screen) 32px;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--gap-grid);
+    }
+
+    .game-card {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .game-card:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .game-card::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 45%;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.75),
+        rgba(0, 0, 0, 0.35),
+        rgba(0, 0, 0, 0)
+      );
+    }
+
+    .game-like {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 3;
+      font-size: 18px;
+    }
+
+    .game-info {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 2;
+    }
+
+    .game-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.25;
+      margin-bottom: 4px;
+
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .game-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
+
 <body>
 
-  <h1>PS4 / PS5 Collections</h1>
-  <p id="status">Загрузка...</p>
+  <div class="page">
+    <div id="gamesGrid" class="games-grid"></div>
+  </div>
 
-  <button id="show-all" style="margin-left:8px;">
-  🎮 Все игры
-</button>
+  <script>
+    // ====== ДАННЫЕ (потом заменишь на свои) ======
+    const games = [
+      {
+        id: 1,
+        title: "God of War Ragnarök",
+        cover: "https://upload.wikimedia.org/wikipedia/en/e/ee/God_of_War_Ragnar%C3%B6k_cover.jpg",
+        platforms: "PS5",
+        liked: true
+      },
+      {
+        id: 2,
+        title: "The Last of Us Part II",
+        cover: "https://upload.wikimedia.org/wikipedia/en/4/4f/The_Last_of_Us_Part_II_Cover_Art.jpg",
+        platforms: "PS4 • PS5",
+        liked: false
+      },
+      {
+        id: 3,
+        title: "Spider-Man 2",
+        cover: "https://upload.wikimedia.org/wikipedia/en/1/1e/Spider-Man_2_PS5_cover.jpg",
+        platforms: "PS5",
+        liked: false
+      },
+      {
+        id: 4,
+        title: "Horizon Forbidden West",
+        cover: "https://upload.wikimedia.org/wikipedia/en/6/69/Horizon_Forbidden_West_cover_art.jpg",
+        platforms: "PS4 • PS5",
+        liked: true
+      }
+    ];
 
-  <div id="admin-panel" style="display:none; margin-top:20px;">
-    
-  <h2>Админка</h2>
+    // ====== РЕНДЕР ======
+    const grid = document.getElementById("gamesGrid");
 
-  <input
-    id="title"
-    type="text"
-    placeholder="Название коллекции"
-    style="width:100%; margin-bottom:10px;"
-  />
+    games.forEach(game => {
+      const card = document.createElement("div");
+      card.className = "game-card";
 
-  <textarea
-    id="description"
-    placeholder="Описание"
-    style="width:100%; height:80px; margin-bottom:10px;"
-  ></textarea>
+      card.innerHTML = `
+        <img src="${game.cover}" alt="">
+        <div class="game-like">${game.liked ? "❤️" : "🤍"}</div>
+        <div class="game-info">
+          <div class="game-title">${game.title}</div>
+          <div class="game-meta">${game.platforms}</div>
+        </div>
+      `;
 
-  <button id="createBtn">Создать коллекцию</button>
+      card.onclick = () => {
+        alert("Открыть игру: " + game.title);
+      };
 
-  <p id="admin-message"></p>
-</div>
+      grid.appendChild(card);
+    });
+  </script>
 
-<div id="game-admin" style="display:none; margin-top:20px;">
-  <h2>Добавить игру</h2>
-
-  <input id="g-title" placeholder="Название игры" />
-  <input id="g-year" placeholder="Год выхода" type="number" />
-  <input id="g-genres" placeholder="Жанры (через запятую)" />
-  <input id="g-developer" placeholder="Разработчик" />
-  <input id="g-cover" placeholder="URL обложки" />
-
-  <textarea id="g-desc" placeholder="Описание игры"></textarea>
-  <textarea id="g-screens" placeholder="URL скриншотов (через запятую)"></textarea>
-
-  <button id="createGameBtn">Добавить игру</button>
-  <p id="game-msg"></p>
-</div>
-
-<h2>Коллекция игр</h2>
-<div id="games" class="games-grid"></div>
-
-<div id="game-view" style="display:none;"></div>
-  
-  <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
