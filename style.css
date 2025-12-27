@@ -102,3 +102,21 @@ html, body {
   font-size: 18px;
   color: #ff3b5c;
 }
+
+.featured {
+  margin: 0 -16px 28px;
+  overflow: hidden;
+}
+
+.featured-track {
+  display: flex;
+  gap: 16px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.featured-track::-webkit-scrollbar {
+  display: none;
+}
