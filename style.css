@@ -1,63 +1,104 @@
-body {
-  font-family: Arial, sans-serif;
-  padding: 16px;
-  background: #0f0f0f;
-  color: #ffffff;
+:root {
+  --bg: #0b0d10;
+  --text-main: #ffffff;
+  --text-muted: #9aa1ad;
+
+  --radius-card: 16px;
+  --gap-grid: 12px;
+  --padding-screen: 16px;
 }
 
-h1 {
-  font-size: 20px;
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-input, textarea {
-  padding: 8px;
-  border-radius: 6px;
-  border: none;
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
 }
 
-button {
-  padding: 10px 14px;
-  background: #1e88e5;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1565c0;
+.page {
+  padding: 20px var(--padding-screen) 32px;
 }
 
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap-grid);
 }
 
 .game-card {
-  background: #1a1a1a;
-  border-radius: 10px;
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-card);
   overflow: hidden;
+  cursor: pointer;
+  transform: translateZ(0);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.game-card:active {
+  transform: scale(0.98);
+  opacity: 0.9;
 }
 
 .game-card img {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-.game-card .content {
-  padding: 8px;
+.game-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.75),
+    rgba(0, 0, 0, 0.35),
+    rgba(0, 0, 0, 0)
+  );
 }
 
-.game-card h3 {
+.game-info {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+}
+
+.game-title {
   font-size: 14px;
-  margin: 0;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 4px 0;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.game-card .meta {
-  font-size: 11px;
-  color: #aaa;
+.game-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1;
 }
 
-
+.game-like {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  font-size: 18px;
+  color: #ff3b5c;
+}
