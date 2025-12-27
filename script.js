@@ -160,10 +160,6 @@ function openGame(id) {
           <span id="like-count">0</span>
         </div>
 
-        <div id="favorite-block" style="margin:8px 0;">
-          <button id="fav-btn">☆</button>
-        </div>
-
         <p><b>Год:</b> ${game.year || "-"}</p>
         <p><b>Жанры:</b> ${(game.genres || []).join(", ")}</p>
         <p><b>Разработчик:</b> ${game.developer || "-"}</p>
@@ -184,12 +180,6 @@ function openGame(id) {
   document.getElementById("like-btn").onclick = () => {
     toggleLike(game.id);
   };
-
-  loadFavorite(game.id);
-  document.getElementById("fav-btn").onclick = () => {
-    toggleFavorite(game.id);
-  };
-}
 
 async function loadLikes(gameId) {
   const res = await fetch(`${API_URL}/games/${gameId}/likes`, {
@@ -252,32 +242,3 @@ document.getElementById("show-all").onclick = () => {
   document.getElementById("games").style.display = "grid";
   loadGames();
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
