@@ -68,6 +68,20 @@ if (DEBUG && dbgBtn) {
 // Data
 // =======================
 
+const featuredGames = [
+  {
+    id: 101,
+    title: "Death Stranding 2",
+    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202401/02/deathstranding2.jpg"
+  },
+  {
+    id: 102,
+    title: "Silent Hill 2 Remake",
+    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202401/02/silenthill2.jpg"
+  }
+];
+
+
 const games = [
   {
     id: 1,
@@ -174,6 +188,24 @@ function renderGames() {
     gamesGrid.appendChild(createGameCard(game));
   });
 }
+
+function renderFeatured() {
+  const track = document.getElementById("featuredTrack");
+  if (!track) return;
+
+  track.innerHTML = "";
+  featuredGames.forEach(g => {
+    const card = document.createElement("div");
+    card.className = "featured-card";
+    card.innerHTML = `
+      <img src="${g.cover}">
+      <div class="featured-title">${g.title}</div>
+    `;
+    card.onclick = () => dalert("Ожидаемая игра: " + g.title);
+    track.appendChild(card);
+  });
+}
+
 
 function renderFavorites() {
   favoritesGrid.innerHTML = "";
