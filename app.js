@@ -165,29 +165,37 @@ function createGameCard(game) {
     card.classList.add("favorited");
   }
 
-  const cover = document.createElement("div");
-  cover.className = "game-cover";
-  cover.innerHTML = `
-    <div class="game-cover-inner" style="background-image:url('${game.cover}')"></div>
-    <div class="game-platform-badge">${game.platform.toUpperCase()}</div>
+  card.innerHTML = `
+    <div class="game-cover">
+      <div class="game-cover-inner" style="background-image:url('${game.cover}')"></div>
+      <div class="game-platform-badge">${game.platform.toUpperCase()}</div>
+      <button class="game-fav-btn" data-id="${game.id}">
+        <span class="icon-heart ${favorites.has(game.id) ? "favorited" : ""}"></span>
+      </button>
+    </div>
+
+    <div class="game-info">
+      <div class="game-title">${game.title}</div>
+      <div class="game-meta">${game.genre} · ${game.type}</div>
+    </div>
   `;
 
-  const info = document.createElement("div");
-  info.className = "game-info";
-  info.innerHTML = `
-    <div class="game-title">${game.title}</div>
-    <div class="game-meta">${game.genre} · ${game.type}</div>
-  `;
-
-  card.appendChild(cover);
-  card.appendChild(info);
-
-  card.addEventListener("click", () => {
+  // Открытие карточки — только если не нажали на избранное
+  card.addEventListener("click", (e) => {
+    if (e.target.closest(".game-fav-btn")) return;
     openGameSheet(game.id);
+  });
+
+  // Кнопка избранного
+  const favBtn = card.querySelector(".game-fav-btn");
+  favBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleFavorite(game.id);
   });
 
   return card;
 }
+
 
 function renderGames() {
   if (!gamesGrid) return;
