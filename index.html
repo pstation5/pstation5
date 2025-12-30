@@ -2,187 +2,112 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <title>PS Collection</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PS Game Collection</title>
 
-  <style>
-    :root {
-      --bg: #0b0d10;
-      --text-main: #ffffff;
-      --text-muted: #9aa1ad;
-      --radius-card: 16px;
-      --gap-grid: 12px;
-      --padding-screen: 16px;
-    }
+  <!-- Основные стили -->
+  <link rel="stylesheet" href="styles.css" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text-main);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-    }
-
-    .page {
-      padding: 20px var(--padding-screen) 32px;
-    }
-
-<div class="featured">
-  <div class="featured-track" id="featuredTrack">
-    <!-- карточки будут тут -->
-  </div>
-</div>
-
-    
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--gap-grid);
-    }
-
-    .game-card {
-      position: relative;
-      aspect-ratio: 2 / 3;
-      border-radius: var(--radius-card);
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-    }
-
-    .game-card:active {
-      transform: scale(0.98);
-      opacity: 0.9;
-    }
-
-    .game-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .game-card::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 45%;
-      background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.75),
-        rgba(0, 0, 0, 0.35),
-        rgba(0, 0, 0, 0)
-      );
-    }
-
-    .game-like {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 3;
-      font-size: 18px;
-    }
-
-    .game-info {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      z-index: 2;
-    }
-
-    .game-title {
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.25;
-      margin-bottom: 4px;
-
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .game-meta {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-  </style>
+  <!-- Telegram Mini App JS -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-
 <body>
+  <div id="app">
+    <!-- Верхняя панель -->
+    <header class="top-bar">
+      <div class="app-title">
+        <span class="app-title-main">PS Collection</span>
+        <span class="app-title-sub">Каталог игр на PS4 / PS5</span>
+      </div>
+      <button class="avatar-btn">
+        <span class="avatar-initials">U</span>
+      </button>
+    </header>
 
+    <!-- Табы -->
+    <nav class="tabs">
+      <button class="tab-button active" data-tab="all">Все игры</button>
+      <button class="tab-button" data-tab="favorites">Избранное</button>
+      <button class="tab-button" data-tab="my-collections">Мои коллекции</button>
+    </nav>
 
-  <script>
-    // ====== ДАННЫЕ (потом заменишь на свои) ======
-    const games = [
-      {
-        id: 1,
-        title: "God of War Ragnarök",
-        cover: "https://upload.wikimedia.org/wikipedia/en/e/ee/God_of_War_Ragnar%C3%B6k_cover.jpg",
-        platforms: "PS5",
-        liked: true
-      },
-      {
-        id: 2,
-        title: "The Last of Us Part II",
-        cover: "https://upload.wikimedia.org/wikipedia/en/4/4f/The_Last_of_Us_Part_II_Cover_Art.jpg",
-        platforms: "PS4 • PS5",
-        liked: false
-      },
-      {
-        id: 3,
-        title: "Spider-Man 2",
-        cover: "https://upload.wikimedia.org/wikipedia/en/1/1e/Spider-Man_2_PS5_cover.jpg",
-        platforms: "PS5",
-        liked: false
-      },
-      {
-        id: 4,
-        title: "Horizon Forbidden West",
-        cover: "https://upload.wikimedia.org/wikipedia/en/6/69/Horizon_Forbidden_West_cover_art.jpg",
-        platforms: "PS4 • PS5",
-        liked: true
-      }
-    ];
+    <!-- Поиск и фильтры -->
+    <section class="filters">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Найти игру по названию..." />
+      </div>
+      <div class="chips">
+        <button class="chip chip-active" data-platform="all">Все</button>
+        <button class="chip" data-platform="ps4">PS4</button>
+        <button class="chip" data-platform="ps5">PS5</button>
+      </div>
+    </section>
 
+    <!-- Контент -->
+    <main class="content">
+      <!-- Секция: Все игры -->
+      <section class="tab-panel active" id="tab-all">
+        <div id="gamesGrid" class="games-grid"></div>
+      </section>
 
-
-    
-    // ====== РЕНДЕР ======
-    const grid = document.getElementById("gamesGrid");
-
-    games.forEach(game => {
-      const card = document.createElement("div");
-      card.className = "game-card";
-
-      card.innerHTML = `
-        <img src="${game.cover}" alt="">
-        <div class="game-like">${game.liked ? "❤️" : "🤍"}</div>
-        <div class="game-info">
-          <div class="game-title">${game.title}</div>
-          <div class="game-meta">${game.platforms}</div>
+      <!-- Секция: Избранное -->
+      <section class="tab-panel" id="tab-favorites">
+        <div class="empty-state" id="favoritesEmpty">
+          Пока ничего нет в избранном.
+          <span>Нажимай на сердечко у игр, чтобы добавить их сюда.</span>
         </div>
-      `;
+        <div id="favoritesGrid" class="games-grid"></div>
+      </section>
 
-      card.onclick = () => {
-        alert("Открыть игру: " + game.title);
-      };
+      <!-- Секция: Мои коллекции -->
+      <section class="tab-panel" id="tab-my-collections">
+        <div class="collections-header">
+          <h2>Мои коллекции</h2>
+          <button id="createCollectionBtn" class="btn-primary">Создать коллекцию</button>
+        </div>
+        <div id="collectionsList" class="collections-list">
+          <div class="empty-state">
+            У тебя пока нет коллекций.
+            <span>Создай первую подборку игр и поделись с друзьями.</span>
+          </div>
+        </div>
+      </section>
+    </main>
 
-      grid.appendChild(card);
-    });
-  </script>
+    <!-- Game bottom sheet (детальная карточка игры) -->
+    <div class="game-sheet" id="gameSheet">
+      <div class="game-sheet-backdrop" id="gameSheetBackdrop"></div>
+      <div class="game-sheet-body">
+        <div class="sheet-handle"></div>
+        <div class="sheet-cover" id="sheetCover"></div>
+        <div class="sheet-content">
+          <div class="sheet-header">
+            <div>
+              <h2 id="sheetTitle">Название игры</h2>
+              <p id="sheetMeta" class="sheet-meta">PS5 · Диск · Action</p>
+            </div>
+            <button id="sheetFavBtn" class="icon-btn">
+              <span class="icon-heart"></span>
+            </button>
+          </div>
 
+          <p id="sheetDescription" class="sheet-description">
+            Краткое описание игры. Здесь будет жанр, особенности и почему она стоит места в коллекции.
+          </p>
+
+          <div class="sheet-tags" id="sheetTags"></div>
+
+          <div class="sheet-actions">
+            <button class="btn-secondary" id="addToCollectionBtn">Добавить в коллекцию</button>
+            <button class="btn-ghost" id="shareGameBtn">Поделиться</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Логика приложения -->
+  <script src="app.js"></script>
 </body>
 </html>
-
-
-
-
