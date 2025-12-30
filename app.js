@@ -21,14 +21,15 @@ function dalert(msg) {
   }
 }
 
-// Ловим любые ошибки в JS
+// Ловим любые ошибки
 window.onerror = function (message, source, lineno, colno, error) {
   dalert(`JS ERROR: ${message}\n${source}:${lineno}`);
   dlog("Full error:", { message, source, lineno, colno, error });
 };
 
+
 // =======================
-// Telegram WebApp init
+// Telegram init
 // =======================
 
 const tg = window.Telegram?.WebApp || null;
@@ -40,31 +41,31 @@ if (tg) {
   dlog("Telegram WebApp detected:", tg);
   dlog("initData:", tg.initData);
 
-  dalert("Mini App detected Telegram.\ninitData received.");
+  dalert("Telegram WebApp detected.\ninitData loaded.");
 } else {
-  dlog("Telegram WebApp object is NOT available.");
+  dlog("Telegram NOT available.");
 }
 
-// Визуальный индикатор DEBUG MODE
+
+// =======================
+// Debug visual elements
+// =======================
+
 const dbgIndicator = document.getElementById("debugIndicator");
-if (DEBUG && dbgIndicator) {
-  dbgIndicator.style.display = "block";
-}
+if (DEBUG && dbgIndicator) dbgIndicator.style.display = "block";
 
-// Кнопка Test Debug
 const dbgBtn = document.getElementById("debugTestBtn");
 if (DEBUG && dbgBtn) {
   dbgBtn.style.display = "block";
   dbgBtn.onclick = () => {
-    dalert("Debug test click OK!");
+    dalert("Debug button click OK!");
     dlog("Debug button clicked");
   };
-} else {
-  dlog("DEBUG BUTTON NOT FOUND IN DOM");
 }
 
+
 // =======================
-// Моковые данные игр
+// Data
 // =======================
 
 const games = [
@@ -75,8 +76,10 @@ const games = [
     type: "Disk",
     genre: "Action · Adventure",
     tags: ["Story-rich", "Singleplayer"],
-    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202006/0419/QoPg6f7zj0nSMuLyOJ7XdzEJ.png",
-    shortDescription: "Мрачная история выживания с сильным сюжетом и кинематографией.",
+    cover:
+      "https://image.api.playstation.com/vulcan/ap/rnd/202006/0419/QoPg6f7zj0nSMuLyOJ7XdzEJ.png",
+    shortDescription:
+      "Мрачная история выживания с сильным сюжетом и кинематографией.",
   },
   {
     id: 2,
@@ -85,8 +88,10 @@ const games = [
     type: "Disk",
     genre: "Action · Open World",
     tags: ["Marvel", "Open World"],
-    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202308/0216/f8MkO2izW2iSSotoaXSInXZ7.png",
-    shortDescription: "Современный приключенческий боевик про Питера Паркера и Майлза.",
+    cover:
+      "https://image.api.playstation.com/vulcan/ap/rnd/202308/0216/f8MkO2izW2iSSotoaXSInXZ7.png",
+    shortDescription:
+      "Приключения Питера Паркера и Майлза в открытом мире Нью-Йорка.",
   },
   {
     id: 3,
@@ -95,8 +100,9 @@ const games = [
     type: "Disk",
     genre: "Action · Samurai",
     tags: ["Open World", "Samurai"],
-    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202006/0319/ctAi3j_6G4J06QUJ93D4gR75.png",
-    shortDescription: "Атмосферное путешествие по феодальной Японии с акцентом на дуэли.",
+    cover:
+      "https://image.api.playstation.com/vulcan/ap/rnd/202006/0319/ctAi3j_6G4J06QUJ93D4gR75.png",
+    shortDescription: "Самурайский экшен с красивой природой и дуэлями.",
   },
   {
     id: 4,
@@ -105,13 +111,15 @@ const games = [
     type: "Disk",
     genre: "RPG · Soulslike",
     tags: ["Hardcore", "Remake"],
-    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202009/2517/0p9g6f7Zj0nSMuLy0J7XdzEJ.png",
-    shortDescription: "Красивая и безжалостная классика жанра soulslike.",
+    cover:
+      "https://image.api.playstation.com/vulcan/ap/rnd/202009/2517/TozUf0odkWY7SS7CTF4jWbWp.png",
+    shortDescription: "Официальный ремейк хардкорной RPG для PS5.",
   },
 ];
 
+
 // =======================
-// Состояние
+// State
 // =======================
 
 let favorites = new Set();
@@ -120,8 +128,9 @@ let currentSearch = "";
 let currentTab = "all";
 let currentSheetGameId = null;
 
+
 // =======================
-// DOM-элементы
+// DOM
 // =======================
 
 const gamesGrid = document.getElementById("gamesGrid");
@@ -145,76 +154,63 @@ const sheetFavBtn = document.getElementById("sheetFavBtn");
 const addToCollectionBtn = document.getElementById("addToCollectionBtn");
 const shareGameBtn = document.getElementById("shareGameBtn");
 
+
 // =======================
-// Вспомогательные функции
+// Helpers
 // =======================
 
 function matchesFilters(game) {
-  const byPlatform =
+  const pOK =
     currentPlatformFilter === "all" || game.platform === currentPlatformFilter;
-  const bySearch =
-    currentSearch.trim() === "" ||
+  const sOK =
+    currentSearch === "" ||
     game.title.toLowerCase().includes(currentSearch.toLowerCase());
-  return byPlatform && bySearch;
+  return pOK && sOK;
 }
 
 function renderGames() {
-  if (!gamesGrid) return;
   gamesGrid.innerHTML = "";
-  const filtered = games.filter(matchesFilters);
-
-  filtered.forEach((game) => {
-    const card = createGameCard(game);
-    gamesGrid.appendChild(card);
+  games.filter(matchesFilters).forEach((game) => {
+    gamesGrid.appendChild(createGameCard(game));
   });
 }
 
 function renderFavorites() {
-  if (!favoritesGrid || !favoritesEmpty) return;
-
   favoritesGrid.innerHTML = "";
-  const favGames = games.filter((g) => favorites.has(g.id));
+  const fav = games.filter((g) => favorites.has(g.id));
 
-  if (favGames.length === 0) {
-    favoritesEmpty.style.display = "flex";
-  } else {
-    favoritesEmpty.style.display = "none";
-  }
-
-  favGames.forEach((game) => {
-    const card = createGameCard(game);
-    favoritesGrid.appendChild(card);
-  });
+  favoritesEmpty.style.display = fav.length === 0 ? "flex" : "none";
+  fav.forEach((game) => favoritesGrid.appendChild(createGameCard(game)));
 }
 
 function createGameCard(game) {
   const card = document.createElement("article");
   card.className = "game-card";
-  if (favorites.has(game.id)) {
-    card.classList.add("favorited");
-  }
+  if (favorites.has(game.id)) card.classList.add("favorited");
 
   const cover = document.createElement("div");
   cover.className = "game-cover";
 
-  const coverInner = document.createElement("div");
-  coverInner.className = "game-cover-inner";
-  coverInner.style.backgroundImage = `url(${game.cover})`;
-  cover.appendChild(coverInner);
+  const ci = document.createElement("div");
+  ci.className = "game-cover-inner";
+  ci.style.backgroundImage = `url(${game.cover})`;
+  cover.appendChild(ci);
 
-  const platformBadge = document.createElement("div");
-  platformBadge.className = "game-platform-badge";
-  platformBadge.textContent = game.platform.toUpperCase();
-  cover.appendChild(platformBadge);
+  const platform = document.createElement("div");
+  platform.className = "game-platform-badge";
+  platform.textContent = game.platform.toUpperCase();
+  cover.appendChild(platform);
 
   const favBtn = document.createElement("button");
   favBtn.className = "game-fav-btn";
-  favBtn.innerHTML = '<span class="icon-heart"></span>';
+  favBtn.innerHTML = `<span class="icon-heart"></span>`;
   favBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     toggleFavorite(game.id);
   });
   cover.appendChild(favBtn);
+
+  card.appendChild(cover);
 
   const info = document.createElement("div");
   info.className = "game-info";
@@ -229,17 +225,16 @@ function createGameCard(game) {
   meta.textContent = `${game.genre} · ${game.type}`;
   info.appendChild(meta);
 
-  const tagsRow = document.createElement("div");
-  tagsRow.className = "game-tags";
-  game.tags.forEach((tag) => {
-    const tagEl = document.createElement("span");
-    tagEl.className = "game-tag";
-    tagEl.textContent = tag;
-    tagsRow.appendChild(tagEl);
+  const tags = document.createElement("div");
+  tags.className = "game-tags";
+  game.tags.forEach((t) => {
+    const tag = document.createElement("span");
+    tag.className = "game-tag";
+    tag.textContent = t;
+    tags.appendChild(tag);
   });
-  info.appendChild(tagsRow);
+  info.appendChild(tags);
 
-  card.appendChild(cover);
   card.appendChild(info);
 
   card.addEventListener("click", () => openGameSheet(game.id));
@@ -247,146 +242,114 @@ function createGameCard(game) {
   return card;
 }
 
-function toggleFavorite(gameId) {
-  if (favorites.has(gameId)) {
-    favorites.delete(gameId);
-  } else {
-    favorites.add(gameId);
-  }
 
+// =======================
+// Core logic
+// =======================
+
+function toggleFavorite(id) {
+  favorites.has(id) ? favorites.delete(id) : favorites.add(id);
   renderGames();
   renderFavorites();
   updateSheetFavoriteState();
 }
 
-function switchTab(tabId) {
-  currentTab = tabId;
-  tabButtons.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === tabId);
-  });
-  tabPanels.forEach((panel) => {
-    panel.classList.toggle("active", panel.id === `tab-${tabId}`);
-  });
+function switchTab(tab) {
+  currentTab = tab;
+
+  tabButtons.forEach((b) =>
+    b.classList.toggle("active", b.dataset.tab === tab)
+  );
+  tabPanels.forEach((p) =>
+    p.classList.toggle("active", p.id === `tab-${tab}`)
+  );
 }
 
-function openGameSheet(gameId) {
-  const game = games.find((g) => g.id === gameId);
-  if (!game || !gameSheet) return;
+function openGameSheet(id) {
+  const game = games.find((g) => g.id === id);
+  if (!game) return;
 
-  currentSheetGameId = gameId;
+  currentSheetGameId = id;
 
-  sheetCover.innerHTML = "";
-  const coverInner = document.createElement("div");
-  coverInner.className = "sheet-cover-inner";
-  coverInner.style.backgroundImage = `url(${game.cover})`;
-  sheetCover.appendChild(coverInner);
-
+  sheetCover.innerHTML = `<div class="sheet-cover-inner" style="background-image:url('${game.cover}')"></div>`;
   sheetTitle.textContent = game.title;
   sheetMeta.textContent = `${game.platform.toUpperCase()} · ${game.type} · ${game.genre}`;
-  sheetDescription.textContent =
-    game.shortDescription ||
-    "Описание игры появится здесь, когда мы подключим базу данных.";
+  sheetDescription.textContent = game.shortDescription;
 
   sheetTags.innerHTML = "";
-  game.tags.forEach((tag) => {
-    const span = document.createElement("span");
-    span.className = "sheet-tag";
-    span.textContent = tag;
-    sheetTags.appendChild(span);
+  game.tags.forEach((t) => {
+    const el = document.createElement("span");
+    el.className = "sheet-tag";
+    el.textContent = t;
+    sheetTags.appendChild(el);
   });
 
   updateSheetFavoriteState();
-
   gameSheet.classList.add("open");
 }
 
 function closeGameSheet() {
-  if (!gameSheet) return;
   gameSheet.classList.remove("open");
   currentSheetGameId = null;
 }
 
 function updateSheetFavoriteState() {
-  if (!currentSheetGameId || !sheetFavBtn) return;
-  const isFav = favorites.has(currentSheetGameId);
   const icon = sheetFavBtn.querySelector(".icon-heart");
-  if (icon) {
-    icon.classList.toggle("favorited", isFav);
-  }
+  icon.classList.toggle("favorited", favorites.has(currentSheetGameId));
 }
 
+
 // =======================
-// Слушатели
+// Listeners
 // =======================
 
-// Табы
-tabButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    switchTab(btn.dataset.tab);
-  });
-});
+// Tabs
+tabButtons.forEach((b) =>
+  b.addEventListener("click", () => switchTab(b.dataset.tab))
+);
 
-// Фильтр по платформе
-chips.forEach((chip) => {
+// Filters
+chips.forEach((chip) =>
   chip.addEventListener("click", () => {
     chips.forEach((c) => c.classList.remove("chip-active"));
     chip.classList.add("chip-active");
     currentPlatformFilter = chip.dataset.platform;
     renderGames();
-  });
+  })
+);
+
+// Search
+searchInput.addEventListener("input", (e) => {
+  currentSearch = e.target.value.trim();
+  renderGames();
 });
 
-// Поиск
-if (searchInput) {
-  searchInput.addEventListener("input", (e) => {
-    currentSearch = e.target.value;
-    renderGames();
-  });
-}
+// Sheet closing
+gameSheetBackdrop.addEventListener("click", closeGameSheet);
+gameSheet.addEventListener("click", (e) => {
+  if (e.target === gameSheet) closeGameSheet();
+});
 
-// Bottom sheet закрытие
-if (gameSheetBackdrop) {
-  gameSheetBackdrop.addEventListener("click", closeGameSheet);
-}
+sheetFavBtn.addEventListener("click", () => {
+  if (currentSheetGameId) toggleFavorite(currentSheetGameId);
+});
 
-if (gameSheet) {
-  gameSheet.addEventListener("click", (e) => {
-    if (e.target === gameSheet) closeGameSheet();
-  });
-}
+// Temporary stubs
+addToCollectionBtn.addEventListener("click", () =>
+  dalert("Добавление в коллекцию будет позже")
+);
 
-if (sheetFavBtn) {
-  sheetFavBtn.addEventListener("click", () => {
-    if (!currentSheetGameId) return;
-    toggleFavorite(currentSheetGameId);
-  });
-}
+shareGameBtn.addEventListener("click", () => {
+  if (!currentSheetGameId) return;
+  const game = games.find((g) => g.id === currentSheetGameId);
+  dalert("Поделиться: " + game.title);
+});
 
-// Временно: заглушки на действия
-if (addToCollectionBtn) {
-  addToCollectionBtn.addEventListener("click", () => {
-    dalert("Функция добавления в коллекции появится позже.");
-  });
-}
-
-if (shareGameBtn) {
-  shareGameBtn.addEventListener("click", () => {
-    if (!currentSheetGameId) return;
-    const game = games.find((g) => g.id === currentSheetGameId);
-    if (!game) return;
-    const text = `Смотри, какая игра в моей PS коллекции: ${game.title}`;
-    if (tg && typeof tg.sendData === "function") {
-      tg.sendData(JSON.stringify({ type: "share_game", gameId: game.id, text }));
-    } else {
-      dalert(text);
-    }
-  });
-}
 
 // =======================
-// Старт
+// Init
 // =======================
 
 renderGames();
 renderFavorites();
-dlog("App initialized");
+dlog("App initialized.");
