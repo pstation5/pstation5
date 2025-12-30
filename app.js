@@ -436,4 +436,5 @@ if (shareGameBtn) {
 switchTab("all");
 renderGames();
 renderFavorites();
+dlog("Supabase client =", sb);
 dlog("App initialized");
