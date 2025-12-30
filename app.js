@@ -344,3 +344,9 @@ shareGameBtn.addEventListener("click", () => {
 // Стартовый рендер
 renderGames();
 renderFavorites();
+
+if (DEBUG) {
+  const dbg = document.getElementById("debugIndicator");
+  if (dbg) dbg.style.display = "block";
+}
+
