@@ -1,3 +1,28 @@
+window.onerror = function (message, source, lineno, colno, error) {
+  dalert(`JS ERROR: ${message}\n${source}:${lineno}`);
+  dlog("Full error:", { message, source, lineno, colno, error });
+};
+
+
+// Debug mode switch
+const DEBUG = true;
+
+// Helper for debug logging
+function dlog(...args) {
+  if (DEBUG) console.log("[DEBUG]", ...args);
+}
+
+// Helper for debug alerts (safe for Telegram)
+function dalert(msg) {
+  if (DEBUG) {
+    if (window.Telegram?.WebApp?.showAlert) {
+      window.Telegram.WebApp.showAlert("[DEBUG]\n" + msg);
+    } else {
+      alert("[DEBUG]\n" + msg);
+    }
+  }
+}
+
 // Инициализация Telegram Mini App (по сути просто готовность)
 const tg = window.Telegram?.WebApp || null;
 if (tg) {
