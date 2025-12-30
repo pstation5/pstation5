@@ -1,33 +1,35 @@
-// Debug mode switch
+// =======================
+// Debug mode
+// =======================
 const DEBUG = true;
 
-// Helper for debug logging
 function dlog(...args) {
   if (DEBUG) console.log("[DEBUG]", ...args);
 }
 
-// Helper for debug alerts (safe for Telegram)
 function dalert(msg) {
-  if (DEBUG) {
-    if (window.Telegram?.WebApp?.showAlert) {
-      window.Telegram.WebApp.showAlert("[DEBUG]\n" + msg);
+  if (!DEBUG) return;
+  try {
+    const tg = window.Telegram?.WebApp;
+    if (tg && typeof tg.showAlert === "function") {
+      tg.showAlert("[DEBUG]\n" + msg);
     } else {
       alert("[DEBUG]\n" + msg);
     }
+  } catch (e) {
+    console.log("[DEBUG ALERT FAIL]", e, msg);
   }
 }
 
+// Ловим любые ошибки в JS
 window.onerror = function (message, source, lineno, colno, error) {
   dalert(`JS ERROR: ${message}\n${source}:${lineno}`);
   dlog("Full error:", { message, source, lineno, colno, error });
 };
 
-// Инициализация Telegram Mini App (по сути просто готовность)
-const tg = window.Telegram?.WebApp || null;
-if (tg) {
-  tg.ready();
-  tg.expand && tg.expand();
-}
+// =======================
+// Telegram WebApp init
+// =======================
 
 const tg = window.Telegram?.WebApp || null;
 
@@ -35,17 +37,36 @@ if (tg) {
   tg.ready?.();
   tg.expand?.();
 
-  if (DEBUG) {
-    dlog("Telegram WebApp detected:", tg);
-    dlog("initData:", tg.initData);
-    dalert("Mini App detected Telegram.\ninitData received.");
-  }
+  dlog("Telegram WebApp detected:", tg);
+  dlog("initData:", tg.initData);
+
+  dalert("Mini App detected Telegram.\ninitData received.");
 } else {
-  dalert("WARNING: Telegram WebApp object is NOT available.");
+  dlog("Telegram WebApp object is NOT available.");
 }
 
+// Визуальный индикатор DEBUG MODE
+const dbgIndicator = document.getElementById("debugIndicator");
+if (DEBUG && dbgIndicator) {
+  dbgIndicator.style.display = "block";
+}
 
-// Моковые данные игр (потом заменим данными из Supabase)
+// Кнопка Test Debug
+const dbgBtn = document.getElementById("debugTestBtn");
+if (DEBUG && dbgBtn) {
+  dbgBtn.style.display = "block";
+  dbgBtn.onclick = () => {
+    dalert("Debug test click OK!");
+    dlog("Debug button clicked");
+  };
+} else {
+  dlog("DEBUG BUTTON NOT FOUND IN DOM");
+}
+
+// =======================
+// Моковые данные игр
+// =======================
+
 const games = [
   {
     id: 1,
@@ -84,19 +105,25 @@ const games = [
     type: "Disk",
     genre: "RPG · Soulslike",
     tags: ["Hardcore", "Remake"],
-    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202009/2517/TozUf0odkYW7SS7cTF4jvbWp.png",
+    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202009/2517/0p9g6f7Zj0nSMuLy0J7XdzEJ.png",
     shortDescription: "Красивая и безжалостная классика жанра soulslike.",
   },
 ];
 
+// =======================
 // Состояние
+// =======================
+
 let favorites = new Set();
 let currentPlatformFilter = "all";
 let currentSearch = "";
 let currentTab = "all";
 let currentSheetGameId = null;
 
-// DOM
+// =======================
+// DOM-элементы
+// =======================
+
 const gamesGrid = document.getElementById("gamesGrid");
 const favoritesGrid = document.getElementById("favoritesGrid");
 const favoritesEmpty = document.getElementById("favoritesEmpty");
@@ -118,7 +145,10 @@ const sheetFavBtn = document.getElementById("sheetFavBtn");
 const addToCollectionBtn = document.getElementById("addToCollectionBtn");
 const shareGameBtn = document.getElementById("shareGameBtn");
 
+// =======================
 // Вспомогательные функции
+// =======================
+
 function matchesFilters(game) {
   const byPlatform =
     currentPlatformFilter === "all" || game.platform === currentPlatformFilter;
@@ -129,6 +159,7 @@ function matchesFilters(game) {
 }
 
 function renderGames() {
+  if (!gamesGrid) return;
   gamesGrid.innerHTML = "";
   const filtered = games.filter(matchesFilters);
 
@@ -139,6 +170,8 @@ function renderGames() {
 }
 
 function renderFavorites() {
+  if (!favoritesGrid || !favoritesEmpty) return;
+
   favoritesGrid.innerHTML = "";
   const favGames = games.filter((g) => favorites.has(g.id));
 
@@ -209,7 +242,6 @@ function createGameCard(game) {
   card.appendChild(cover);
   card.appendChild(info);
 
-  // Открытие детальной карточки
   card.addEventListener("click", () => openGameSheet(game.id));
 
   return card;
@@ -221,7 +253,7 @@ function toggleFavorite(gameId) {
   } else {
     favorites.add(gameId);
   }
-  // Перерисовка
+
   renderGames();
   renderFavorites();
   updateSheetFavoriteState();
@@ -239,7 +271,7 @@ function switchTab(tabId) {
 
 function openGameSheet(gameId) {
   const game = games.find((g) => g.id === gameId);
-  if (!game) return;
+  if (!game || !gameSheet) return;
 
   currentSheetGameId = gameId;
 
@@ -269,12 +301,13 @@ function openGameSheet(gameId) {
 }
 
 function closeGameSheet() {
+  if (!gameSheet) return;
   gameSheet.classList.remove("open");
   currentSheetGameId = null;
 }
 
 function updateSheetFavoriteState() {
-  if (!currentSheetGameId) return;
+  if (!currentSheetGameId || !sheetFavBtn) return;
   const isFav = favorites.has(currentSheetGameId);
   const icon = sheetFavBtn.querySelector(".icon-heart");
   if (icon) {
@@ -282,7 +315,9 @@ function updateSheetFavoriteState() {
   }
 }
 
+// =======================
 // Слушатели
+// =======================
 
 // Табы
 tabButtons.forEach((btn) => {
@@ -302,58 +337,56 @@ chips.forEach((chip) => {
 });
 
 // Поиск
-searchInput.addEventListener("input", (e) => {
-  currentSearch = e.target.value;
-  renderGames();
-});
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    currentSearch = e.target.value;
+    renderGames();
+  });
+}
 
 // Bottom sheet закрытие
-gameSheetBackdrop.addEventListener("click", closeGameSheet);
-gameSheet.addEventListener("click", (e) => {
-  if (e.target === gameSheet) closeGameSheet();
-});
+if (gameSheetBackdrop) {
+  gameSheetBackdrop.addEventListener("click", closeGameSheet);
+}
 
-sheetFavBtn.addEventListener("click", () => {
-  if (!currentSheetGameId) return;
-  toggleFavorite(currentSheetGameId);
-});
+if (gameSheet) {
+  gameSheet.addEventListener("click", (e) => {
+    if (e.target === gameSheet) closeGameSheet();
+  });
+}
+
+if (sheetFavBtn) {
+  sheetFavBtn.addEventListener("click", () => {
+    if (!currentSheetGameId) return;
+    toggleFavorite(currentSheetGameId);
+  });
+}
 
 // Временно: заглушки на действия
-addToCollectionBtn.addEventListener("click", () => {
-  if (tg?.showAlert) {
-    tg.showAlert("Функция добавления в коллекции появится позже.");
-  } else {
-    alert("Функция добавления в коллекции появится позже.");
-  }
-});
+if (addToCollectionBtn) {
+  addToCollectionBtn.addEventListener("click", () => {
+    dalert("Функция добавления в коллекции появится позже.");
+  });
+}
 
-shareGameBtn.addEventListener("click", () => {
-  if (!currentSheetGameId) return;
-  const game = games.find((g) => g.id === currentSheetGameId);
-  const text = `Смотри, какая игра в моей PS коллекции: ${game.title}`;
-  if (tg?.shareMessage) {
-    tg.shareMessage(text);
-  } else if (tg?.sendData) {
-    tg.sendData(JSON.stringify({ type: "share_game", gameId: game.id }));
-  } else {
-    alert(text);
-  }
-});
+if (shareGameBtn) {
+  shareGameBtn.addEventListener("click", () => {
+    if (!currentSheetGameId) return;
+    const game = games.find((g) => g.id === currentSheetGameId);
+    if (!game) return;
+    const text = `Смотри, какая игра в моей PS коллекции: ${game.title}`;
+    if (tg && typeof tg.sendData === "function") {
+      tg.sendData(JSON.stringify({ type: "share_game", gameId: game.id, text }));
+    } else {
+      dalert(text);
+    }
+  });
+}
 
-// Стартовый рендер
+// =======================
+// Старт
+// =======================
+
 renderGames();
 renderFavorites();
-
-if (DEBUG) {
-  const dbg = document.getElementById("debugIndicator");
-  if (dbg) dbg.style.display = "block";
-}
-
-if (DEBUG) {
-  const btn = document.getElementById("debugTestBtn");
-  btn.style.display = "block";
-  btn.onclick = () => {
-    dalert("Debug test click OK!");
-    dlog("Debug button clicked");
-  };
-}
+dlog("App initialized");
