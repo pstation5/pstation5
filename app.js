@@ -1,9 +1,3 @@
-window.onerror = function (message, source, lineno, colno, error) {
-  dalert(`JS ERROR: ${message}\n${source}:${lineno}`);
-  dlog("Full error:", { message, source, lineno, colno, error });
-};
-
-
 // Debug mode switch
 const DEBUG = true;
 
@@ -22,6 +16,11 @@ function dalert(msg) {
     }
   }
 }
+
+window.onerror = function (message, source, lineno, colno, error) {
+  dalert(`JS ERROR: ${message}\n${source}:${lineno}`);
+  dlog("Full error:", { message, source, lineno, colno, error });
+};
 
 // Инициализация Telegram Mini App (по сути просто готовность)
 const tg = window.Telegram?.WebApp || null;
