@@ -535,3 +535,29 @@ body {
   text-shadow: 0 0 8px rgba(0,0,0,0.8);
 }
 
+.game-card {
+  border-radius: 20px;
+  padding: 10px;
+  background: #151720;
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: transform .15s ease, box-shadow .2s ease;
+}
+
+.game-card:active {
+  transform: scale(0.96);
+}
+
+.game-cover {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.game-title {
+  font-size: 13px;
+}
+
+.game-meta {
+  font-size: 11px;
+  opacity: .7;
+}
+
