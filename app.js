@@ -350,3 +350,11 @@ if (DEBUG) {
   if (dbg) dbg.style.display = "block";
 }
 
+if (DEBUG) {
+  const btn = document.getElementById("debugTestBtn");
+  btn.style.display = "block";
+  btn.onclick = () => {
+    dalert("Debug test click OK!");
+    dlog("Debug button clicked");
+  };
+}
