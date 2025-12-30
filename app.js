@@ -30,6 +30,22 @@ if (tg) {
   tg.expand && tg.expand();
 }
 
+const tg = window.Telegram?.WebApp || null;
+
+if (tg) {
+  tg.ready?.();
+  tg.expand?.();
+
+  if (DEBUG) {
+    dlog("Telegram WebApp detected:", tg);
+    dlog("initData:", tg.initData);
+    dalert("Mini App detected Telegram.\ninitData received.");
+  }
+} else {
+  dalert("WARNING: Telegram WebApp object is NOT available.");
+}
+
+
 // Моковые данные игр (потом заменим данными из Supabase)
 const games = [
   {
