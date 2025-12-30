@@ -385,3 +385,6 @@ shareGameBtn.addEventListener("click", () => {
 renderGames();
 renderFavorites();
 dlog("App initialized.");
+
+renderFeatured();
+
