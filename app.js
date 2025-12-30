@@ -9,23 +9,24 @@ function dlog(...args) {
 
 function dalert(msg) {
   if (!DEBUG) return;
+
   try {
     const tg = window.Telegram?.WebApp;
+
+    // Проверяем поддержку showAlert
     if (tg && typeof tg.showAlert === "function") {
       tg.showAlert("[DEBUG]\n" + msg);
-    } else {
-      alert("[DEBUG]\n" + msg);
+      return;
     }
+
+    // Фоллбек: обычный alert
+    alert("[DEBUG]\n" + msg);
+
   } catch (e) {
-    console.log("[DEBUG ALERT FAIL]", e, msg);
+    alert("[DEBUG FALLBACK]\n" + msg);
   }
 }
 
-// Ловим любые ошибки
-window.onerror = function (message, source, lineno, colno, error) {
-  dalert(`JS ERROR: ${message}\n${source}:${lineno}`);
-  dlog("Full error:", { message, source, lineno, colno, error });
-};
 
 
 // =======================
