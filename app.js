@@ -1,6 +1,7 @@
-// =======================
-// Debug mode
-// =======================
+/************************************************************
+ *  DEBUG MODE — безопасная версия (без Telegram ошибок)
+ ************************************************************/
+
 const DEBUG = true;
 
 function dlog(...args) {
@@ -10,47 +11,37 @@ function dlog(...args) {
 function dalert(msg) {
   if (!DEBUG) return;
 
-  try {
-    const tg = window.Telegram?.WebApp;
-
-    // Проверяем поддержку showAlert
-    if (tg && typeof tg.showAlert === "function") {
-      tg.showAlert("[DEBUG]\n" + msg);
-      return;
-    }
-
-    // Фоллбек: обычный alert
-    alert("[DEBUG]\n" + msg);
-
-  } catch (e) {
-    alert("[DEBUG FALLBACK]\n" + msg);
-  }
+  // Безопасный вывод — без showAlert/showPopup
+  // Работает в Telegram Desktop 6.0 и браузере
+  alert("[DEBUG]\n" + msg);
 }
 
+// Ловим ошибки и выводим безопасно
+window.onerror = function (message, source, line, col, err) {
+  dalert(`JS ERROR: ${message}\n${source}:${line}`);
+  dlog("Full error:", err);
+};
 
 
-// =======================
-// Telegram init
-// =======================
+/************************************************************
+ *  Telegram WebApp Init
+ ************************************************************/
 
-const tg = window.Telegram?.WebApp || null;
+const tg = window?.Telegram?.WebApp || null;
 
 if (tg) {
-  tg.ready?.();
-  tg.expand?.();
-
-  dlog("Telegram WebApp detected:", tg);
+  tg.ready();
+  dlog("Telegram WebApp detected");
   dlog("initData:", tg.initData);
-
-  dalert("Telegram WebApp detected.\ninitData loaded.");
 } else {
-  dlog("Telegram NOT available.");
+  dlog("Telegram not detected (browser mode)");
 }
 
 
-// =======================
-// Debug visual elements
-// =======================
+
+/************************************************************
+ *  Debug UI activation
+ ************************************************************/
 
 const dbgIndicator = document.getElementById("debugIndicator");
 if (DEBUG && dbgIndicator) dbgIndicator.style.display = "block";
@@ -58,30 +49,14 @@ if (DEBUG && dbgIndicator) dbgIndicator.style.display = "block";
 const dbgBtn = document.getElementById("debugTestBtn");
 if (DEBUG && dbgBtn) {
   dbgBtn.style.display = "block";
-  dbgBtn.onclick = () => {
-    dalert("Debug button click OK!");
-    dlog("Debug button clicked");
-  };
+  dbgBtn.onclick = () => dalert("Debug button click OK!");
 }
 
 
-// =======================
-// Data
-// =======================
 
-const featuredGames = [
-  {
-    id: 101,
-    title: "Death Stranding 2",
-    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202401/02/deathstranding2.jpg"
-  },
-  {
-    id: 102,
-    title: "Silent Hill 2 Remake",
-    cover: "https://image.api.playstation.com/vulcan/ap/rnd/202401/02/silenthill2.jpg"
-  }
-];
-
+/************************************************************
+ *  GAME DATA
+ ************************************************************/
 
 const games = [
   {
@@ -105,8 +80,7 @@ const games = [
     tags: ["Marvel", "Open World"],
     cover:
       "https://image.api.playstation.com/vulcan/ap/rnd/202308/0216/f8MkO2izW2iSSotoaXSInXZ7.png",
-    shortDescription:
-      "Приключения Питера Паркера и Майлза в открытом мире Нью-Йорка.",
+    shortDescription: "Приключения Питера Паркера и Майлза в Нью-Йорке.",
   },
   {
     id: 3,
@@ -117,7 +91,7 @@ const games = [
     tags: ["Open World", "Samurai"],
     cover:
       "https://image.api.playstation.com/vulcan/ap/rnd/202006/0319/ctAi3j_6G4J06QUJ93D4gR75.png",
-    shortDescription: "Самурайский экшен с красивой природой и дуэлями.",
+    shortDescription: "Самурайский экшен с красивыми дуэлями.",
   },
   {
     id: 4,
@@ -128,36 +102,36 @@ const games = [
     tags: ["Hardcore", "Remake"],
     cover:
       "https://image.api.playstation.com/vulcan/ap/rnd/202009/2517/TozUf0odkWY7SS7CTF4jWbWp.png",
-    shortDescription: "Официальный ремейк хардкорной RPG для PS5.",
+    shortDescription: "Ремейк хардкорной RPG для PS5.",
   },
 ];
 
 
-// =======================
-// State
-// =======================
+
+/************************************************************
+ *  APP STATE
+ ************************************************************/
 
 let favorites = new Set();
-let currentPlatformFilter = "all";
+let currentPlatform = "all";
 let currentSearch = "";
-let currentTab = "all";
-let currentSheetGameId = null;
+let currentSheetId = null;
 
 
-// =======================
-// DOM
-// =======================
+
+/************************************************************
+ *  DOM ELEMENTS
+ ************************************************************/
 
 const gamesGrid = document.getElementById("gamesGrid");
 const favoritesGrid = document.getElementById("favoritesGrid");
 const favoritesEmpty = document.getElementById("favoritesEmpty");
 const searchInput = document.getElementById("searchInput");
-
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabPanels = document.querySelectorAll(".tab-panel");
 const chips = document.querySelectorAll(".chip");
 
-// Sheet
+// Bottom sheet elements
 const gameSheet = document.getElementById("gameSheet");
 const gameSheetBackdrop = document.getElementById("gameSheetBackdrop");
 const sheetCover = document.getElementById("sheetCover");
@@ -170,17 +144,17 @@ const addToCollectionBtn = document.getElementById("addToCollectionBtn");
 const shareGameBtn = document.getElementById("shareGameBtn");
 
 
-// =======================
-// Helpers
-// =======================
+
+/************************************************************
+ *  RENDER FUNCTIONS
+ ************************************************************/
 
 function matchesFilters(game) {
-  const pOK =
-    currentPlatformFilter === "all" || game.platform === currentPlatformFilter;
-  const sOK =
+  const platOK = currentPlatform === "all" || game.platform === currentPlatform;
+  const searchOK =
     currentSearch === "" ||
     game.title.toLowerCase().includes(currentSearch.toLowerCase());
-  return pOK && sOK;
+  return platOK && searchOK;
 }
 
 function renderGames() {
@@ -190,44 +164,22 @@ function renderGames() {
   });
 }
 
-function renderFeatured() {
-  const track = document.getElementById("featuredTrack");
-  if (!track) return;
-
-  track.innerHTML = "";
-  featuredGames.forEach(g => {
-    const card = document.createElement("div");
-    card.className = "featured-card";
-    card.innerHTML = `
-      <img src="${g.cover}">
-      <div class="featured-title">${g.title}</div>
-    `;
-    card.onclick = () => dalert("Ожидаемая игра: " + g.title);
-    track.appendChild(card);
-  });
-}
-
-
 function renderFavorites() {
   favoritesGrid.innerHTML = "";
   const fav = games.filter((g) => favorites.has(g.id));
 
   favoritesEmpty.style.display = fav.length === 0 ? "flex" : "none";
+
   fav.forEach((game) => favoritesGrid.appendChild(createGameCard(game)));
 }
 
 function createGameCard(game) {
   const card = document.createElement("article");
   card.className = "game-card";
-  if (favorites.has(game.id)) card.classList.add("favorited");
 
   const cover = document.createElement("div");
   cover.className = "game-cover";
-
-  const ci = document.createElement("div");
-  ci.className = "game-cover-inner";
-  ci.style.backgroundImage = `url(${game.cover})`;
-  cover.appendChild(ci);
+  cover.innerHTML = `<div class="game-cover-inner" style="background-image:url('${game.cover}')"></div>`;
 
   const platform = document.createElement("div");
   platform.className = "game-platform-badge";
@@ -237,13 +189,11 @@ function createGameCard(game) {
   const favBtn = document.createElement("button");
   favBtn.className = "game-fav-btn";
   favBtn.innerHTML = `<span class="icon-heart"></span>`;
-  favBtn.addEventListener("click", (e) => {
+  favBtn.onclick = (e) => {
     e.stopPropagation();
     toggleFavorite(game.id);
-  });
+  };
   cover.appendChild(favBtn);
-
-  card.appendChild(cover);
 
   const info = document.createElement("div");
   info.className = "game-info";
@@ -251,58 +201,56 @@ function createGameCard(game) {
   const title = document.createElement("div");
   title.className = "game-title";
   title.textContent = game.title;
-  info.appendChild(title);
 
   const meta = document.createElement("div");
   meta.className = "game-meta";
   meta.textContent = `${game.genre} · ${game.type}`;
-  info.appendChild(meta);
 
-  const tags = document.createElement("div");
-  tags.className = "game-tags";
+  const tagWrap = document.createElement("div");
+  tagWrap.className = "game-tags";
   game.tags.forEach((t) => {
     const tag = document.createElement("span");
     tag.className = "game-tag";
     tag.textContent = t;
-    tags.appendChild(tag);
+    tagWrap.appendChild(tag);
   });
-  info.appendChild(tags);
 
+  info.appendChild(title);
+  info.appendChild(meta);
+  info.appendChild(tagWrap);
+
+  card.appendChild(cover);
   card.appendChild(info);
 
-  card.addEventListener("click", () => openGameSheet(game.id));
+  card.onclick = () => openSheet(game.id);
 
   return card;
 }
 
 
-// =======================
-// Core logic
-// =======================
+
+/************************************************************
+ *  FAVORITES
+ ************************************************************/
 
 function toggleFavorite(id) {
   favorites.has(id) ? favorites.delete(id) : favorites.add(id);
   renderGames();
   renderFavorites();
-  updateSheetFavoriteState();
+  updateSheetFavIcon();
 }
 
-function switchTab(tab) {
-  currentTab = tab;
 
-  tabButtons.forEach((b) =>
-    b.classList.toggle("active", b.dataset.tab === tab)
-  );
-  tabPanels.forEach((p) =>
-    p.classList.toggle("active", p.id === `tab-${tab}`)
-  );
-}
 
-function openGameSheet(id) {
+/************************************************************
+ *  BOTTOM SHEET
+ ************************************************************/
+
+function openSheet(id) {
   const game = games.find((g) => g.id === id);
   if (!game) return;
 
-  currentSheetGameId = id;
+  currentSheetId = id;
 
   sheetCover.innerHTML = `<div class="sheet-cover-inner" style="background-image:url('${game.cover}')"></div>`;
   sheetTitle.textContent = game.title;
@@ -317,75 +265,67 @@ function openGameSheet(id) {
     sheetTags.appendChild(el);
   });
 
-  updateSheetFavoriteState();
+  updateSheetFavIcon();
   gameSheet.classList.add("open");
 }
 
-function closeGameSheet() {
+function closeSheet() {
   gameSheet.classList.remove("open");
-  currentSheetGameId = null;
 }
 
-function updateSheetFavoriteState() {
+function updateSheetFavIcon() {
   const icon = sheetFavBtn.querySelector(".icon-heart");
-  icon.classList.toggle("favorited", favorites.has(currentSheetGameId));
+  icon.classList.toggle("favorited", favorites.has(currentSheetId));
 }
 
 
-// =======================
-// Listeners
-// =======================
+
+/************************************************************
+ *  EVENT LISTENERS
+ ************************************************************/
 
 // Tabs
-tabButtons.forEach((b) =>
-  b.addEventListener("click", () => switchTab(b.dataset.tab))
+tabButtons.forEach((btn) =>
+  btn.addEventListener("click", () => {
+    const id = btn.dataset.tab;
+    tabPanels.forEach((p) =>
+      p.classList.toggle("active", p.id === `tab-${id}`)
+    );
+    tabButtons.forEach((b) =>
+      b.classList.toggle("active", b.dataset.tab === id)
+    );
+  })
 );
 
-// Filters
+// Platform filter
 chips.forEach((chip) =>
   chip.addEventListener("click", () => {
     chips.forEach((c) => c.classList.remove("chip-active"));
     chip.classList.add("chip-active");
-    currentPlatformFilter = chip.dataset.platform;
+
+    currentPlatform = chip.dataset.platform;
     renderGames();
   })
 );
 
 // Search
 searchInput.addEventListener("input", (e) => {
-  currentSearch = e.target.value.trim();
+  currentSearch = e.target.value.toLowerCase().trim();
   renderGames();
 });
 
-// Sheet closing
-gameSheetBackdrop.addEventListener("click", closeGameSheet);
-gameSheet.addEventListener("click", (e) => {
-  if (e.target === gameSheet) closeGameSheet();
-});
-
-sheetFavBtn.addEventListener("click", () => {
-  if (currentSheetGameId) toggleFavorite(currentSheetGameId);
-});
-
-// Temporary stubs
-addToCollectionBtn.addEventListener("click", () =>
-  dalert("Добавление в коллекцию будет позже")
-);
-
-shareGameBtn.addEventListener("click", () => {
-  if (!currentSheetGameId) return;
-  const game = games.find((g) => g.id === currentSheetGameId);
-  dalert("Поделиться: " + game.title);
-});
+// Sheet close
+gameSheetBackdrop.onclick = closeSheet;
+sheetFavBtn.onclick = () => toggleFavorite(currentSheetId);
+addToCollectionBtn.onclick = () => dalert("Добавление в коллекции появится позже");
+shareGameBtn.onclick = () => dalert("Функция 'Поделиться' будет позже");
 
 
-// =======================
-// Init
-// =======================
+
+/************************************************************
+ *  INIT
+ ************************************************************/
 
 renderGames();
 renderFavorites();
-dlog("App initialized.");
-
-renderFeatured();
-
+dlog("App initialized");
